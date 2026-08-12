@@ -14,19 +14,27 @@ array predicate with no explicit loop; every counterexample is an index into
 that array; and the array is directly renderable — which is why this is a
 *visual* demo repository rather than a test suite.
 
-Two pictures do most of the teaching:
+## Rock-Paper-Scissors is a magma, and no more
 
-- **The identity's cross.** When `e` is a two-sided identity, row `e` and
-  column `e` reproduce the headings. Ring them and the definition explains
-  itself.
-- **The Latin square.** A group's table has every element exactly once in every
-  row and column. Color by result and a group is recognizable at a glance; a
-  mere monoid is not.
+<img src="assets/rps-cayley.svg" alt="Rock-Paper-Scissors Cayley table, colored by winner" width="330">
 
-Nothing here declares what a structure is. Each lesson hands `elements` and
-`operation` to a classifier and reports what came back — magma, semigroup,
-monoid, group, abelian group are **derived**, and a failed law names a witness
-rather than returning `false`:
+`fight(a, b)` returns the winner. That is a closed binary operation on three
+elements, so it is a magma — and the table above is the whole of it. One color
+per element, so the structure is visible before a single name is read.
+
+Nothing here *declares* what a structure is. Each lesson hands `elements` and
+`operation` to a classifier and reports what came back:
+
+```
+  closed       yes
+  associative  no
+  commutative  yes
+  identity     no
+  inverses     no
+  => magma
+```
+
+And a failed law names a witness rather than returning `false`:
 
 ```
   associativity counterexample:
@@ -35,22 +43,63 @@ rather than returning `false`:
     a*(b*c):  b*c = scissors  ->  rock
 ```
 
+### Watch it fail
+
+<img src="assets/rps-associativity.svg" alt="Animated SVG: two markers walk the two bracketings to different results" width="330">
+
+Two markers walk the two bracketings of the same three elements and land on
+different colors. *That* is what non-associativity looks like. The animation is
+SMIL — text inside the SVG — so it needs no encoder, no GIF, and no language
+capability that the static diagram did not already need.
+
+*(If your viewer strips SVG animation you will see the first frame, which is a
+correct static table.)*
+
+### The same operation, drawn as a graph
+
+<img src="assets/rpsls-dominance.svg" alt="RPSLS dominance digraph: the pentagram" width="330">
+
+Rock-Paper-Scissors-Lizard-Spock, at five elements. `a -> b` when `a * b = a`,
+read straight off the Cayley table — so the picture cannot disagree with the
+algebra. Every node has out-degree 2 and in-degree 2, which is why the game is
+fair, and the drawing is the familiar pentagram.
+
+Function, table, and graph are three views of one object. Five elements instead
+of three adds no law: still a commutative magma.
+
+### The two pictures the rest of the plan is built around
+
+- **The identity's cross.** When `e` is a two-sided identity, row `e` and
+  column `e` reproduce the headings. Ring them and the definition explains
+  itself. *(Lesson 06.)*
+- **The Latin square.** A group's table has every element exactly once in every
+  row and column. Color by result and a group is recognizable at a glance; a
+  mere monoid is not. *(Lesson 08.)*
+
+**[docs/viewing.md](docs/viewing.md) covers every way to see these** — terminal
+ASCII, `out/*.svg`, `--svg-out`, and pasting `web/*.mlpl` straight into the
+sw-MLPL browser playground.
+
 ## Status
 
 Verified baseline: `mlpl-repl 0.20.0` from the adjacent
 `../sw-mlpl/target/release` build, with mlplunit for conformance.
 
-Lesson 01 (magmas, via Rock-Paper-Scissors) is implemented and green:
-7 conformance tests passing, 0 explicit loops, ASCII and SVG output. Lessons
-02–12 are planned and queued — see [docs/plan.md](docs/plan.md).
+Lessons 01 (magmas via Rock-Paper-Scissors) and 02 (RPSLS: function, table,
+and graph as three views of one object) are implemented and green, with 0
+explicit loops, ASCII + static SVG + animated SVG output, and three
+paste-ready Web UI entries. Lessons 03–12 are planned and queued — see
+[docs/plan.md](docs/plan.md).
 
 ## Quick start
 
 ```sh
 just demos     # run every lesson; artifacts land in out/
+just render    # rebuild out/ and list exactly what was written
 just tests     # mlplunit conformance suite
+just web       # regenerate the paste-ready Web UI entries in web/
+just assets    # regenerate the diagrams this README embeds
 just check     # the full local gate
-just render    # rebuild out/ and list what was written
 ```
 
 The interpreter is found at `../sw-mlpl/target/release/mlpl-repl`, or wherever
@@ -60,13 +109,19 @@ The interpreter is found at `../sw-mlpl/target/release/mlpl-repl`, or wherever
 
 ```
 lib/algebra.mlpl      laws, classification, counterexamples, homomorphisms
-lib/render.mlpl       ASCII / SVG / JSON renderers
+lib/render.mlpl       ASCII / SVG / JSON renderers, static and animated
 demos/NN-topic/*.mlpl one self-checking lesson per file
+demos/web/*.mlpl      web entries: final value is the SVG
+web/*.mlpl            GENERATED standalone copies — paste these into the Web UI
+assets/*.svg          GENERATED diagrams this README embeds
 probes/*.mlpl         capability probes against the interpreter
 tests/test_*.mlpl     mlplunit conformance
 viewer/*.html         dependency-free interactive pages (planned)
-out/                  every artifact, gitignored
+out/                  scratch artifacts, gitignored
 ```
+
+`web/` and `assets/` are generated and committed; `just check` fails if either
+is stale, so they cannot drift from `lib/`.
 
 ## The second job: dogfooding sw-MLPL
 
@@ -108,6 +163,7 @@ not boilerplate.
 
 ## Documents
 
+- [docs/viewing.md](docs/viewing.md) — every way to see a visualization
 - [docs/plan.md](docs/plan.md) — the twelve-lesson sequence and delivery order
 - [docs/scope-boundary.md](docs/scope-boundary.md) — the contract with
   demo-category-theory

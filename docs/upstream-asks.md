@@ -214,6 +214,47 @@ here because sw-MLPL's answer to "how do I fold?" is currently "recurse".
 
 ---
 
+## 9. `mlpl-repl <bare-filename.mlpl>` fails with exit 1
+
+The most natural invocation a newcomer types does not work:
+
+```
+$ mlpl-repl mini.mlpl              # mini.mlpl contains just: ok(1)
+--source-dir : No such file or directory (os error 2)
+$ echo $?
+1
+```
+
+Every other spelling of the same run is fine:
+
+```
+$ mlpl-repl ./mini.mlpl            # Ok(1)
+$ mlpl-repl sub/dir/mini.mlpl      # Ok(1)
+$ mlpl-repl /abs/path/mini.mlpl    # Ok(1)
+$ mlpl-repl --source-dir . mini.mlpl   # Ok(1)
+```
+
+**Diagnosis:** the default sandbox root is documented as "the script's own
+directory" and is presumably computed as the path's parent. For a bare
+filename that parent is the empty string, and the empty path is then opened
+and fails. The message names a flag the user never passed, which makes it hard
+to connect to the cause.
+
+**Where it bit:** verifying that the generated `web/*.mlpl` entries run
+standalone. Nothing in this repository is blocked — every script here is
+invoked through `scripts/select-mlpl` with an explicit `--source-dir` — but
+`docs/viewing.md` has to warn readers about it, which is a bad first
+impression for a language whose `--help` shows exactly this form:
+
+```
+mlpl-repl <script.mlpl> [-- ARGS]      Run a script (positional path)
+```
+
+**Severity:** low impact here, high impact on first contact. Fix is to treat an
+empty parent as `.`.
+
+---
+
 ## Not asks
 
 Recorded so a later session does not re-litigate them:

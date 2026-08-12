@@ -1,0 +1,23 @@
+# Web entry -- Rock-Paper-Scissors as a colored Cayley table.
+#
+# The FINAL VALUE of this script is the SVG string, which is what makes it a
+# web entry: the sw-MLPL browser REPL renders an SVG return value inline.
+# There is no print(), no write_text(), and after `just web` no include either
+# -- none of the three work in the browser session.
+#
+# Paste the generated web/rps_cayley_web.mlpl (not this file) into the editor.
+#
+# visual: svg
+# loops: 0
+
+include "../../lib/algebra.mlpl"
+include "../../lib/render.mlpl"
+
+def u:beats(x, y) { eq(mod(x - y + 3, 3), 1) }
+def u:fight(x, y) { if u:beats(x, y) { x } else { y } }
+
+u:cayley_svg({
+  title: "Rock-Paper-Scissors (magma)",
+  names: ["rock", "paper", "scissors"],
+  table: table(:u:fight, u:elements(3), u:elements(3))
+})

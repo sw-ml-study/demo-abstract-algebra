@@ -1,0 +1,24 @@
+# Web entry -- Rock-Paper-Scissors-Lizard-Spock as a dominance digraph.
+#
+# a -> b when a * b = a and a is not b, read straight off the Cayley table, so
+# the picture cannot disagree with the algebra.  Every node has out-degree 2
+# and in-degree 2; the drawing is the pentagram.
+#
+# The FINAL VALUE is the SVG string, so the browser REPL renders it inline.
+#
+# visual: svg
+# loops: 0
+
+include "../../lib/algebra.mlpl"
+include "../../lib/render.mlpl"
+
+# Ordered so each element beats the next two going around the circle.
+def u:gap5(x, y) { mod(x - y + 5, 5) }
+def u:beats5(x, y) { lt(u:gap5(x, y) - 1, 2) * (1 - eq(u:gap5(x, y), 0)) }
+def u:fight5(x, y) { if u:beats5(x, y) { x } else { y } }
+
+u:dominance_svg({
+  title: "Rock-Paper-Scissors-Lizard-Spock: who beats whom",
+  names: ["spock", "paper", "lizard", "scissors", "rock"],
+  table: table(:u:fight5, u:elements(5), u:elements(5))
+})

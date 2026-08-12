@@ -1,0 +1,28 @@
+#!/bin/sh
+# Copy the diagrams the README embeds from out/ into the tracked assets/ tree.
+#
+# out/ is gitignored scratch; assets/ is committed so the README renders on a
+# fresh clone and on the forge. scripts/check-generated proves the two agree.
+set -eu
+
+repo_root=$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)
+out_dir=${1:-"$repo_root/assets"}
+
+"$repo_root/scripts/run-all" >/dev/null
+mkdir -p "$out_dir"
+
+# source-in-out/                              committed name
+set -- \
+  "01-rock-paper-scissors.svg:rps-cayley.svg" \
+  "01-rock-paper-scissors-associativity.svg:rps-associativity.svg" \
+  "02-rpsls-cayley.svg:rpsls-cayley.svg" \
+  "02-rpsls-dominance.svg:rpsls-dominance.svg"
+
+for pair in "$@"; do
+  src="$repo_root/out/${pair%%:*}"
+  dst="$out_dir/${pair##*:}"
+  [ -f "$src" ] || { echo "missing generated diagram: $src" >&2; exit 1; }
+  cp "$src" "$dst"
+done
+
+echo "README diagrams written to ${out_dir#$repo_root/}"

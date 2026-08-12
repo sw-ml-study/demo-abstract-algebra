@@ -63,6 +63,14 @@ def u:z3_add(x, y) { mod(x + y, 3) }
 def u:count_substr(hay, needle) {
   h = tokenize_bytes(hay);
   ndl = tokenize_bytes(needle);
+  # A haystack shorter than the needle has no matches, and the rotate-and-mask
+  # formulation below would build a zero-length array and fail on it.  The
+  # empty document is a real case: assoc_walk_svg returns "" when the operation
+  # IS associative.
+  if lt(size(h), size(ndl)) { 0 } else { u:count_found(h, ndl) }
+}
+
+def u:count_found(h, ndl) {
   n = size(h);
   k = size(ndl);
   hits = u:match_mask(h, ndl, 0, ones([n]));
@@ -94,5 +102,60 @@ def u:test_structure_json() { "The viewer's transport must survive a round trip.
   u:assert_eq(back.assoc_counterexample.a, 0, "witness a lost")?;
   ok({test: "structure-json", cases: 7})
 }
+
+@test {name: "animated associativity walk", tags: ["render", "animation"]}
+def u:test_assoc_walk() { "SMIL markers, and the constraint browsers enforce silently.";
+  rps = {
+    title: "rps",
+    names: ["rock", "paper", "scissors"],
+    table: [[0, 1, 0], [1, 1, 2], [0, 2, 2]]
+  };
+  doc = u:assoc_walk_svg(rps);
+  # Two markers, x and y animated on each: four <animate> elements.
+  u:assert_eq(u:count_substr(doc, "<animate "), 4, "wrong animate count")?;
+  u:assert_eq(u:count_substr(doc, "repeatCount=\"indefinite\""), 4, "not looping")?;
+  # values and keyTimes must have EQUAL length or the browser drops the
+  # animation with no error at all.  Every animate carries one 4-entry
+  # keyTimes and one 4-entry values, so 3 separators each, twice over.
+  u:assert_eq(u:count_substr(doc, "keyTimes=\"0;0.35;0.5;1\""), 4, "keyTimes")?;
+  u:assert_eq(u:count_substr(doc, ";"), 4 * 3 * 2, "values/keyTimes lengths")?;
+  # An ASSOCIATIVE table has no counterexample to walk, so there is no
+  # animation to draw and drawing one would be a lie.
+  z3 = {
+    title: "Z3",
+    names: ["0", "1", "2"],
+    table: table(:u:z3_add, u:elements(3), u:elements(3))
+  };
+  u:assert_eq(u:assoc_walk_svg(z3), "", "an associative table has no walk")?;
+  u:assert_eq(u:count_substr(u:assoc_walk_svg(z3), "<animate "), 0, "z3 walk")?;
+  u:assert_eq(u:count_substr("", "x"), 0, "empty haystack")?;
+  u:assert_eq(u:count_substr("ab", "abcd"), 0, "needle longer than haystack")?;
+  ok({test: "assoc-walk", cases: 8})
+}
+
+@test {name: "dominance digraph reads the table", tags: ["render"]}
+def u:test_dominance() { "The graph must agree with the algebra by construction.";
+  # RPSLS, ordered so each element beats the next two around the circle.
+  s = {
+    title: "rpsls",
+    names: ["spock", "paper", "lizard", "scissors", "rock"],
+    table: table(:u:fight5, u:elements(5), u:elements(5))
+  };
+  doc = u:dominance_svg(s);
+  # Ten wins in RPSLS: five elements, each beating exactly two others.
+  u:assert_eq(u:count_substr(doc, "<line "), 10, "wrong edge count")?;
+  u:assert_eq(u:count_substr(doc, "<circle "), 5, "wrong node count")?;
+  u:assert_eq(u:count_substr(doc, "marker-end="), 10, "edges are not directed")?;
+  u:assert_eq(u:count_substr(doc, "<marker "), 1, "arrowhead defined once")?;
+  # A commutative-but-not-winner table still draws: RPS has 3 wins.
+  rps = {title: "rps", names: ["rock", "paper", "scissors"],
+         table: [[0, 1, 0], [1, 1, 2], [0, 2, 2]]};
+  u:assert_eq(u:count_substr(u:dominance_svg(rps), "<line "), 3, "rps edges")?;
+  ok({test: "dominance", cases: 5})
+}
+
+def u:gap5(x, y) { mod(x - y + 5, 5) }
+def u:beats5(x, y) { lt(u:gap5(x, y) - 1, 2) * (1 - eq(u:gap5(x, y), 0)) }
+def u:fight5(x, y) { if u:beats5(x, y) { x } else { y } }
 
 u:run_registered_tests()

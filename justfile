@@ -20,15 +20,24 @@ tap *args:
 list-tests:
     ./scripts/run-tests --list
 
-# Audit catalogs, lesson doc headers, and license headers.
+# Audit catalogs, lesson doc headers, and generated-tree freshness.
 audit:
     ./scripts/validate-catalog catalog/demos.tsv
     ./scripts/validate-catalog catalog/tests.tsv
     ./scripts/check-docstrings
+    ./scripts/check-generated
+
+# Regenerate the standalone, paste-ready Web UI entries in web/.
+web:
+    ./scripts/build-web-demos
+
+# Regenerate the diagrams the README embeds, in assets/.
+assets:
+    ./scripts/build-assets
 
 # Rebuild every visual artifact under out/ and report what was written.
 render:
     ./scripts/render-all
 
 # Run the complete local validation gate.
-check: audit demos tests
+check: demos tests audit

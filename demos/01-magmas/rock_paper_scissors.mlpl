@@ -56,15 +56,24 @@ x = u:show_assoc_counterexample(s)
 # Color by result element.  Nothing about this table is a Latin square, no
 # band reproduces the headings: that is what "magma and no more" looks like.
 wrote = u:write_cayley_svg("out/01-rock-paper-scissors.svg", s)
+
+# --- View 4: the failure, animated ------------------------------------------
+# Two markers walk the two bracketings of the same three elements and land on
+# different colors.  SMIL is just more SVG text, so this costs nothing that the
+# static diagram did not already cost -- no encoder, no new builtin.
+walked = u:write_assoc_walk_svg("out/01-rock-paper-scissors-associativity.svg",
+  {title: "Rock-Paper-Scissors: associativity fails", names: s.names, table: s.table})
+
 print("")
 print("wrote out/01-rock-paper-scissors.svg:", is_ok(wrote))
+print("wrote out/01-rock-paper-scissors-associativity.svg:", is_ok(walked))
 
 # --- Invariants -------------------------------------------------------------
 c = u:classify(s.table)
 laws_ok = c.closed * c.commutative * (1 - c.associative) * (1 - c.identity)
 witness_ok = x.found * eq(x.a, 0) * eq(x.b, 1) * eq(x.c, 2)
 rung_ok = c.magma * (1 - c.semigroup) * (1 - c.monoid) * (1 - c.group)
-if laws_ok * witness_ok * rung_ok * spot * is_ok(wrote) {
+if laws_ok * witness_ok * rung_ok * spot * is_ok(wrote) * is_ok(walked) {
   ok("rock-paper-scissors is a commutative magma and no more")
 } else {
   err("rock-paper-scissors invariants failed")

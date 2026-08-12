@@ -1,0 +1,91 @@
+# Lesson 02 -- One object, three views: Rock-Paper-Scissors-Lizard-Spock.
+#
+# Meaning here: still a MAGMA -- a set with a closed binary operation. Nothing
+# about growing from three elements to five adds a law.
+# Not to be confused with: the DOMINANCE RELATION drawn below. The relation
+# ("a beats b") and the operation ("a * b is the winner") are different objects
+# that happen to determine each other here. A magma is the operation.
+#
+# The lesson is that a function, a Cayley table, and a directed graph are three
+# views of ONE thing. Every view below reads the same 5x5 array; nothing is
+# computed twice, and nothing can drift.
+#
+# There is a second, quieter lesson. The five choices can be arranged in a
+# circle so that each beats exactly the next two going around. That reduces ten
+# hand-written rules to one modular-arithmetic predicate -- and the pentagram
+# the graph draws is a picture of that fact.
+#
+# visual: ascii, svg
+# loops: 0
+# complexity: n^2 to build the table, n^3 to check associativity
+
+include "../../lib/algebra.mlpl"
+include "../../lib/render.mlpl"
+
+# --- View 1: the operation as a function ------------------------------------
+# Ordered so that x beats x+1 and x+2 (mod 5):
+#
+#   spock -> paper -> lizard -> scissors -> rock -> spock ...
+#
+# Spock smashes scissors and vaporizes rock; paper disproves Spock and covers
+# rock; lizard poisons Spock and eats paper; scissors decapitates lizard and
+# cuts paper; rock crushes lizard and crushes scissors. Ten rules, one formula.
+def u:gap5(x, y) { mod(x - y + 5, 5) }
+def u:beats5(x, y) { lt(u:gap5(x, y) - 1, 2) * (1 - eq(u:gap5(x, y), 0)) }
+def u:fight5(x, y) { if u:beats5(x, y) { x } else { y } }
+
+# --- View 2: the same operation as a Cayley table ---------------------------
+s = {
+  title: "Rock-Paper-Scissors-Lizard-Spock (magma)",
+  names: ["spock", "paper", "lizard", "scissors", "rock"],
+  table: table(:u:fight5, u:elements(5), u:elements(5))
+}
+
+u:show_table(s)
+
+print("")
+print("Which laws hold?")
+u:show_laws(s)
+
+# Growing the set did not change the answer: still a commutative magma, still
+# not associative. More elements is not more structure.
+print("")
+x = u:show_assoc_counterexample(s)
+
+# --- View 3: the dominance graph --------------------------------------------
+# a -> b when a * b = a and a is not b. Read straight off the table, so the
+# graph cannot disagree with the algebra. Each node has out-degree 2 and
+# in-degree 2, and the drawing is the familiar pentagram.
+graph = u:write_dominance_svg("out/02-rpsls-dominance.svg",
+  {title: "Rock-Paper-Scissors-Lizard-Spock: who beats whom",
+   names: s.names, table: s.table})
+tbl = u:write_cayley_svg("out/02-rpsls-cayley.svg", s)
+
+print("")
+print("wrote out/02-rpsls-dominance.svg:", is_ok(graph))
+print("wrote out/02-rpsls-cayley.svg:", is_ok(tbl))
+
+# --- Invariants -------------------------------------------------------------
+c = u:classify(s.table)
+laws_ok = c.closed * c.commutative * (1 - c.associative) * (1 - c.identity)
+rung_ok = c.magma * (1 - c.semigroup)
+
+# Every element beats exactly two others and loses to exactly two others: the
+# tournament is perfectly balanced, which is why the game is fair.
+beat_matrix = eq(s.table, u:index_matrix(5)) * (1 - eq(u:index_matrix(5), u:header_matrix(5)))
+out_degree = reduce_add(beat_matrix, 1)
+in_degree = reduce_add(beat_matrix, 0)
+balanced = reduce(:and, eq(out_degree, 2)) * reduce(:and, eq(in_degree, 2))
+print("")
+print("out-degree per element:", out_degree)
+print("in-degree per element: ", in_degree)
+
+# The circular formula and the table must agree on a known rule:
+# rock (4) beats scissors (3).
+spot = eq(take(take(s.table, 0, 4), 0, 3), 4)
+
+if laws_ok * rung_ok * balanced * spot * x.found * is_ok(graph) * is_ok(tbl) {
+  ok("rpsls is a balanced commutative magma: five elements, no new laws")
+} else {
+  err("rpsls invariants failed")
+}

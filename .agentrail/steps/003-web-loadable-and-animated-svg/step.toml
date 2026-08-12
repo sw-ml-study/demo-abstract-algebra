@@ -1,0 +1,9 @@
+number = 3
+slug = "web-loadable-and-animated-svg"
+status = "in-progress"
+description = "Make the visuals actually viewable. Today the only graphic is an SVG file wri..."
+role = "production"
+context_files = []
+created_at = "2026-08-12T11:12:50"
+task_type = "viz"
+commits = []

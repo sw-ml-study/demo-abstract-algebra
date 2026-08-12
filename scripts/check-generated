@@ -1,0 +1,25 @@
+#!/bin/sh
+# Prove the committed generated trees (web/, assets/) match their sources.
+#
+# Generated files in git drift silently. This regenerates into a scratch
+# directory and diffs, so a stale artifact fails the gate instead of shipping.
+set -eu
+
+repo_root=$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)
+tmp=$(mktemp -d)
+trap 'rm -rf "$tmp"' EXIT
+
+"$repo_root/scripts/build-web-demos" "$tmp/web" >/dev/null
+"$repo_root/scripts/build-assets" "$tmp/assets" >/dev/null
+
+failures=0
+for tree in web assets; do
+  if ! diff -r "$repo_root/$tree" "$tmp/$tree" >/dev/null 2>&1; then
+    echo "$tree/ is stale -- regenerate with \`just web\` / \`just assets\`" >&2
+    diff -r "$repo_root/$tree" "$tmp/$tree" | head -20 >&2
+    failures=$((failures + 1))
+  fi
+done
+
+[ "$failures" -eq 0 ] || exit 1
+echo "generated trees: up to date"
