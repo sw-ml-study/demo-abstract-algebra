@@ -1,9 +1,10 @@
 number = 8
 slug = "legible-animated-frames"
-status = "in-progress"
+status = "completed"
 description = 'The svg(_, "life") animations are unreadable: no row or column labels, every ...'
 role = "production"
 context_files = []
 created_at = "2026-08-12T14:15:22"
+completed_at = "2026-08-12T14:19:49"
 task_type = "viz"
-commits = []
+commits = ["99cfa4d38f29b51df899eb9af9014807d3c15268"]
