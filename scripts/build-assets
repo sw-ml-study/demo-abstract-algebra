@@ -21,6 +21,10 @@ set -- \
   "03-not-closed.svg:not-closed.svg" \
   "04-rps-cube.svg:assoc-cube-fails.svg" \
   "04-z3-cube.svg:assoc-cube-holds.svg" \
+  "06-identity-cross.svg:identity-cross.svg" \
+  "08-group-z4.svg:group-z4.svg" \
+  "08-group-klein.svg:group-klein.svg" \
+  "08-not-a-group.svg:not-a-group.svg" \
   "02-rpsls-dominance.svg:rpsls-dominance.svg"
 
 for pair in "$@"; do

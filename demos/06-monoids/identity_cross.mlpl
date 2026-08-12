@@ -1,0 +1,128 @@
+# Lesson 06 -- Monoids: the identity, found rather than declared.
+#
+# Meaning here: a MONOID is a semigroup with a two-sided IDENTITY -- an element
+# e with e * x = x and x * e = x for every x.
+# Also called: the same thing everywhere. "Monoid" is one of the few words in
+# this subject that means exactly one thing in algebra, in category theory
+# (a one-object category) and in functional programming (mempty / mappend).
+# Worth saying, because not every word is a trap. See docs/terminology.md.
+# Not to be confused with: the identity FUNCTION, id(x) = x. That is a member
+# of a set of functions; this is a member of the set the operation acts on.
+#
+# Nothing here declares an identity. The table is handed to a search, and what
+# comes back is a mask -- and this lesson also proves the mask can never have
+# two bits set, which is the uniqueness theorem stated as an array fact.
+#
+# NOT a Web UI file. This is a CLI lesson: it uses include and write_text,
+# neither of which the browser session has, and it ends in ok(...) so the
+# suite can gate on it. See docs/viewing.md.
+#
+# visual: ascii, svg
+# loops: 0
+# complexity: n^2 to search for an identity, n^3 for the associativity it rides on
+
+include "../../lib/algebra.mlpl"
+include "../../lib/render.mlpl"
+
+u:prolog({
+  title: "LESSON 06 -- MONOIDS: the identity, found rather than declared",
+  intro: "An identity is an element that changes nothing. This lesson never says which element that is -- it searches the table for a row that reproduces the headings and a column that does the same, draws the cross where they meet, and then shows why there can never be two."
+})
+
+names = ["0", "1", "2"]
+
+# --- The search -------------------------------------------------------------
+# e is an identity when row e reproduces the header AND column e does too.
+# Both halves are one comparison against a materialized header matrix, so the
+# whole search is two reductions and a product -- see u:identity_mask.
+def u:mx(x, y) { if lt(x, y) { y } else { x } }
+mx = {
+  title: "max on {0, 1, 2}: a monoid, identity 0",
+  names: names,
+  table: table(:u:mx, u:elements(3), u:elements(3))
+}
+
+u:show_table(mx)
+print("")
+u:show_laws(mx)
+
+print("")
+print("identity mask (one bit per element):", u:identity_mask(mx.table))
+print("identity element:", unwrap(list_get(names, u:identity_of(mx.table))))
+print("  because max(0, x) is x for every x, and 0 is the smallest element.")
+
+# --- Uniqueness, as an array fact -------------------------------------------
+# The textbook argument is two lines: if e and f are both identities then
+#   e = e * f   (f is an identity, acting on the right)
+#     = f       (e is an identity, acting on the left)
+# so e and f are the same element. Which means the mask can hold at most one
+# bit -- and that is something we can simply count, on every structure here.
+def u:plus3(x, y) { mod(x + y, 3) }
+def u:always_zero(x, y) { 0 }
+tables = {
+  a: table(:u:mx, u:elements(3), u:elements(3)),
+  b: table(:u:plus3, u:elements(3), u:elements(3)),
+  c: table(:u:always_zero, u:elements(3), u:elements(3)),
+  d: [[0, 1, 0], [1, 1, 2], [0, 2, 2]]
+}
+counts = [reduce_add(u:identity_mask(tables.a)),
+          reduce_add(u:identity_mask(tables.b)),
+          reduce_add(u:identity_mask(tables.c)),
+          reduce_add(u:identity_mask(tables.d))]
+print("")
+print("identities found in max, Z3, constant, rock-paper-scissors:", counts)
+print("never more than one:", u:tick(reduce(:and, lt(counts, 2))))
+
+# --- A monoid is not a group ------------------------------------------------
+# max has an identity but almost nothing has an inverse: max(a, b) = 0 forces
+# both to be 0, so only the identity is invertible.
+print("")
+print("invertible elements of max:", u:invertible_mask(mx.table))
+print("  only the identity, so this is a monoid and stops there.")
+
+# --- The diagrams -----------------------------------------------------------
+a = u:write_cayley_svg("out/06-identity-cross.svg", mx)
+# The same table, with the identity's own row and column ringed explicitly.
+cross = u:mask_of_identity(mx.table)
+b = u:write_marked_svg("out/06-identity-cells.svg", mx, cross,
+  "ringed: every cell the identity touches")
+
+u:epilog_open()
+
+u:explain("out/06-identity-cross.svg",
+  "The 3x3 table for max. Rows and columns are 0, 1, 2, cells coloured by result.")
+u:note("One row and one column are RINGED IN WHITE, crossing at the top-left.")
+u:note("WHAT TO NOTICE: read along the ringed row -- 0, 1, 2 -- and it reproduces the")
+u:note("column headings exactly. Read down the ringed column and it reproduces the row")
+u:note("headings. That is the whole definition of an identity, drawn: e * x = x going")
+u:note("across, x * e = x going down.")
+u:note("Nothing declared this. The white cross appears wherever a search finds a row")
+u:note("and a column that both echo the headings, and it appears nowhere else -- there")
+u:note("is never a second cross, because there can never be a second identity.")
+
+u:explain("out/06-identity-cells.svg",
+  "The same table with every cell the identity touches ringed, not just the bands.")
+u:note("Five cells of the nine: the identity's row, its column, and the corner they")
+u:note("share. In a 3x3 that is more than half the table.")
+u:note("WHAT TO NOTICE: an identity is cheap to have and enormously constraining. Fixing")
+u:note("one element's behaviour fixes 2n - 1 of the n^2 cells, which is why the jump")
+u:note("from semigroup to monoid does so much work.")
+
+u:takeaway("An identity is not a decoration on a structure, it is a shape in the table: one row and one column that reproduce the headings. Search for that shape and you find the identity or you find nothing, and you can never find two -- e = e * f = f is a two-line proof, and here it is the observation that the identity mask never holds more than one bit. Having an identity is also not much on its own: max has one, and only the identity itself has an inverse.")
+
+print("wrote out/06-identity-cross.svg:", is_ok(a))
+print("wrote out/06-identity-cells.svg:", is_ok(b))
+
+# --- Invariants -------------------------------------------------------------
+c = u:classify(mx.table)
+mon_ok = c.monoid * (1 - c.group) * eq(u:identity_of(mx.table), 0)
+unique_ok = reduce(:and, lt(counts, 2))
+# max: only the identity is invertible, so exactly one bit in the mask.
+inv_ok = eq(reduce_add(u:invertible_mask(mx.table)), 1)
+# The cross covers 2n - 1 cells.
+cross_ok = eq(reduce_add(flatten(cross)), 2 * 3 - 1)
+if mon_ok * unique_ok * inv_ok * cross_ok * is_ok(a) * is_ok(b) {
+  ok("max is a monoid with identity 0; identities are unique and constraining")
+} else {
+  err("monoid invariants failed")
+}

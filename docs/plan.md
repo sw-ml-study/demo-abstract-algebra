@@ -5,7 +5,7 @@ that brief. The category-theory half is deferred to `../demo-category-theory`
 under the contract in `docs/scope-boundary.md`.
 
 Verified baseline: `mlpl-repl 0.20.0` from `../sw-mlpl/target/release`.
-Lessons 01 to 04 are implemented and green; 05 onward are planned.
+Lessons 01 to 08 are implemented and green; 09 onward are planned.
 
 ## The thesis
 
@@ -66,10 +66,10 @@ than the subject — they are gone by lesson 03.
 | 02 | `02-rpsls/lizard_spock` | The same structure at n=5; function / table / graph as three views of one object | Dominance digraph on a circle; the labelled animated frames | **done** |
 | 03 | `03-closure/escaping_the_set` | Closure by counterexample; the two repairs (shrink the operation, grow the set) | Escaping cells in grey, marked `!v` | **done** |
 | 04 | `04-associativity/bracketing` | The `n^3` triple check; independence from commutativity; why the witness matters | The agreement cube as `n` square panels, green/red | **done** |
-| 05 | `05-semigroups/string_joins` | Associative but no identity | Latin-square-ness absent; no white cross | **needs blocker B3** |
-| 06 | `06-monoids/identity_cross` | Identity discovered, not asserted; uniqueness | The white cross | planned |
-| 07 | `07-inverses/undoing` | Inverses relative to the identity | Inverse pairs joined by chords over the table | planned |
-| 08 | `08-groups/latin_square` | Groups; `Z_n` and the Klein four-group | The Latin square, side by side with a non-group | planned |
+| 05 | `05-semigroups/adjoining_an_identity` | Associative but no identity; the `S^1` construction | Striped rows; the adjoined row and column | **done** (substitute, see below) |
+| 06 | `06-monoids/identity_cross` | Identity discovered, not asserted; uniqueness as an array fact | The white cross, and the `2n-1` cells it owns | **done** |
+| 07 | `07-inverses/undoing` | Inverses relative to the identity; why the question needs one | Cells equal to the identity, ringed | **done** |
+| 08 | `08-groups/latin_square` | Groups; the Latin square derived; `Z4` vs Klein | Three tables: two Latin squares and a failure | **done** |
 | 09 | `09-commutativity/symmetry` | Commutativity as a property, not a rung; `S_3` is not abelian | Reflection across the diagonal, animated in the viewer | planned |
 | 10 | `10-enumeration/all_small_magmas` | Enumerate all `n^(n^2)` operations; classify them | Population bar chart of the ladder rungs | planned |
 | 11 | `11-isomorphism/same_up_to_naming` | Relabeling; canonical forms; equivalence classes | Two tables shown becoming identical under a permutation | planned |
@@ -78,22 +78,21 @@ than the subject — they are gone by lesson 03.
 Lessons 13+ (rings, fields, two interacting operations) are a later saga, not
 part of this plan.
 
-### Lesson 05 is currently blocked upstream
+### Lesson 05 shipped a substitute
 
 Its natural subject is string concatenation — the canonical semigroup that is
 not a monoid until you add `""`. sw-MLPL cannot concatenate strings
-(`docs/mlpl-blockers.md`, B1) and cannot measure or search them (B3), so the
-lesson is unwritable in its intended form today. Two ways forward, decided when
-step 3 reaches it:
+(`docs/sw-mlpl-work-order.md`, B1) or measure them (B3), so that version is
+unwritable today.
 
-- Wait for B1/B3 and write the lesson as intended. Preferred — it is the best
-  example of the concept, and the lesson doubles as the adoption test for the
-  new builtins.
-- Substitute a non-string semigroup (`max` on a bounded set, or left
-  projection) and note in the header that the natural example is blocked.
+Shipped instead: left projection and the constant operation, both associative
+with no identity, followed by the `S^1` construction that adjoins one. The
+same point, and the adjoining is arguably a better lesson than the string
+version would have been — it shows a rung being climbed by construction rather
+than by luck.
 
-Ship the substitute rather than stall the ladder, and replace it when B1/B3
-land.
+**When B1/B3 land**, add the string version alongside rather than replacing
+this one. The lesson header records the substitution.
 
 ### Lesson 10 is the serious array-programming workload
 

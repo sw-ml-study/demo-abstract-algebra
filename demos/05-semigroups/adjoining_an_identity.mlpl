@@ -1,0 +1,133 @@
+# Lesson 05 -- Semigroups: associative, and that is all.
+#
+# Meaning here: a SEMIGROUP is a magma whose operation is associative. One law
+# more than a magma, one law less than a monoid. Nothing is said about an
+# identity, and this lesson is about what happens when there is not one.
+# Also called: nothing else, reliably. "Semigroup" is stable across branches.
+# Not to be confused with: "subgroup", which is a different idea entirely --
+# a group sitting inside a larger group.
+#
+# THE NATURAL EXAMPLE IS BLOCKED. The canonical semigroup-that-is-not-a-monoid
+# is non-empty strings under concatenation: joining is associative, and there
+# is no identity until you admit the empty string. sw-MLPL cannot concatenate
+# or measure strings (docs/sw-mlpl-work-order.md, B1 and B3), so that lesson is
+# unwritable today. This substitutes two finite operations that make the same
+# point, and the string version replaces them when B1/B3 land.
+#
+# NOT a Web UI file. This is a CLI lesson: it uses include and write_text,
+# neither of which the browser session has, and it ends in ok(...) so the
+# suite can gate on it. See docs/viewing.md.
+#
+# visual: ascii, svg
+# loops: 0
+# complexity: n^3 to check associativity, n^2 to search for an identity
+
+include "../../lib/algebra.mlpl"
+include "../../lib/render.mlpl"
+
+u:prolog({
+  title: "LESSON 05 -- SEMIGROUPS: associative, and that is all",
+  intro: "Add associativity to a magma and you have a semigroup. This lesson shows two operations that are associative with no identity anywhere, then performs the standard repair -- ADJOIN one -- and watches the classifier climb a rung on its own."
+})
+
+# --- A semigroup with no identity -------------------------------------------
+# Left projection: a * b = a. Both bracketings of a * b * c give a, so it is
+# associative for free. And an identity would have to satisfy e * x = x, but
+# e * x is always e -- so only a one-element set can manage it.
+lp = {
+  title: "Left projection on {a, b}: a semigroup",
+  names: ["a", "b"],
+  table: table(:u:first, u:elements(2), u:elements(2))
+}
+
+u:show_table(lp)
+print("")
+u:show_laws(lp)
+
+# --- A second one, to show it is not a quirk of projection ------------------
+# The constant operation: everything multiplies to z. Also associative, also
+# identity-free above one element.
+def u:always_zero(x, y) { 0 }
+cz = {
+  title: "The constant operation on {z, a}: also a semigroup",
+  names: ["z", "a"],
+  table: table(:u:always_zero, u:elements(2), u:elements(2))
+}
+print("")
+u:show_table(cz)
+print("")
+u:show_laws(cz)
+
+# --- The repair: adjoin an identity -----------------------------------------
+# Every semigroup can be made a monoid by adding one new element and DECLARING
+# it to act as the identity. Order 2 becomes order 3: the old table sits in the
+# top-left corner untouched, and the new row and column simply copy the
+# headings. This construction is written S^1 in the literature.
+#
+# The new element is index 2, so the new table is:
+#   rows/cols 0,1 -> the old left-projection table
+#   row 2        -> the header (e * x = x)
+#   col 2        -> the index   (x * e = x)
+def u:adjoined(x, y) {
+  if eq(x, 2) { y } else { if eq(y, 2) { x } else { u:first(x, y) } }
+}
+mon = {
+  title: "Left projection with an identity adjoined: a monoid",
+  names: ["a", "b", "e"],
+  table: table(:u:adjoined, u:elements(3), u:elements(3))
+}
+print("")
+u:show_table(mon)
+print("")
+u:show_laws(mon)
+
+# The old structure is still in there, unchanged: the top-left 2x2 corner.
+corner = u:gather2(mon.table, u:elements(2))
+preserved = equal(corner, lp.table)
+print("")
+print("old table preserved in the corner:", u:tick(preserved))
+print("identity element index:", u:identity_of(mon.table))
+
+# --- The diagrams -----------------------------------------------------------
+a = u:write_cayley_svg("out/05-semigroup.svg", lp)
+b = u:write_cayley_svg("out/05-monoid.svg", mon)
+
+u:epilog_open()
+
+u:explain("out/05-semigroup.svg",
+  "A 2x2 table for left projection. Rows and columns are a, b.")
+u:note("Each cell is coloured by its result. The whole first row is blue (a), the whole")
+u:note("second row is red (b) -- because a * anything is a.")
+u:note("WHAT TO NOTICE: the table is made of horizontal STRIPES. That shape is exactly")
+u:note("what 'the answer ignores the second argument' looks like, and it is why the")
+u:note("operation is associative without anyone arranging it.")
+u:note("WHAT IS ABSENT: no row reproduces the heading order a, b. A row that did would")
+u:note("mark an identity. Striped rows never can, above one element.")
+
+u:explain("out/05-monoid.svg",
+  "The same table with a third element e adjoined, so 3x3 now.")
+u:note("The top-left 2x2 corner is the old table, untouched -- still striped.")
+u:note("The new row e and the new column e are RINGED IN WHITE. They are not stripes:")
+u:note("they reproduce the headings a, b, e in order, which is the picture of an")
+u:note("identity. e * x = x reading along the row, x * e = x reading down the column.")
+u:note("WHAT TO NOTICE: the classifier was never told a new law held. It re-derived")
+u:note("'monoid' from the table, because an identity is now there to be found.")
+
+u:takeaway("A semigroup is a magma that gained associativity and nothing else. When there is no identity you do not have to abandon the structure -- you adjoin one, the old operation survives untouched in the corner, and the rung goes up by construction. The natural example of all this is string concatenation, which is unwritable here until sw-MLPL can join two strings; docs/sw-mlpl-work-order.md B1 tracks it.")
+
+print("wrote out/05-semigroup.svg:", is_ok(a))
+print("wrote out/05-monoid.svg:", is_ok(b))
+
+# --- Invariants -------------------------------------------------------------
+clp = u:classify(lp.table)
+ccz = u:classify(cz.table)
+cm = u:classify(mon.table)
+semi_ok = clp.semigroup * (1 - clp.monoid) * ccz.semigroup * (1 - ccz.monoid)
+mon_ok = cm.monoid * (1 - cm.group) * eq(u:identity_of(mon.table), 2)
+# Adjoining must not have changed the old operation, nor invented commutativity.
+kept = preserved * (1 - cm.commutative)
+if semi_ok * mon_ok * kept * is_ok(a) * is_ok(b) {
+  ok("two semigroups with no identity; adjoining one makes a monoid")
+} else {
+  err("semigroup invariants failed")
+}

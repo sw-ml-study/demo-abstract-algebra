@@ -1,0 +1,135 @@
+# Lesson 07 -- Inverses: every action can be undone.
+#
+# Meaning here: given an identity e, an INVERSE of a is an element b with
+# a * b = e and b * a = e. It is the last law before a group.
+# Not to be confused with: an inverse FUNCTION, or matrix inversion, or the
+# multiplicative inverse of a number. All are the same idea specialized; the
+# thing that varies is which operation and which identity you mean, which is
+# exactly why "inverse" is meaningless until an identity is fixed.
+#
+# Notice the dependency: inverses are defined RELATIVE to an identity, so this
+# question cannot even be asked of a semigroup. The ladder is not a list of
+# independent properties -- each rung stands on the one below.
+#
+# NOT a Web UI file. This is a CLI lesson: it uses include and write_text,
+# neither of which the browser session has, and it ends in ok(...) so the
+# suite can gate on it. See docs/viewing.md.
+#
+# visual: ascii, svg
+# loops: 0
+# complexity: n^2 to locate every inverse pair
+
+include "../../lib/algebra.mlpl"
+include "../../lib/render.mlpl"
+
+u:prolog({
+  title: "LESSON 07 -- INVERSES: every action can be undone",
+  intro: "An inverse undoes an element. The question only makes sense once an identity exists to undo TO, so this lesson takes two monoids with the same identity and asks which of their elements can be undone -- one where all can, and one where almost none can."
+})
+
+# --- A monoid where nothing much can be undone ------------------------------
+def u:mx(x, y) { if lt(x, y) { y } else { x } }
+mx = {
+  title: "max on {0, 1, 2}: only the identity is invertible",
+  names: ["0", "1", "2"],
+  table: table(:u:mx, u:elements(3), u:elements(3))
+}
+
+u:show_table(mx)
+print("")
+u:show_laws(mx)
+print("")
+print("identity:", u:identity_of(mx.table))
+print("invertible elements:", u:invertible_mask(mx.table))
+print("  max(a, b) = 0 forces both to be 0, so nothing above the identity")
+print("  has anything that undoes it. Raising a value is a one-way move.")
+
+# --- A monoid where everything can be undone --------------------------------
+# Z4: adding 1 is undone by adding 3, adding 2 by adding 2. Every element has
+# a partner, so this clears the last rung and becomes a group.
+def u:plus4(x, y) { mod(x + y, 4) }
+z4 = {
+  title: "Z4 under addition: every element is invertible",
+  names: ["0", "1", "2", "3"],
+  table: table(:u:plus4, u:elements(4), u:elements(4))
+}
+print("")
+u:show_table(z4)
+print("")
+u:show_laws(z4)
+print("")
+print("identity:", u:identity_of(z4.table))
+print("invertible elements:", u:invertible_mask(z4.table))
+
+# --- Who undoes whom --------------------------------------------------------
+# The inverse mask marks the cells that equal the identity. Reading it row by
+# row gives each element its partner. 1 pairs with 3, and 2 is its own.
+pairs = u:inverse_mask(z4.table)
+print("")
+print("cells that equal the identity, by row:")
+print(disp(pairs))
+print("  row 0 -> column 0, row 1 -> column 3, row 2 -> column 2, row 3 -> column 1")
+print("  so 1 and 3 undo each other, and 0 and 2 are their own inverses.")
+
+# Exactly one inverse per element in a group: the mask is a permutation matrix.
+per_row = reduce_add(pairs, 1)
+per_col = reduce_add(pairs, 0)
+unique_inv = reduce(:and, eq(per_row, 1)) * reduce(:and, eq(per_col, 1))
+print("  inverses per element:", per_row, " -- exactly one each:", u:tick(unique_inv))
+
+# --- Self-inverse elements --------------------------------------------------
+# a * a = e says a undoes itself. In Z4 that is 0 and 2; in the Klein group it
+# is every element, which is what makes that group feel so different.
+def u:klein(x, y) { bxor(x, y) }
+kl = {
+  title: "The Klein four-group: every element is its own inverse",
+  names: ["e", "a", "b", "c"],
+  table: table(:u:klein, u:elements(4), u:elements(4))
+}
+z4_self = reduce_add(eq(u:diagonal(z4.table), u:identity_of(z4.table)))
+kl_self = reduce_add(eq(u:diagonal(kl.table), u:identity_of(kl.table)))
+print("")
+print("self-inverse elements -- Z4:", z4_self, " Klein:", kl_self)
+print("  Both are groups of order 4, and they are not the same group.")
+
+# --- The diagrams -----------------------------------------------------------
+a = u:write_marked_svg("out/07-inverses-z4.svg", z4, pairs,
+  "ringed: a * b = the identity")
+b = u:write_marked_svg("out/07-inverses-max.svg", mx, u:inverse_mask(mx.table),
+  "ringed: a * b = the identity")
+
+u:epilog_open()
+
+u:explain("out/07-inverses-z4.svg",
+  "The 4x4 table for Z4, with every cell that equals the identity RINGED.")
+u:note("Rows and columns are 0, 1, 2, 3; a cell is the sum modulo 4.")
+u:note("WHAT TO NOTICE: exactly one ring per row and exactly one per column, and the")
+u:note("rings run along the ANTI-DIAGONAL, from the top-left corner down to the")
+u:note("bottom-left. That is what 'every element has exactly one inverse' looks like.")
+u:note("Read row 1 across to its ring: it lands under column 3, so 1 and 3 undo each")
+u:note("other. Rows 0 and 2 ring on their own diagonal cell -- they undo themselves.")
+
+u:explain("out/07-inverses-max.svg",
+  "The 3x3 table for max, ringed by the same rule.")
+u:note("One ring, in the top-left corner. Only 0 * 0 reaches the identity.")
+u:note("WHAT TO NOTICE: rows 1 and 2 have no ring at all, so those elements cannot be")
+u:note("undone by anything. max is a perfectly good monoid that fails the last rung,")
+u:note("and the failure is visible as empty rows.")
+
+u:takeaway("Inverses are the last thing a group needs and the first thing that cannot be asked about in isolation -- 'a undoes b' is meaningless until an identity says what undoing means. In a group the inverse mask is a permutation matrix: one ring per row, one per column, no exceptions. In a mere monoid it is sparse, and every empty row names an element you can never take back.")
+
+print("wrote out/07-inverses-z4.svg:", is_ok(a))
+print("wrote out/07-inverses-max.svg:", is_ok(b))
+
+# --- Invariants -------------------------------------------------------------
+cm = u:classify(mx.table)
+cz = u:classify(z4.table)
+ck = u:classify(kl.table)
+mon_ok = cm.monoid * (1 - cm.group) * eq(reduce_add(u:invertible_mask(mx.table)), 1)
+grp_ok = cz.group * ck.group * unique_inv
+self_ok = eq(z4_self, 2) * eq(kl_self, 4)
+if mon_ok * grp_ok * self_ok * is_ok(a) * is_ok(b) {
+  ok("inverses need an identity; in a group they form a permutation matrix")
+} else {
+  err("inverse invariants failed")
+}

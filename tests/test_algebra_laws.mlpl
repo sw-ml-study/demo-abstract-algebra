@@ -142,4 +142,38 @@ def u:test_edges() { "Order-1 structures and boundary shapes.";
   ok({test: "edges", cases: 12})
 }
 
+@test {name: "the Latin-square test tracks group-ness", tags: ["laws"]}
+def u:test_latin() { "n^2 counting must agree with the n^3 four-law classifier.";
+  z4 = table(:u:z4_add, u:elements(4), u:elements(4));
+  kl = table(:u:xor4, u:elements(4), u:elements(4));
+  mx = table(:u:max2, u:elements(4), u:elements(4));
+  rps = [[0, 1, 0], [1, 1, 2], [0, 2, 2]];
+  lp = table(:u:first, u:elements(3), u:elements(3));
+  u:assert_eq(u:is_latin(z4), u:classify(z4).group, "Z4")?;
+  u:assert_eq(u:is_latin(kl), u:classify(kl).group, "Klein")?;
+  u:assert_eq(u:is_latin(mx), u:classify(mx).group, "max is a monoid, not a group")?;
+  u:assert_eq(u:is_latin(rps), u:classify(rps).group, "rock-paper-scissors")?;
+  u:assert_eq(u:is_latin(lp), u:classify(lp).group, "left projection")?;
+  # A non-closed table must answer 0 rather than crash, as with associativity.
+  u:assert_eq(u:is_latin([[0, 1, 2], [1, 2, 3], [2, 3, 4]]), 0, "non-closed")?;
+  ok({test: "latin-square", cases: 6})
+}
+
+def u:xor4(x, y) { bxor(x, y) }
+
+@test {name: "identity cells and the diagonal", tags: ["laws"]}
+def u:test_identity_cells() { "The cross covers 2n-1 cells; the diagonal is a*a.";
+  mx = table(:u:max2, u:elements(3), u:elements(3));
+  u:assert_eq(reduce_add(flatten(u:mask_of_identity(mx))), 2 * 3 - 1, "cross size")?;
+  # No identity means no cells.
+  lp = table(:u:first, u:elements(3), u:elements(3));
+  u:assert_eq(reduce_add(flatten(u:mask_of_identity(lp))), 0, "no identity, no cross")?;
+  # The diagonal is a * a, read off in order.
+  z4 = table(:u:z4_add, u:elements(4), u:elements(4));
+  u:assert_true(equal(u:diagonal(z4), [0, 2, 0, 2]), "Z4 diagonal")?;
+  kl = table(:u:xor4, u:elements(4), u:elements(4));
+  u:assert_true(equal(u:diagonal(kl), [0, 0, 0, 0]), "Klein is all self-inverse")?;
+  ok({test: "identity-cells", cases: 4})
+}
+
 u:run_registered_tests()

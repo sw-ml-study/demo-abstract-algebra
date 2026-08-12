@@ -382,6 +382,44 @@ def u:frames_svg(s) {
 def u:write_frames_svg(path, s) { write_text(path, u:frames_svg(s)) }
 
 # ---------------------------------------------------------------------------
+# The labelled table with a set of cells ringed
+# ---------------------------------------------------------------------------
+#
+# Several laws are "these particular cells are special": the pairs that
+# multiply to the identity, the row and column an identity owns, the cells a
+# homomorphism gets wrong. One renderer covers them all -- draw the table, ring
+# the cells an [n, n] 0/1 mask selects.
+
+def u:ring_cells(s, mask, i, acc) {
+  n = u:order(s.table)
+  if lt(i, n * n) {
+    a = floor(i / n)
+    b = mod(i, n)
+    piece = if take(take(mask, 0, a), 0, b) {
+      u:svg_frame(u:cell_x(b) + 3, u:cell_y(a) + 3, u:cell_px() - 6,
+        u:cell_px() - 6, "#ffffff")
+    } else { "" }
+    u:ring_cells(s, mask, i + 1, u:cat(acc, piece))
+  } else { acc }
+}
+
+# The table, with the masked cells ringed and a caption saying what they are.
+def u:marked_svg(s, mask, caption) {
+  w = u:grid_w(s)
+  h = u:grid_h(s) + 30
+  u:cat3(
+    u:cat3(u:svg_open(w, h), u:svg_rect(0, 0, w, h, "#1a1b26"),
+      u:svg_text(w / 2, 18, "#c0caf5", s.title)),
+    u:cat3(u:table_body(s), u:ring_cells(s, mask, 0, ""),
+      u:svg_text(w / 2, u:grid_h(s) + 14, "#9ece6a", caption)),
+    "</svg>")
+}
+
+def u:write_marked_svg(path, s, mask, caption) {
+  write_text(path, u:marked_svg(s, mask, caption))
+}
+
+# ---------------------------------------------------------------------------
 # The associativity cube, as a row of slices
 # ---------------------------------------------------------------------------
 #

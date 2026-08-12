@@ -30,6 +30,13 @@ def u:header_matrix(n) { table(:u:second, u:elements(n), u:elements(n)) }
 def u:first(x, y) { x }
 def u:index_matrix(n) { table(:u:first, u:elements(n), u:elements(n)) }
 
+# The [n] diagonal a * a. Self-inverse elements are where this equals the
+# identity; idempotents are where it equals a.
+def u:diagonal(t) {
+  n = u:order(t)
+  compress(flatten(eq(u:index_matrix(n), u:header_matrix(n))), flatten(t))
+}
+
 # ---------------------------------------------------------------------------
 # The two associativity cubes
 # ---------------------------------------------------------------------------
@@ -86,6 +93,26 @@ def u:is_associative(t) {
 
 def u:is_commutative(t) { equal(t, transpose(t)) }
 
+# A LATIN SQUARE: every element appears exactly once in each row and in each
+# column. Counting is enough -- one_hot the whole table and sum along each
+# axis, then demand every count is 1.
+#
+# This is the group test in disguise. Row a contains v exactly when a * b = v
+# has a solution; in a group the solution exists and is unique, so every
+# element appears exactly once. It is n^2 counting where the four-law
+# classifier is n^3 checking, and the two agree.
+def u:is_latin(t) {
+  n = u:order(t)
+  if u:is_closed(t) { u:latin_counts(t, n) } else { 0 }
+}
+
+def u:latin_counts(t, n) {
+  hot = reshape(one_hot(flatten(t), n), [n, n, n])
+  per_row = reduce_add(hot, 1)
+  per_col = reduce_add(hot, 0)
+  reduce(:and, flatten(eq(per_row, 1))) * reduce(:and, flatten(eq(per_col, 1)))
+}
+
 # ---------------------------------------------------------------------------
 # Identity and inverses
 # ---------------------------------------------------------------------------
@@ -98,6 +125,16 @@ def u:identity_mask(t) {
 }
 
 def u:has_identity(t) { reduce(:or, u:identity_mask(t)) }
+
+# [n, n] mask: every cell the identity touches -- its row, its column, and the
+# corner they share, so 2n - 1 cells. Empty when there is no identity.
+def u:mask_of_identity(t) {
+  n = u:order(t)
+  e = u:identity_of(t)
+  rows = eq(u:index_matrix(n), e)
+  cols = eq(u:header_matrix(n), e)
+  (1 - (1 - rows) * (1 - cols)) * u:has_identity(t)
+}
 
 # The identity element index, or -1 when there is none.  A monoid's identity
 # is unique, so argmax over the mask is exact.

@@ -125,14 +125,48 @@ squares, which is why nobody writes brackets around `1 + 2 + 3`.
 
 Same code, same shape, same 27 triples in both. Only the colours differ.
 
-### The two pictures the rest of the plan is built around
+### The identity's cross
 
-- **The identity's cross.** When `e` is a two-sided identity, row `e` and
-  column `e` reproduce the headings. Ring them and the definition explains
-  itself. *(Lesson 06.)*
-- **The Latin square.** A group's table has every element exactly once in every
-  row and column. Color by result and a group is recognizable at a glance; a
-  mere monoid is not. *(Lesson 08.)*
+<img src="assets/identity-cross.svg" alt="max on {0,1,2}: the identity's row and column ringed in white" width="290">
+
+`max` on `{0, 1, 2}`. One row and one column are ringed, crossing at the
+top-left. Read along the ringed row — `0, 1, 2` — and it reproduces the column
+headings exactly; read down the ringed column and it reproduces the row
+headings. That is the whole definition of an identity, drawn: `e * x = x` going
+across, `x * e = x` going down.
+
+Nothing declares it. The cross appears wherever a search finds a row and a
+column that both echo the headings, and it never appears twice — because
+`e = e * f = f` means there is never a second identity.
+
+### The Latin square
+
+<img src="assets/group-z4.svg" alt="Z4: a Latin square with diagonal colour bands" width="300">
+<img src="assets/not-a-group.svg" alt="max on four elements: a row of one repeated colour" width="300">
+
+`Z₄` on the left is a **group**, and its table is a Latin square: look down any
+row or across any column and you see four cells, four different colours, every
+element present and none repeated. The colours march diagonally, because
+adding 1 generates the whole group — that banding is what *cyclic* looks like.
+
+`max` on the right is a **monoid** and not a group. Its bottom row is one
+colour four times, with another colour missing entirely. A repeat means two
+inputs give the same answer; a gap means some answer is unreachable. Same
+failure from both sides, and both say: some element has no inverse.
+
+The definition of a group never mentions rows or columns. The shape falls out
+of having inverses, which is why you can classify a table across the room.
+
+But the shape does not tell you *which* group:
+
+<img src="assets/group-klein.svg" alt="The Klein four-group: symmetric about both diagonals, main diagonal all identity" width="300">
+
+The Klein four-group is also order 4, also abelian, also a Latin square — and
+it is not `Z₄`. No diagonal march; the colours are symmetric about *both*
+diagonals and the main diagonal is entirely the identity's colour, because
+every element undoes itself. No relabelling can change how many elements
+satisfy `a * a = e`, so no relabelling can turn one into the other. Lesson 11
+makes that argument a search over all permutations.
 
 ### See it yourself in the browser, in four lines
 

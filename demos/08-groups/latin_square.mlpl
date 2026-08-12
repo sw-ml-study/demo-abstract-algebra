@@ -1,0 +1,159 @@
+# Lesson 08 -- Groups, and the shape that gives them away.
+#
+# Meaning here: a GROUP is a monoid in which every element has an inverse.
+# Closed, associative, an identity, inverses -- four laws, and the top of the
+# ladder this repository climbs.
+# Not to be confused with: "group" in the everyday sense of a collection. A
+# group is a set AND an operation, and the operation is most of the content.
+#
+# The payoff of the whole sequence is one picture. A group's Cayley table is a
+# LATIN SQUARE: every element appears exactly once in each row and once in each
+# column. Nothing about the definition mentions rows or columns -- it falls out
+# of having inverses -- and once you can see it, you can classify a table
+# across the room.
+#
+# This lesson also shows that the shape does not determine the group. Z4 and
+# the Klein four-group are both order 4, both abelian, both Latin squares, and
+# they are not the same group.
+#
+# NOT a Web UI file. This is a CLI lesson: it uses include and write_text,
+# neither of which the browser session has, and it ends in ok(...) so the
+# suite can gate on it. See docs/viewing.md.
+#
+# visual: ascii, svg
+# loops: 0
+# complexity: n^2 for the Latin-square test, n^3 for the associativity beneath it
+
+include "../../lib/algebra.mlpl"
+include "../../lib/render.mlpl"
+
+u:prolog({
+  title: "LESSON 08 -- GROUPS, and the shape that gives them away",
+  intro: "A group is a monoid where everything can be undone. The definition says nothing about rows or columns, yet every group's table turns out to be a Latin square -- each element exactly once per row and per column. This lesson derives that shape, checks it against a monoid that fails it, and then shows two different groups wearing it."
+})
+
+# --- Two groups of order 4 --------------------------------------------------
+def u:plus4(x, y) { mod(x + y, 4) }
+def u:klein(x, y) { bxor(x, y) }
+
+z4 = {
+  title: "Z4 under addition: a cyclic group",
+  names: ["0", "1", "2", "3"],
+  table: table(:u:plus4, u:elements(4), u:elements(4))
+}
+kl = {
+  title: "The Klein four-group: not cyclic",
+  names: ["e", "a", "b", "c"],
+  table: table(:u:klein, u:elements(4), u:elements(4))
+}
+
+u:show_table(z4)
+print("")
+u:show_laws(z4)
+print("")
+u:show_table(kl)
+print("")
+u:show_laws(kl)
+
+# --- The Latin-square property ----------------------------------------------
+# Row a contains element v exactly when a * b = v has a solution b. In a group
+# it always does -- take b = a-inverse * v -- and the solution is unique, so
+# every element appears exactly once. That is the whole derivation, and it is
+# checkable as a count.
+print("")
+print("Z4    -- is a Latin square:", u:tick(u:is_latin(z4.table)))
+print("Klein -- is a Latin square:", u:tick(u:is_latin(kl.table)))
+
+# --- A monoid that fails it -------------------------------------------------
+def u:mx(x, y) { if lt(x, y) { y } else { x } }
+mx = {
+  title: "max on {0, 1, 2, 3}: a monoid, not a Latin square",
+  names: ["0", "1", "2", "3"],
+  table: table(:u:mx, u:elements(4), u:elements(4))
+}
+cm = u:classify(mx.table)
+print("")
+print("max   -- monoid:", u:tick(cm.monoid), " group:", u:tick(cm.group),
+      " Latin square:", u:tick(u:is_latin(mx.table)))
+print("  Row 3 is 3, 3, 3, 3 -- one element four times and the others missing.")
+print("  A missing element in a row is an equation a * b = v with no solution,")
+print("  which is exactly what having no inverse means.")
+
+# The property tracks group-ness across every structure in this repository.
+def u:fight(x, y) { if eq(mod(x - y + 3, 3), 1) { x } else { y } }
+def u:first2(x, y) { x }
+checked = [u:is_latin(z4.table), u:is_latin(kl.table), u:is_latin(mx.table),
+           u:is_latin(table(:u:fight, u:elements(3), u:elements(3))),
+           u:is_latin(table(:u:first2, u:elements(3), u:elements(3)))]
+grouped = [u:classify(z4.table).group, u:classify(kl.table).group,
+           cm.group, 0, 0]
+print("")
+print("Latin square? Z4, Klein, max, rock-paper-scissors, left projection:")
+print("  latin: ", checked)
+print("  group: ", grouped)
+print("  agree everywhere:", u:tick(equal(checked, grouped)))
+
+# --- Same shape, different groups -------------------------------------------
+# Both are Latin squares, both abelian, both order 4. They differ in how many
+# elements undo themselves: Z4 has two, Klein has four. No relabelling can
+# change that count, so no relabelling can turn one into the other.
+z4_self = reduce_add(eq(u:diagonal(z4.table), u:identity_of(z4.table)))
+kl_self = reduce_add(eq(u:diagonal(kl.table), u:identity_of(kl.table)))
+print("")
+print("self-inverse elements -- Z4:", z4_self, " Klein:", kl_self)
+print("  A relabelling can rename elements but not create or destroy the")
+print("  property a * a = e, so these two groups are genuinely different.")
+print("  Lesson 11 turns that argument into a search over all permutations.")
+
+# --- The diagrams -----------------------------------------------------------
+a = u:write_cayley_svg("out/08-group-z4.svg", z4)
+b = u:write_cayley_svg("out/08-group-klein.svg", kl)
+c = u:write_cayley_svg("out/08-not-a-group.svg", mx)
+
+u:epilog_open()
+
+u:explain("out/08-group-z4.svg",
+  "The 4x4 table for Z4. Rows and columns are 0, 1, 2, 3, cells coloured by result.")
+u:note("THE LATIN SQUARE: look down any row, or across any column. Four cells, four")
+u:note("different colours, every element present and none repeated.")
+u:note("The white cross marks the identity's row and column, as in lesson 06.")
+u:note("WHAT TO NOTICE: the colours march diagonally. Each row is the row above shifted")
+u:note("one place, because adding 1 is what generates this group -- start at 0 and keep")
+u:note("adding 1 and you visit all four elements before returning. That is what CYCLIC")
+u:note("means, and the diagonal banding is what it looks like.")
+
+u:explain("out/08-group-klein.svg",
+  "The 4x4 table for the Klein four-group, same layout.")
+u:note("Also a Latin square: four colours per row and per column, no repeats.")
+u:note("WHAT TO NOTICE: no diagonal march. The colours are symmetric about BOTH")
+u:note("diagonals, and the main diagonal is entirely the identity's colour -- every")
+u:note("element undoes itself. There is no single element you can keep applying to")
+u:note("reach the rest, so this group is not cyclic. Same shape, different group.")
+
+u:explain("out/08-not-a-group.svg",
+  "The 4x4 table for max: a monoid, and the counterexample.")
+u:note("The bottom row is one colour repeated four times, and the first colour is")
+u:note("missing from it entirely.")
+u:note("WHAT TO NOTICE: a repeated colour in a row means two different inputs give the")
+u:note("same answer; a missing colour means some answer is unreachable. Both are the")
+u:note("same failure seen from opposite sides, and both say the same thing: some")
+u:note("element has no inverse. The Latin-square test is the inverse test in disguise.")
+
+u:takeaway("A group is four laws, but you can see it as one shape. Every row and every column is a permutation of the elements -- a Latin square -- because a * b = v always has exactly one solution when inverses exist. The test is n^2 counting rather than n^3 checking, and it agrees with the four-law classifier on every structure in this repository. What the shape does NOT tell you is which group: Z4 and the Klein four-group are both Latin squares of order 4, and they differ in something a picture shows at a glance -- Klein's diagonal is all identity, Z4's is not.")
+
+print("wrote out/08-group-z4.svg:", is_ok(a))
+print("wrote out/08-group-klein.svg:", is_ok(b))
+print("wrote out/08-not-a-group.svg:", is_ok(c))
+
+# --- Invariants -------------------------------------------------------------
+cz = u:classify(z4.table)
+ck = u:classify(kl.table)
+groups_ok = cz.abelian_group * ck.abelian_group
+latin_ok = u:is_latin(z4.table) * u:is_latin(kl.table) * (1 - u:is_latin(mx.table))
+tracks_ok = equal(checked, grouped)
+distinct_ok = eq(z4_self, 2) * eq(kl_self, 4)
+if groups_ok * latin_ok * tracks_ok * distinct_ok * is_ok(a) * is_ok(b) * is_ok(c) {
+  ok("a group is a Latin square; Z4 and Klein wear the same shape differently")
+} else {
+  err("group invariants failed")
+}
