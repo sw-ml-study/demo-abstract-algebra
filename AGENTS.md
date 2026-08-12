@@ -396,6 +396,7 @@ mathematics are disambiguated, not glossed over. Every lesson README carries a
 
 - Implementation plan and lesson sequence: `docs/plan.md`
 - Repository boundary with demo-category-theory: `docs/scope-boundary.md`
+- Handoff for the sw-MLPL agent, self-contained: `docs/sw-mlpl-work-order.md`
 - sw-MLPL capabilities that BLOCK this work, specified for implementation:
   `docs/mlpl-blockers.md` (probe: `probes/text_capabilities.mlpl`)
 - Other language friction found while building lessons: `docs/upstream-asks.md`

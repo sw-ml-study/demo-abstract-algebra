@@ -18,6 +18,12 @@ deleted when the language grows.
 The remaining entries (#1, #2, #5) are genuine friction with honest workarounds
 and can wait.
 
+> **Handing this to the sw-MLPL agent?** Give them
+> **[docs/sw-mlpl-work-order.md](sw-mlpl-work-order.md)** instead. It is the
+> actionable subset — self-contained, with fix sites, proposed signatures,
+> acceptance tests and a recommended order — and needs nothing else from this
+> repository. This file is the fuller narrative record behind it.
+
 Per `AGENTS.md`, this repository does not modify `../sw-mlpl`. This file is the
 record; promoting any of it upstream is a separately authorized task.
 

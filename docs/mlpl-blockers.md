@@ -10,6 +10,11 @@ specifies what replaces them.
 Each blocker below states the verified symptom, why it blocks, the builtin
 that fixes it, and exactly what this repository deletes when it lands.
 
+> **To hand upstream:** [docs/sw-mlpl-work-order.md](sw-mlpl-work-order.md) is
+> the self-contained work order covering these blockers *and* every other
+> finding, with fix sites and a recommended order. This file is the deeper
+> treatment of the text surface specifically.
+
 Verified against `mlpl-repl 0.20.0`, build `d373584c`, 2026-08-12. Every claim
 here was executed, not read out of `docs/lang-reference.md` — the reference and
 the binary disagree in at least one place (see "Documentation drift").

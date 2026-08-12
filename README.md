@@ -129,6 +129,9 @@ not boilerplate.
 - [docs/plan.md](docs/plan.md) — the twelve-lesson sequence and delivery order
 - [docs/scope-boundary.md](docs/scope-boundary.md) — the contract with
   demo-category-theory
+- [docs/sw-mlpl-work-order.md](docs/sw-mlpl-work-order.md) — **the handoff for
+  the sw-MLPL agent**: every finding, with fix sites, proposed signatures,
+  acceptance tests and a recommended order
 - [docs/mlpl-blockers.md](docs/mlpl-blockers.md) — the sw-MLPL capabilities
   that block this work, specified for implementation
 - [docs/upstream-asks.md](docs/upstream-asks.md) — the full friction record

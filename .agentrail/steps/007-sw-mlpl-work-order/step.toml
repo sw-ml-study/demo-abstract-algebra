@@ -1,0 +1,9 @@
+number = 7
+slug = "sw-mlpl-work-order"
+status = "in-progress"
+description = "Consolidate every sw-MLPL finding from this repository into a single self-con..."
+role = "production"
+context_files = []
+created_at = "2026-08-12T14:07:38"
+task_type = "upstream-spec"
+commits = []
