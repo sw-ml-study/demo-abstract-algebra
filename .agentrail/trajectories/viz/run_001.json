@@ -1,0 +1,11 @@
+{
+  "task_type": "viz",
+  "state": {
+    "number": 3,
+    "step": "web-loadable-and-animated-svg"
+  },
+  "action": "Read the playground's Rust render path to find the real SVG predicate rather than trusting docs; verified SMIL correctness by pausing and seeking animations in headless Chrome and screenshotting; verified spliced bundles run from an unrelated directory with zero includes; found and fixed an empty-haystack crash in the test substring counter.",
+  "result": "success",
+  "reward": 1,
+  "timestamp": "2026-08-12T11:34:17"
+}
