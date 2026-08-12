@@ -284,6 +284,13 @@ repository from a session working in this one.
 
 ## Project rules adapted from sw-MLPL
 
+- **Every step ends pushed.** The cycle is `agentrail next`, `agentrail begin`,
+  work, **run the full gate (`just check`)**, commit with a message that
+  explains what changed and why, `agentrail complete`, commit the `.agentrail/`
+  metadata, and **`git push`** — before starting the next step. Work that only
+  exists locally is invisible: a reviewer looking at the remote sees nothing,
+  and a later session cannot build on it. If a push fails, say so explicitly
+  rather than moving on.
 - Follow `agentrail next`, `agentrail begin`, work, test, commit,
   `agentrail complete`, then stop. Never edit `.agentrail/` by hand.
 - Use TDD for executable behavior. Add a failing fixture or assertion before

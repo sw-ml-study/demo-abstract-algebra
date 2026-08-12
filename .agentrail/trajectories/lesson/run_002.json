@@ -1,0 +1,11 @@
+{
+  "task_type": "lesson",
+  "state": {
+    "number": 6,
+    "step": "lessons-05-08-the-ladder"
+  },
+  "action": "Measured comment density and style in sw-mlpl's demos.toml rather than guessing; traced EntryKind::Narration to its three creation sites to establish that pasted files cannot use it; read split_inline_comment to find the multi-line hazard; rendered the triangle and pentagram through headless Chrome to confirm arrow direction.",
+  "result": "success",
+  "reward": 1,
+  "timestamp": "2026-08-12T13:44:37"
+}
