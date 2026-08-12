@@ -618,7 +618,25 @@ This appears to be a deliberate design choice rather than an oversight, so the
 ask is either to reconsider it, or to supply `broadcast_to(a, dims)` so the
 intent is at least spelled once.
 
-## E3. `run_script` returns a string result's repr, not the string
+## E3. Document that inline SVG needs `width` and `height`
+
+Not a code bug — a trap. The playground renders an SVG result inside
+`.svg-output { display: inline-block }`, so an `<svg>` carrying only a
+`viewBox` has no intrinsic width, defaults to `100%`, resolves against a
+shrink-to-fit parent, and collapses to zero. The reader sees the download arrow
+and an empty box.
+
+Every built-in renderer sets both attributes, so this only bites programs that
+emit their own SVG — which is exactly what a downstream repo does while
+[C1](#c1) and [C3](#c3) are open. It cost a full round of "the demo shows
+nothing" here.
+
+Either document the requirement wherever `svg()` output is described, or make
+the panel defensive (`.svg-output svg { width: max-content }` or similar).
+
+---
+
+## E4. `run_script` returns a string result's repr, not the string
 
 ```mlpl
 r = unwrap(run_script("demo.mlpl", {source_dir: "."}))

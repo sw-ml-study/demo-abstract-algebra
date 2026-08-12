@@ -63,6 +63,28 @@ for f in "$repo_root"/web/*.mlpl; do
   done
   pictures=$(ls -1 "$work/svg" 2>/dev/null | wc -l | tr -d ' ')
 
+  # Every emitted SVG must carry width AND height, not just a viewBox.
+  #
+  # A standalone .svg file with only a viewBox fills the viewport and looks
+  # fine. Inline in the playground it does not: with no intrinsic width it
+  # defaults to 100%, and the result panel is `display: inline-block`, which
+  # shrink-wraps to its content. The picture collapses to zero and the reader
+  # sees nothing but the download arrow. Every built-in renderer emits both.
+  # Check the ROOT <svg ...> tag only: the background <rect> that follows it
+  # carries width="100%", so grepping the whole head would always match.
+  bare=0
+  for got in "$work"/svg/*.svg; do
+    [ -f "$got" ] || continue
+    root=$(tr -d '\n' < "$got" | sed 's/>.*//')
+    printf '%s' "$root" | grep -q ' width=' || bare=$((bare + 1))
+    printf '%s' "$root" | grep -q ' height=' || bare=$((bare + 1))
+  done
+  if [ "$bare" -gt 0 ]; then
+    echo "$name: emits an SVG without width/height -- it will render as a" >&2
+    echo "  download arrow and nothing else in the playground" >&2
+    failures=$((failures + 1))
+  fi
+
   if [ "$pictures" -eq 0 ]; then
     echo "$name: renders NO pictures -- a web demo that draws nothing is a bug" >&2
     failures=$((failures + 1))

@@ -77,10 +77,21 @@ def u:show_comm_counterexample(s) {
 # SVG fragments
 # ---------------------------------------------------------------------------
 
+# WIDTH AND HEIGHT ARE NOT OPTIONAL.
+#
+# A standalone .svg file with only a viewBox renders fine -- it fills the
+# viewport. Inline in a page it does not: with no intrinsic width it defaults
+# to 100%, and the playground's result panel is `display: inline-block`, which
+# shrink-wraps to its content. Circular, so the picture collapses to zero and
+# all the reader sees is the download arrow. Every built-in renderer emits
+# both attributes; so must this one.
 def u:svg_open(w, h) {
-  u:cat5("<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 ",
-    u:num(w), " ", u:num(h),
-    "\" font-family=\"ui-monospace,Menlo,monospace\" font-size=\"12\">")
+  u:cat5(
+    u:cat5("<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 ",
+      u:num(w), " ", u:num(h), "\" "),
+    u:cat5("width=\"", u:num(w), "\" height=\"", u:num(h), "\" "),
+    "font-family=\"ui-monospace,Menlo,monospace\" font-size=\"12\"",
+    ">", "")
 }
 
 def u:svg_rect(x, y, w, h, fill) {

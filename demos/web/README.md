@@ -32,6 +32,10 @@ Enforced by `scripts/check-narration`, `scripts/check-web-size` and
 - **No `include`, no `write_text`**, and the final value is prose, not a Result:
   the browser has no filesystem and rejects `include`, and a Result would print
   `Ok(...)` instead of drawing.
+- **Set `width` and `height` on every `<svg>` you emit,** not just a
+  `viewBox`. The playground's result panel is `display: inline-block`, so an
+  SVG with no intrinsic width collapses to nothing and only the download arrow
+  shows. `scripts/check-web-renders` fails the gate on a bare root tag.
 - **Stay under 26 statement groups.** The playground shows one entry per group,
   so length is friction.
 

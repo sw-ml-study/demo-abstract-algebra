@@ -200,6 +200,27 @@ JUST WRITTEN" section that names every file they produced.
 the prose is any good.
 
 
+## Hand-rolled SVG must set `width` and `height`
+
+A standalone `.svg` file with only a `viewBox` fills its viewport and looks
+fine. **Inline it does not.** The playground drops an SVG result into
+
+```css
+.svg-output { display: inline-block; }        /* shrink-wraps to content */
+.svg-output svg { max-width: 100%; height: auto; }
+```
+
+With no intrinsic width the `<svg>` defaults to `100%`, which resolves against
+a shrink-to-fit parent — circular, so it collapses to zero. The reader sees the
+download arrow and nothing else.
+
+Every built-in renderer emits both attributes (`svg(_, "heatmap")` produces
+`viewBox="0 0 400 300" width="400" height="300"`). Anything hand-rolled here
+must too. `scripts/check-web-renders` inspects the root `<svg>` tag of every
+picture a web demo produces and fails the gate if either attribute is missing.
+
+---
+
 ## 5. The interactive viewer
 
 Planned, not built — saga step `005-interactive-viewer`. `viewer/cayley.html`
