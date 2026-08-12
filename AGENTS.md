@@ -310,7 +310,11 @@ repository from a session working in this one.
 - Separate decisions from effects: `.mlpl` functions compute values; the thin
   runner performs process and filesystem effects.
 - Every commit must leave the scoped demo suite green.
-- Update the catalog and user-facing documentation in the same step as a demo.
+- **Update the docs in the same step as the code, not afterwards.** A lesson
+  that ships flips its catalog row to `runnable` AND its `docs/plan.md` row to
+  `**done**`; a new diagram is referenced from the README or a doc; a new doc is
+  linked from somewhere. `scripts/check-docs` enforces all four and covers every
+  file under `docs/`, including the source brief `docs/research.txt`.
 - Do not install or overwrite the user's stable sw-MLPL binaries. Run the
   explicitly configured binary from `$MLPL` or the documented adjacent build.
 - Do not modify `../sw-mlpl`; language changes belong to a separately
@@ -328,6 +332,20 @@ repository from a session working in this one.
   catalog, mlplunit, binary-selection, or validation logic into the `justfile`.
 - Direct script commands remain supported for minimal environments and for
   debugging the delegated layer.
+
+## Syntax traps found the hard way
+
+- A newline immediately after a record field's `:` is a parse error. Break
+  after the comma instead:
+
+  ```mlpl
+  s = {                      # not:  s = {title:
+    title: "...",            #         "...",
+    names: ["a", "b"]        #       names: [...]}
+  }
+  ```
+- A multi-line expression must stay inside brackets. `if a * b\n * c { ... }`
+  fails on the newline; assign the parts to names first.
 
 ## Demo quality rules
 

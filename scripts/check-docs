@@ -1,0 +1,63 @@
+#!/bin/sh
+# Documentation tracks the code, checked rather than remembered.
+#
+# Four things drift silently and all four have bitten this repo:
+#   1. a lesson ships but docs/plan.md still calls it planned
+#   2. a lesson is gated but the plan claims it is done
+#   3. a diagram lands in assets/ that nothing references, or the README
+#      points at one that no longer exists
+#   4. a doc is added under docs/ that nothing links to
+set -eu
+
+repo_root=$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)
+plan="$repo_root/docs/plan.md"
+readme="$repo_root/README.md"
+failures=0
+
+note() { echo "$1" >&2; failures=$((failures + 1)); }
+
+# (1) and (2): catalog status vs the plan's status column.
+tab=$(printf '\t')
+while IFS="$tab" read -r id path lesson concept loops target visual features status; do
+  [ "$id" = "id" ] && continue
+  [ -z "$id" ] && continue
+  case "$lesson" in web|probes|lib) continue ;; esac
+
+  row=$(grep -F "$lesson/" "$plan" || true)
+  if [ -z "$row" ]; then
+    note "docs/plan.md: no row for lesson $lesson (catalog says $status)"
+    continue
+  fi
+  case "$status:$row" in
+    runnable:*'**done**'*) ;;
+    runnable:*) note "docs/plan.md: $lesson is runnable but the plan does not mark it done" ;;
+    gated:*'**done**'*) note "docs/plan.md: $lesson is gated but the plan marks it done" ;;
+    *) ;;
+  esac
+done < "$repo_root/catalog/demos.tsv"
+
+# (3) every committed diagram is referenced, and every reference exists.
+for f in "$repo_root"/assets/*.svg; do
+  [ -f "$f" ] || continue
+  name=$(basename "$f")
+  grep -qrF "assets/$name" "$readme" "$repo_root"/docs/*.md \
+    || note "assets/$name is committed but nothing references it"
+done
+grep -ohF 'assets/' "$readme" "$repo_root"/docs/*.md 2>/dev/null | true
+for ref in $(grep -oh 'assets/[a-z0-9-]*\.svg' "$readme" "$repo_root"/docs/*.md 2>/dev/null | sort -u); do
+  [ -f "$repo_root/$ref" ] || note "$ref is referenced but does not exist"
+done
+
+# (4) no orphan docs -- EVERY file under docs/, not only markdown. The source
+# brief docs/research.txt is a doc too, and it is what the whole plan derives
+# from; if nothing links it, a reader cannot find the argument behind any of
+# this.
+for f in "$repo_root"/docs/*; do
+  [ -f "$f" ] || continue
+  name=$(basename "$f")
+  grep -qrF "docs/$name" "$readme" "$repo_root"/docs/* "$repo_root/AGENTS.md" \
+    || note "docs/$name is not linked from anywhere"
+done
+
+[ "$failures" -eq 0 ] || exit 1
+echo "docs: in sync"

@@ -1,0 +1,128 @@
+# Lesson 03 -- Closure, taught by breaking it.
+#
+# Meaning here: an operation is CLOSED on a set when every result is back in
+# that set. It is the one law a magma requires, and the reason "binary
+# operation on M" means M x M -> M rather than M x M -> anything.
+# Not to be confused with: closure in programming, a function capturing its
+# environment. Unrelated. See docs/terminology.md.
+#
+# Lessons 01 and 02 asserted closure and moved on. This one takes it away.
+# Ordinary addition on {0, 1, 2} escapes almost immediately: 1 + 2 is 3, and
+# 3 is not one of the three things we started with. The table shows exactly
+# where it leaves, and then two standard repairs put it back.
+#
+# NOT a Web UI file. This is a CLI lesson: it uses include and write_text,
+# neither of which the browser session has, and it ends in ok(...) so the
+# suite can gate on it. See docs/viewing.md.
+#
+# visual: ascii, svg
+# loops: 0
+# complexity: n^2 to build the table, n^2 to locate every escape
+
+include "../../lib/algebra.mlpl"
+include "../../lib/render.mlpl"
+
+u:prolog({
+  title: "LESSON 03 -- CLOSURE, taught by breaking it",
+  intro: "A magma needs exactly one thing: every result of the operation must land back in the set. This lesson builds an operation that does NOT, shows where it leaves, and applies the two repairs that fix it -- shrink the operation, or grow the set."
+})
+
+names = ["0", "1", "2"]
+
+# --- An operation that escapes ----------------------------------------------
+# Ordinary addition. Nothing is wrong with it as arithmetic; it is simply not
+# an operation ON this set, because it does not stay inside.
+def u:plus(x, y) { x + y }
+open = {
+  title: "Addition on {0, 1, 2}: NOT closed",
+  names: names,
+  table: table(:u:plus, u:elements(3), u:elements(3))
+}
+
+u:show_table(open)
+
+print("")
+print("Which laws hold?")
+u:show_laws(open)
+
+# Closure is checked the same way every other law is: an array predicate over
+# the whole table at once, no loop.
+esc = u:closure_counterexample(open.table)
+print("")
+print("  closure counterexample:")
+print("    a =", unwrap(list_get(names, esc.a)), " b =", unwrap(list_get(names, esc.b)))
+print("    a * b =", esc.value, "which is not one of", names)
+print("  cells that escape:", reduce_add(flatten(1 - u:inside_mask(open.table))))
+
+# --- Repair 1: shrink the operation -----------------------------------------
+# Keep the set, change the operation so it cannot leave. Addition modulo 3
+# folds every escape back to a legal element -- and the result is not merely
+# closed, it is a group.
+def u:plus3(x, y) { mod(x + y, 3) }
+fixed = {
+  title: "Addition modulo 3: closed",
+  names: names,
+  table: table(:u:plus3, u:elements(3), u:elements(3))
+}
+
+print("")
+u:show_table(fixed)
+print("")
+u:show_laws(fixed)
+
+# --- Repair 2: grow the set -------------------------------------------------
+# Keep the operation, add the missing elements. Addition on {0, 1, 2} escapes
+# to 3 and 4, so on {0, 1, 2, 3, 4} it escapes further -- to 5, 6, 7, 8. No
+# finite set survives ordinary addition, which is why the closed version of
+# this idea is the INFINITE set of naturals.
+wider = {
+  title: "Addition on {0, 1, 2, 3, 4}: still not closed",
+  names: ["0", "1", "2", "3", "4"],
+  table: table(:u:plus, u:elements(5), u:elements(5))
+}
+still_open = 1 - u:is_closed(wider.table)
+print("")
+print("Growing the set from 3 to 5 elements:")
+print("  escaping cells at n=3:", reduce_add(flatten(1 - u:inside_mask(open.table))))
+print("  escaping cells at n=5:", reduce_add(flatten(1 - u:inside_mask(wider.table))))
+print("  still not closed:", u:tick(still_open))
+
+# --- The diagrams -----------------------------------------------------------
+a = u:write_cayley_svg("out/03-not-closed.svg", open)
+b = u:write_cayley_svg("out/03-closed.svg", fixed)
+
+u:epilog_open()
+
+u:explain("out/03-not-closed.svg",
+  "The 3x3 table for ordinary addition. Rows and columns are 0, 1, 2.")
+u:note("Cells that land back inside the set are coloured, one colour per element.")
+u:note("Cells that ESCAPE are grey and marked with a leading '!' -- !3 and !4 here.")
+u:note("WHAT TO NOTICE: the grey region is a triangle in the bottom-right corner. That")
+u:note("is not an accident. Addition grows with both inputs, so the escapes are exactly")
+u:note("the pairs whose sum is too large, and 'too large' is a diagonal boundary.")
+u:note("Three of the nine cells escape. The operation is fine; it is just not an")
+u:note("operation ON this set.")
+
+u:explain("out/03-closed.svg",
+  "The same 3x3 layout for addition modulo 3.")
+u:note("No grey. Every cell is a real element, so the set is closed and this is a magma.")
+u:note("WHAT TO NOTICE: it is also a Latin square -- each colour appears exactly once in")
+u:note("every row and every column. Repairing closure here happened to produce a group,")
+u:note("which is a bonus, not a rule: closure alone guarantees only a magma.")
+
+u:takeaway("Closure is a claim about a SET and an OPERATION together, never about either alone. Addition is not 'unclosed'; it is simply not an operation on a finite set. You fix an escape by shrinking the operation until it stays home, or by growing the set until it can hold every result -- and for ordinary addition the second road runs forever, which is why the naturals are infinite.")
+
+print("wrote out/03-not-closed.svg:", is_ok(a))
+print("wrote out/03-closed.svg:", is_ok(b))
+
+# --- Invariants -------------------------------------------------------------
+co = u:classify(open.table)
+cf = u:classify(fixed.table)
+open_ok = (1 - co.closed) * (1 - co.magma) * esc.found
+fixed_ok = cf.closed * cf.magma * cf.abelian_group
+witness_ok = eq(esc.a, 1) * eq(esc.b, 2) * eq(esc.value, 3)
+if open_ok * fixed_ok * witness_ok * still_open * is_ok(a) * is_ok(b) {
+  ok("addition escapes {0,1,2}; modulo 3 repairs it into a group")
+} else {
+  err("closure invariants failed")
+}

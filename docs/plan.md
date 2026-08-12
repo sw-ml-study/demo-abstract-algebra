@@ -5,7 +5,7 @@ that brief. The category-theory half is deferred to `../demo-category-theory`
 under the contract in `docs/scope-boundary.md`.
 
 Verified baseline: `mlpl-repl 0.20.0` from `../sw-mlpl/target/release`.
-Lesson 01 is implemented and green; everything from Lesson 02 on is planned.
+Lessons 01 to 04 are implemented and green; 05 onward are planned.
 
 ## The thesis
 
@@ -63,9 +63,9 @@ than the subject — they are gone by lesson 03.
 | # | Lesson | Concept | New visual | Status |
 |---|---|---|---|---|
 | 01 | `01-magmas/rock_paper_scissors` | Magma; closure; a law that fails | Colored Cayley table; ASCII grid | **done** |
-| 02 | `02-rpsls/lizard_spock` | The same structure at n=5; function / table / graph as three views of one object | Dominance digraph in SVG, drawn on a circle | planned |
-| 03 | `03-closure/escaping_the_set` | Closure by counterexample: an operation that leaves the set | Out-of-set cells struck out in grey | planned |
-| 04 | `04-associativity/bracketing` | The `n^3` triple check; why the witness matters | The two bracketing cubes as stacked slices | planned |
+| 02 | `02-rpsls/lizard_spock` | The same structure at n=5; function / table / graph as three views of one object | Dominance digraph on a circle; the labelled animated frames | **done** |
+| 03 | `03-closure/escaping_the_set` | Closure by counterexample; the two repairs (shrink the operation, grow the set) | Escaping cells in grey, marked `!v` | **done** |
+| 04 | `04-associativity/bracketing` | The `n^3` triple check; independence from commutativity; why the witness matters | The agreement cube as `n` square panels, green/red | **done** |
 | 05 | `05-semigroups/string_joins` | Associative but no identity | Latin-square-ness absent; no white cross | **needs blocker B3** |
 | 06 | `06-monoids/identity_cross` | Identity discovered, not asserted; uniqueness | The white cross | planned |
 | 07 | `07-inverses/undoing` | Inverses relative to the identity | Inverse pairs joined by chords over the table | planned |

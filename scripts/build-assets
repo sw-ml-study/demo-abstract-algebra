@@ -18,6 +18,9 @@ set -- \
   "01-rock-paper-scissors-associativity.svg:rps-associativity.svg" \
   "02-rpsls-cayley.svg:rpsls-cayley.svg" \
   "02-rpsls-frames.svg:rpsls-frames.svg" \
+  "03-not-closed.svg:not-closed.svg" \
+  "04-rps-cube.svg:assoc-cube-fails.svg" \
+  "04-z3-cube.svg:assoc-cube-holds.svg" \
   "02-rpsls-dominance.svg:rpsls-dominance.svg"
 
 for pair in "$@"; do

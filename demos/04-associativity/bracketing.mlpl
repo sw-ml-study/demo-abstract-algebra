@@ -1,0 +1,138 @@
+# Lesson 04 -- Associativity, and why a witness beats a boolean.
+#
+# Meaning here: an operation is ASSOCIATIVE when (a * b) * c equals
+# a * (b * c) for every triple. Equivalently: brackets do not matter, so
+# a * b * c can be written without any.
+# Not to be confused with: commutativity, which is about swapping ORDER.
+# They are independent -- lesson 01's Rock-Paper-Scissors commutes and is not
+# associative; lesson 02's left projection associates and does not commute.
+#
+# This is the first law that costs more than a glance. Closure is n^2 cells,
+# and you can see all of them. Associativity is n^3 TRIPLES, one dimension
+# more than a page has -- so this lesson slices the cube.
+#
+# It is also where the repository's rule about counterexamples earns its keep.
+# "associative: no" tells you nothing you can act on. A triple you can check
+# by hand tells you exactly where the operation misbehaves.
+#
+# NOT a Web UI file. This is a CLI lesson: it uses include and write_text,
+# neither of which the browser session has, and it ends in ok(...) so the
+# suite can gate on it. See docs/viewing.md.
+#
+# visual: ascii, svg
+# loops: 0
+# complexity: n^3 to check, in three whole-array operations and no loop
+
+include "../../lib/algebra.mlpl"
+include "../../lib/render.mlpl"
+
+u:prolog({
+  title: "LESSON 04 -- ASSOCIATIVITY, and why a witness beats a boolean",
+  intro: "Brackets either matter or they do not. Checking that means visiting every triple of elements -- n^3 of them -- which this lesson does in three whole-array operations and no loop, then slices the result into square panels you can read, and finishes by exhibiting the exact triple where an operation goes wrong."
+})
+
+names = ["rock", "paper", "scissors"]
+
+# --- The operation that fails -----------------------------------------------
+def u:beats(x, y) { eq(mod(x - y + 3, 3), 1) }
+def u:fight(x, y) { if u:beats(x, y) { x } else { y } }
+rps = {
+  title: "Rock-Paper-Scissors: bracketing matters",
+  names: names,
+  table: table(:u:fight, u:elements(3), u:elements(3))
+}
+
+# --- The two cubes ----------------------------------------------------------
+# left[a, b, c]  = (a * b) * c
+# right[a, b, c] = a * (b * c)
+#
+# Both are built by indexing the table BY the table -- gather_rows(t, flatten(t))
+# evaluates every inner product at once -- so all 27 triples land in one array
+# without a single loop. Answering "what is the natural array formulation of
+# checking a law over M^3?" was the question the source brief posed.
+left = u:left_cube(rps.table)
+right = transpose_axes(u:right_cube(rps.table), [2, 0, 1])
+agree = u:assoc_cube(rps.table)
+
+print("(a * b) * c, sliced by a:")
+print(disp(left))
+print("a * (b * c), sliced by a:")
+print(disp(right))
+print("where they agree (1) and differ (0):")
+print(disp(agree))
+
+print("")
+print("triples checked:", size(agree))
+print("triples that disagree:", size(agree) - reduce_add(flatten(agree)))
+
+# --- The witness ------------------------------------------------------------
+print("")
+x = u:show_assoc_counterexample(rps)
+
+# --- An operation that passes -----------------------------------------------
+# Z3 under addition. Same shape, same check, twenty-seven agreements.
+def u:plus3(x, y) { mod(x + y, 3) }
+z3 = {
+  title: "Z3 under addition: brackets do not matter",
+  names: ["0", "1", "2"],
+  table: table(:u:plus3, u:elements(3), u:elements(3))
+}
+z3_agree = u:assoc_cube(z3.table)
+print("")
+print("Z3: triples that disagree:", size(z3_agree) - reduce_add(flatten(z3_agree)))
+print("Z3 witness found:", u:assoc_counterexample(z3.table).found)
+
+# --- Independence from commutativity ----------------------------------------
+# Left projection: a * b = a. Associative (both bracketings give a), and about
+# as non-commutative as an operation can be.
+lp = {
+  title: "Left projection: associative, not commutative",
+  names: names,
+  table: table(:u:first, u:elements(3), u:elements(3))
+}
+clp = u:classify(lp.table)
+print("")
+print("Left projection -- associative:", u:tick(clp.associative),
+      " commutative:", u:tick(clp.commutative))
+print("Rock-Paper-Scissors -- associative:", u:tick(0), " commutative:", u:tick(1))
+
+# --- The diagrams -----------------------------------------------------------
+a = u:write_cube_svg("out/04-rps-cube.svg", rps)
+b = u:write_cube_svg("out/04-z3-cube.svg", z3)
+
+u:epilog_open()
+
+u:explain("out/04-rps-cube.svg",
+  "The 27 triples of Rock-Paper-Scissors, as three square panels.")
+u:note("Each panel holds the FIRST element fixed -- the caption says which -- and inside a")
+u:note("panel the rows are b and the columns are c. So one small square is one triple.")
+u:note("GREEN means (a*b)*c and a*(b*c) came out the same. RED means they did not.")
+u:note("WHAT TO NOTICE: red squares are scattered through all three panels, so no single")
+u:note("choice of first element is to blame. Bracketing changes the answer for many")
+u:note("triples, not one unlucky corner.")
+
+u:explain("out/04-z3-cube.svg",
+  "The same three-panel layout for addition modulo 3.")
+u:note("Every square is green. That is what an associative operation looks like: 27 out")
+u:note("of 27, no exceptions, which is why nobody writes brackets around 1 + 2 + 3.")
+u:note("WHAT TO NOTICE: the check is identical in both cases -- same code, same shape,")
+u:note("same 27 triples. Only the colours differ. Associativity is not a property you")
+u:note("declare about an operation; it is the answer this array gives back.")
+
+u:takeaway("A law that fails should hand you a witness, not a verdict. 'associative: no' is unactionable; (rock * paper) * scissors = scissors while rock * (paper * scissors) = rock is something you can check by hand in ten seconds and then reason about. Every predicate in lib/algebra.mlpl has a matching counterexample function for exactly this reason -- and because the check is an array operation, finding the witness costs a stable argsort rather than a search.")
+
+print("wrote out/04-rps-cube.svg:", is_ok(a))
+print("wrote out/04-z3-cube.svg:", is_ok(b))
+
+# --- Invariants -------------------------------------------------------------
+# The two cubes must genuinely disagree somewhere, and agree everywhere for Z3.
+rps_fails = 1 - u:is_associative(rps.table)
+z3_holds = u:is_associative(z3.table)
+counted = eq(size(agree), 27) * eq(size(agree) - reduce_add(flatten(agree)), 6)
+witness_ok = x.found * eq(x.a, 0) * eq(x.b, 1) * eq(x.c, 2) * (1 - eq(x.left, x.right))
+independent = clp.associative * (1 - clp.commutative)
+if rps_fails * z3_holds * counted * witness_ok * independent * is_ok(a) * is_ok(b) {
+  ok("associativity is 27 triples; failures come with a witness")
+} else {
+  err("associativity invariants failed")
+}

@@ -121,13 +121,25 @@ def u:test_edges() { "Order-1 structures and boundary shapes.";
   u:assert_eq(c.abelian_group, 1, "trivial structure is not a group")?;
   u:assert_eq(u:identity_of(one), 0, "trivial identity")?;
   u:assert_eq(u:order(one), 1, "trivial order")?;
+  # A NON-CLOSED table: associativity is undefined, not false, and asking must
+  # not crash. The cube gathers by table entries, so an escaping value would
+  # index out of range -- lesson 03 found this the hard way.
+  esc = [[0, 1, 2], [1, 2, 3], [2, 3, 4]];   # ordinary addition on {0,1,2}
+  ce = u:classify(esc);
+  u:assert_eq(ce.closed, 0, "escaping table reported closed")?;
+  u:assert_eq(ce.associative, 0, "associativity on a non-closed table")?;
+  u:assert_eq(ce.magma, 0, "a non-closed table is not a magma")?;
+  u:assert_eq(u:structure_name(esc), "not-a-magma", "wrong rung")?;
+  u:assert_eq(u:assoc_counterexample(esc).found, 0, "witness on a non-closed table")?;
+  u:assert_eq(u:closure_counterexample(esc).value, 3, "first escape is 1 + 2 = 3")?;
+
   # An order-2 constant table: associative, but no identity.
   const0 = [[0, 0], [0, 0]];
   cc = u:classify(const0);
   u:assert_eq(cc.semigroup, 1, "constant table is not a semigroup")?;
   u:assert_eq(cc.identity, 0, "constant table should have no identity")?;
   u:assert_eq(u:has_inverses(const0), 0, "constant table has no inverses")?;
-  ok({test: "edges", cases: 6})
+  ok({test: "edges", cases: 12})
 }
 
 u:run_registered_tests()

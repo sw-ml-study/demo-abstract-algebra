@@ -94,6 +94,37 @@ fair, and the drawing is the familiar pentagram.
 Function, table, and graph are three views of one object. Five elements instead
 of three adds no law: still a commutative magma.
 
+### Closure: the one law a magma needs
+
+<img src="assets/not-closed.svg" alt="Addition on {0,1,2}: escaping cells in grey" width="290">
+
+Ordinary addition on `{0, 1, 2}`. Coloured cells landed back inside the set;
+grey cells marked `!3` and `!4` **escaped** it. The grey region is a triangle in
+the corner, because addition grows with both inputs and "too large" is a
+diagonal boundary.
+
+Nothing is wrong with addition — it is simply not an operation *on this set*.
+You repair an escape by shrinking the operation until it stays home (addition
+modulo 3, which turns out to be a group) or by growing the set until it can
+hold every result — and for addition that second road runs forever, which is
+why the naturals are infinite.
+
+### Associativity: 27 triples, sliced
+
+<img src="assets/assoc-cube-fails.svg" alt="Rock-Paper-Scissors associativity cube: red squares scattered across three panels" width="330">
+<img src="assets/assoc-cube-holds.svg" alt="Z3 associativity cube: every square green" width="330">
+
+Associativity asks about `n³` **triples** — one dimension more than a page has.
+Slicing on the first element turns it into `n` square panels: panel `a` holds
+that element fixed, rows are `b`, columns are `c`, so one small square is one
+triple. Green means the two bracketings agreed.
+
+Rock-Paper-Scissors (left) scatters red through all three panels — 6 of 27
+triples disagree, so no single element is to blame. `Z₃` (right) is 27 green
+squares, which is why nobody writes brackets around `1 + 2 + 3`.
+
+Same code, same shape, same 27 triples in both. Only the colours differ.
+
 ### The two pictures the rest of the plan is built around
 
 - **The identity's cross.** When `e` is a two-sided identity, row `e` and

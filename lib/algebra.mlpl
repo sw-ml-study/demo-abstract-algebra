@@ -67,12 +67,22 @@ def u:assoc_cube(t) {
 
 # Closure: every entry names a real element.  No ge/le builtins exist, so
 # "not below zero" is spelled 1 - lt(...).  See docs/upstream-asks.md #1.
-def u:is_closed(t) {
+# [n, n] mask: 1 where the entry names a real element of the set.
+def u:inside_mask(t) {
   n = u:order(t)
-  reduce(:and, flatten((1 - lt(t, 0)) * lt(t, n) * eq(t, floor(t))))
+  (1 - lt(t, 0)) * lt(t, n) * eq(t, floor(t))
 }
 
-def u:is_associative(t) { reduce(:and, flatten(u:assoc_cube(t))) }
+def u:is_closed(t) { reduce(:and, flatten(u:inside_mask(t))) }
+
+# Associativity is not merely false on a non-closed table -- it is UNDEFINED.
+# (a * b) * c cannot be evaluated when a * b is not an element, and the cube
+# gathers by table entries, so an escaping value would index out of range.
+# Answer 0 without touching the cube; u:is_closed is the question that matters
+# first, and u:structure_name reports "not-a-magma".
+def u:is_associative(t) {
+  if u:is_closed(t) { reduce(:and, flatten(u:assoc_cube(t))) } else { 0 }
+}
 
 def u:is_commutative(t) { equal(t, transpose(t)) }
 
@@ -152,6 +162,15 @@ def u:structure_name(t) {
 # The first (a, b, c) triple where the two bracketings disagree, as the record
 # {found, a, b, c, left, right}.  Lexicographic first, so the witness is stable.
 def u:assoc_counterexample(t) {
+  if u:is_closed(t) { u:assoc_witness(t) } else { u:no_witness() }
+}
+
+# No triple to exhibit: on a non-closed table the question does not arise.
+def u:no_witness() {
+  {found: 0, a: 0, b: 0, c: 0, ab: 0, bc: 0, left: 0, right: 0}
+}
+
+def u:assoc_witness(t) {
   n = u:order(t)
   cube = u:assoc_cube(t)
   flat = flatten(cube)
@@ -195,8 +214,7 @@ def u:comm_counterexample(t) {
 # The first entry that escapes the element set, as {found, a, b, value}.
 def u:closure_counterexample(t) {
   n = u:order(t)
-  inside = (1 - lt(t, 0)) * lt(t, n) * eq(t, floor(t))
-  flat = flatten(inside)
+  flat = flatten(u:inside_mask(t))
   found = 1 - reduce(:and, flat)
   i = take(grade_up(flat), 0, 0) * found
   a = floor(i / n)

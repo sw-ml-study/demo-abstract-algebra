@@ -29,6 +29,7 @@ audit:
     ./scripts/check-web-size
     ./scripts/check-narration
     ./scripts/check-web-renders
+    ./scripts/check-docs
 
 # Regenerate the standalone, paste-ready Web UI entries in web/.
 web:

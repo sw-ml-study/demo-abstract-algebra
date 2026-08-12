@@ -382,6 +382,65 @@ def u:frames_svg(s) {
 def u:write_frames_svg(path, s) { write_text(path, u:frames_svg(s)) }
 
 # ---------------------------------------------------------------------------
+# The associativity cube, as a row of slices
+# ---------------------------------------------------------------------------
+#
+# Associativity is a question about n^3 triples, which is one dimension more
+# than a page has. Slicing on the first element turns it into n square panels:
+# panel a shows, for every (b, c), whether (a * b) * c agrees with a * (b * c).
+#
+# Green agrees, red does not. A fully associative operation is n green squares
+# and nothing else -- which is a very fast thing to check by eye.
+
+def u:slice_px() { 26 }
+def u:slice_gap() { 22 }
+def u:slice_side(s) { u:order(s.table) * u:slice_px() }
+
+# One cell of one panel.
+def u:cube_cell(cube, k, a, b, c) {
+  agree = take(take(take(cube, 0, a), 0, b), 0, c)
+  x = 16 + a * (u:slice_side(k) + u:slice_gap()) + c * u:slice_px()
+  y = 62 + b * u:slice_px()
+  fill = if agree { "#9ece6a" } else { "#f7768e" }
+  u:svg_rect(x + 1, y + 1, u:slice_px() - 2, u:slice_px() - 2, fill)
+}
+
+def u:cube_cells(cube, k, i, acc) {
+  n = u:order(k.table)
+  if lt(i, n * n * n) {
+    a = floor(i / (n * n))
+    b = floor(mod(i, n * n) / n)
+    c = mod(i, n)
+    u:cube_cells(cube, k, i + 1, u:cat(acc, u:cube_cell(cube, k, a, b, c)))
+  } else { acc }
+}
+
+# A caption under each panel naming the element it holds fixed.
+def u:cube_labels(k, a, acc) {
+  if lt(a, u:order(k.table)) {
+    x = 16 + a * (u:slice_side(k) + u:slice_gap()) + u:slice_side(k) / 2
+    lab = u:svg_text(x, 50, "#c0caf5", u:cat3("a = ", u:nth(k, a), ""))
+    u:cube_labels(k, a + 1, u:cat(acc, lab))
+  } else { acc }
+}
+
+def u:cube_svg(k) {
+  n = u:order(k.table)
+  cube = u:assoc_cube(k.table)
+  w = 32 + n * u:slice_side(k) + (n - 1) * u:slice_gap()
+  h = 62 + u:slice_side(k) + 30
+  u:cat3(
+    u:cat3(u:svg_open(w, h), u:svg_rect(0, 0, w, h, "#1a1b26"),
+      u:svg_text(w / 2, 18, "#c0caf5", k.title)),
+    u:cat3(u:svg_text(w / 2, 32, "#565f89",
+        "green: (a*b)*c = a*(b*c)   red: they differ"),
+      u:cube_labels(k, 0, ""), u:cube_cells(cube, k, 0, "")),
+    "</svg>")
+}
+
+def u:write_cube_svg(path, k) { write_text(path, u:cube_svg(k)) }
+
+# ---------------------------------------------------------------------------
 # The dominance digraph: the same operation, drawn as a graph
 # ---------------------------------------------------------------------------
 #
