@@ -110,7 +110,7 @@ def u:svg_text_left(x, y, fill, s) {
 # BYTE length, not character length -- sw-MLPL cannot count characters
 # (docs/mlpl-blockers.md, B3).  Exact for the ASCII labels used here; a
 # non-ASCII title would over-estimate, which errs toward not clipping.
-def u:text_px(s, font_px) { round(size(tokenize_bytes(s)) * font_px * 0.62) }
+def u:text_px(s, font_px) { round(size(tokenize_bytes(s)) * font_px * 0.70) }
 
 def u:max2(a, b) { if lt(a, b) { b } else { a } }
 
@@ -296,6 +296,79 @@ def u:assoc_walk_found(s, x) {
 }
 
 def u:write_assoc_walk_svg(path, s) { write_text(path, u:assoc_walk_svg(s)) }
+
+# ---------------------------------------------------------------------------
+# Animated frames: which pairings produce which element
+# ---------------------------------------------------------------------------
+#
+# The built-in svg(frames, "life") animates a [T, H, W] array, and for a Cayley
+# table it is close to unreadable: no row or column labels, every lit cell the
+# same green -- so a frame cannot say WHICH element it is about -- a fixed
+# 0.35s per frame, and no caption. See docs/upstream-asks.md #12 and #13.
+#
+# This renderer keeps the whole labelled table on screen and RINGS the cells
+# belonging to frame k, captioned with the element's name, at a pace you can
+# read. Nothing blinks out of existence, so you never lose your place.
+
+def u:frame_secs() { 1.6 }
+
+# One ring per cell whose product is element k.
+def u:frame_rings(s, k, i, acc) {
+  n = u:order(s.table)
+  if lt(i, n * n) {
+    a = floor(i / n)
+    b = mod(i, n)
+    piece = if eq(take(take(s.table, 0, a), 0, b), k) {
+      u:svg_frame(u:cell_x(b) + 3, u:cell_y(a) + 3, u:cell_px() - 6,
+        u:cell_px() - 6, "#ffffff")
+    } else { "" }
+    u:frame_rings(s, k, i + 1, u:cat(acc, piece))
+  } else { acc }
+}
+
+# Discrete opacity: frame k is the only visible overlay during its 1/n slot.
+# values and keyTimes must be the same length or browsers drop the animation
+# silently, so both are built from the same three stops.
+def u:frame_anim(k, n) {
+  t0 = round(1000 * k / n) / 1000
+  t1 = round(1000 * (k + 1) / n) / 1000
+  u:cat5(
+    u:cat3("<animate attributeName=\"opacity\" dur=\"",
+      u:num(n * u:frame_secs()), "s\" "),
+    "repeatCount=\"indefinite\" calcMode=\"discrete\" ",
+    u:cat5("keyTimes=\"0;", u:num(t0), ";", u:num(t1), ";1\" "),
+    "values=\"0;1;0;0\"", "/>")
+}
+
+# The overlay for one frame: the rings, plus a caption naming the element.
+def u:frame_group(s, k) {
+  n = u:order(s.table)
+  u:cat3(
+    u:cat3("<g opacity=\"0\">", u:frame_rings(s, k, 0, ""),
+      u:svg_text(u:grid_w(s) / 2, u:grid_h(s) + 16, u:palette(k),
+        u:cat3("a * b  =  ", u:nth(s, k), ""))),
+    u:frame_anim(k, n),
+    "</g>")
+}
+
+def u:frame_groups(s, k, acc) {
+  if lt(k, u:order(s.table)) {
+    u:frame_groups(s, k + 1, u:cat(acc, u:frame_group(s, k)))
+  } else { acc }
+}
+
+# The labelled table, animated: every element highlighted in turn.
+def u:frames_svg(s) {
+  w = u:grid_w(s)
+  h = u:grid_h(s) + 34
+  u:cat3(
+    u:cat3(u:svg_open(w, h), u:svg_rect(0, 0, w, h, "#1a1b26"),
+      u:svg_text(w / 2, 18, "#c0caf5", s.title)),
+    u:cat(u:table_body(s), u:frame_groups(s, 0, "")),
+    "</svg>")
+}
+
+def u:write_frames_svg(path, s) { write_text(path, u:frames_svg(s)) }
 
 # ---------------------------------------------------------------------------
 # The dominance digraph: the same operation, drawn as a graph

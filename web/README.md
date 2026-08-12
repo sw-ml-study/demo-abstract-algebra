@@ -49,32 +49,27 @@ bottom rung.
 
 ### `latin_square.mlpl` — what a group looks like
 
-**Two animations, side by side in the transcript.** Both are 3×3 operation
-tables cycling through three frames; in frame *k* a cell lights up when
-`row * column = k`.
+**Two labelled tables.** Both 3×3, rows and columns labelled with the element
+names, every cell carrying the **name and the colour** of its result.
 
-- The first is Rock-Paper-Scissors. The lit cells clump: some rows get two,
-  others none.
-- The second is `Z₃`, addition modulo 3. Every frame lights **exactly one cell
-  per row and one per column** — a permutation matrix.
+- Rock-Paper-Scissors. Look along a row: blue appears twice in the first row,
+  and the third row is blue, green, green. Colours repeat and others go missing.
+- `Z₃`, addition modulo 3. Along any row *or* column, each of the three colours
+  appears **exactly once**.
 
 **What it teaches.** That second pattern is a **Latin square**, and it is what
-being a *group* looks like. Each row is a shuffle of the elements, which is the
-same as saying nothing is ever lost and every element has an inverse. You can
-recognize a group across the room without reading a single number.
+being a *group* looks like. Each row is a shuffle of the elements rather than a
+random assortment — the same thing as saying nothing is ever lost, so every
+element has an inverse. You can tell a group from a magma across the room
+without reading a number.
 
-This one is pure sw-MLPL: the animation is `svg(frames, "life")`, a built-in
-renderer, and the frames come from one line of array work — no hand-written SVG
-anywhere.
-
-*7 steps, 2 pictures.*
+*16 steps, 2 pictures.*
 
 ---
 
 ### `rpsls_pentagon.mlpl` — Rock-Paper-Scissors-Lizard-Spock, and why it's a star
 
-**Two pictures.** First the **beats graph**: five circles on a ring, ten arrows.
-Then the **same operation animated** as a 5×5 table, one frame per element.
+**One picture:** the **beats graph** — five circles on a ring, ten arrows.
 
 **What it teaches.** Ten rules, one idea — arrange the five choices in a circle
 and each beats the *next two* going around. Because each beats the two *after*
@@ -86,7 +81,7 @@ Count the arrows at any circle: two leave, two arrive. Every choice wins twice
 and loses twice, which is exactly why the game is fair. And five elements
 instead of three added rules but no **laws** — this is still just a magma.
 
-*17 steps, 2 pictures.*
+*16 steps, 1 picture.*
 
 ---
 

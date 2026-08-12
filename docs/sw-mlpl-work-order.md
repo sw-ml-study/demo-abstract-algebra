@@ -437,9 +437,13 @@ u:f([])                == 0
 
 **Symptom.** `svg(t, "heatmap")` renders an `MxN` matrix as viridis-coloured
 cells. It draws no row or column headings, no cell values, and offers no way to
-highlight a row, column, or cell. `svg(frames, "life")` animates, but is
-**binary** — `> 0.5` is alive, and every live cell is the same green, so a
-cell's *value* cannot carry identity.
+highlight a row, column, or cell. `svg(frames, "life")` animates, but has four separate deficiencies that
+together make it unusable for a Cayley table: **no row or column labels**;
+**one colour for every live cell** (`> 0.5` is alive, all painted `#a6e3a1`),
+so a cell's *value* cannot carry identity; **no caption**, so nothing says
+which element a frame is about; and a **fixed `FRAME_SECS = 0.35`**, making a
+5-frame loop 1.75s — too fast to read. A reader shown one asked, reasonably,
+"what is the pattern supposed to convey?"
 
 **Why both matter together.** A Cayley table's entries are element
 **identities**, not magnitudes — viridis is actively misleading for them — and
@@ -456,8 +460,12 @@ colouring, taking labels and highlights through the existing `aux` argument:
 svg(t, "table", {row_labels, col_labels, cell_text, highlight_rows, highlight_cols})
 ```
 
-Plus, ideally, a categorical variant of `life` where a cell's value selects a
-palette entry, so an animated Cayley table needs no `one_hot` trick.
+Plus a categorical, labelled, pace-adjustable variant of `life` — a cell's
+value selects a palette entry, axes carry labels, each frame carries a caption,
+and the frame duration is an argument. The working shape is demonstrated by
+`u:frames_svg` in `demo-abstract-algebra/lib/render.mlpl`: the whole labelled
+table stays on screen and each frame RINGS the cells it owns, so nothing blinks
+out of existence and the pattern is actually legible.
 
 **What it deletes downstream:** most of a 500-line render library.
 

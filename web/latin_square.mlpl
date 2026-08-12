@@ -1,45 +1,54 @@
 # **************************************************************************
 # * WHAT THIS SHOWS
 # *
-# * The difference between a MAGMA and a GROUP, as two animations. Both are
-# * 3x3 operation tables; only one is a group, and you will be able to tell
-# * at a glance.
+# * The difference between a MAGMA and a GROUP, as two labelled tables.
+# * Every cell carries the name AND the colour of its result, so the pattern
+# * is visible before you read a single word.
 # **************************************************************************
 ;
-def u:frames(t, n) { reshape(transpose(one_hot(flatten(t), n)), [n, n, n]) }  # frame k = cells where a*b = k
 def u:fight(x, y) { if eq(mod(x - y + 3, 3), 1) { x } else { y } }  # Rock-Paper-Scissors
 def u:add3(x, y) { mod(x + y, 3) }  # Z3, addition mod 3
+def u:cat(a, b) { decode_bytes(concat(tokenize_bytes(a), tokenize_bytes(b))) }  # plumbing: no labelled grid renderer
+def u:nm(v) { unwrap(to_json(round(v))) }
+def u:col(i) { unwrap(list_get(["#7aa2f7", "#f7768e", "#9ece6a", "#e0af68", "#bb9af7"], mod(i, 5))) }
+def u:txt(x, y, fill, sz, str) { u:cat(u:cat(u:cat("<text x=\"", u:nm(x)), u:cat("\" y=\"", u:nm(y))), u:cat(u:cat(u:cat("\" fill=\"", fill), u:cat("\" font-size=\"", u:nm(sz))), u:cat(u:cat("\" text-anchor=\"middle\" dominant-baseline=\"central\" font-family=\"monospace\">", str), "</text>"))) }
+def u:box(a, b, v, nm) { u:cat(u:cat(u:cat(u:cat("<rect x=\"", u:nm(70 + b * 62)), u:cat("\" y=\"", u:nm(70 + a * 62))), u:cat(u:cat("\" width=\"58\" height=\"58\" rx=\"4\" fill=\"", u:col(v)), "\"/>")), u:txt(99 + b * 62, 99 + a * 62, "#12131c", 11, unwrap(list_get(nm.names, v)))) }
+def u:cells(t, i, nm, acc) { if lt(i, tally(t) * tally(t)) { u:cells(t, i + 1, nm, u:cat(acc, u:box(floor(i / tally(t)), mod(i, tally(t)), take(take(t, 0, floor(i / tally(t))), 0, mod(i, tally(t))), nm))) } else { acc } }
+def u:heads(k, i, nm, acc) { if lt(i, k) { u:heads(k, i + 1, nm, u:cat(acc, u:cat(u:txt(99 + i * 62, 56, "#c0caf5", 11, unwrap(list_get(nm.names, i))), u:txt(36, 99 + i * 62, "#c0caf5", 11, unwrap(list_get(nm.names, i)))))) } else { acc } }
+def u:grid(t, nm) { u:cat(u:cat(u:cat(u:cat("<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 ", u:nm(86 + tally(t) * 62)), u:cat(" ", u:nm(86 + tally(t) * 62))), u:cat("\"><rect width=\"100%\" height=\"100%\" fill=\"#1a1b26\"/>", u:heads(tally(t), 0, nm, ""))), u:cat(u:cells(t, 0, nm, ""), "</svg>")) }
+rps = {names: ["rock", "paper", "scis"]}  # short names so cells stay legible
+z3 = {names: ["0", "1", "2"]}
 # **************************************************************************
-# * HOW TO READ BOTH ANIMATIONS
+# * TABLE 1 -- ROCK-PAPER-SCISSORS, a magma
 # *
-# * Each one is a single 3x3 Cayley table, cycling through 3 frames. Rows and
-# * columns are the elements 0, 1, 2. In frame k a cell lights up when
-# * row * column = k -- so frame 0 shows every pairing that produces 0,
-# * frame 1 every pairing that produces 1, and so on.
+# * Rows and columns both run rock, paper, scissors. A cell is the winner of
+# * row-vs-column, coloured by which element that is.
 # *
-# * ANIMATION 1 is Rock-Paper-Scissors. The lit cells clump and drift: some
-# * rows get two lit cells in a frame while other rows get none. Rock wins
-# * three of the nine matchups, scissors only two. Nothing is regular.
+# * Look along any row: blue appears twice in the first row, and the third
+# * row has blue, green, green. Colours repeat and others go missing.
 # **************************************************************************
-svg(u:frames(table(:u:fight, range(3), range(3)), 3), "life")
+u:grid(table(:u:fight, range(3), range(3)), rps)
 # **************************************************************************
-# * ANIMATION 2 is Z3, addition modulo 3.
+# * TABLE 2 -- Z3 UNDER ADDITION, a group
 # *
-# * Every frame lights exactly ONE cell per row and ONE per column. That
-# * shape is a permutation matrix.
+# * Same layout: rows and columns are 0, 1, 2, and a cell is their sum
+# * modulo 3.
+# *
+# * Now look along any row, or any column: each of the three colours appears
+# * EXACTLY ONCE. No repeats, nothing missing.
 # **************************************************************************
-svg(u:frames(table(:u:add3, range(3), range(3)), 3), "life")
+u:grid(table(:u:add3, range(3), range(3)), z3)
 # **************************************************************************
 # * WHAT TO NOTICE
 # *
-# * A table whose frames are all permutation matrices is a LATIN SQUARE:
-# * every element appears exactly once in each row and once in each column.
+# * That second pattern -- every element once per row and once per column --
+# * is called a LATIN SQUARE, and it is what being a GROUP looks like.
 # *
-# * THE POINT -- the Latin square IS what being a group looks like. Each row
-# * is a shuffle of the elements, which is another way of saying nothing is
-# * ever lost and every element has an inverse. You can recognize a group
-# * across the room without reading a single number.
+# * Each row is a shuffle of the elements rather than a random assortment.
+# * That is the same thing as saying nothing is ever lost: whatever a row
+# * starts from, every possible answer is reachable exactly one way, so every
+# * element has an inverse.
 # *
-# * Both animations come from sw-MLPL's built-in svg(frames, "life")
-# * renderer. There is no hand-written SVG in this demo at all.
+# * THE POINT -- you can tell a group from a magma across the room, without
+# * reading a single number. Table 1 has repeats; table 2 does not.
 # **************************************************************************

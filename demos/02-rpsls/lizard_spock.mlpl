@@ -73,6 +73,14 @@ graph = u:write_dominance_svg("out/02-rpsls-dominance.svg",
    names: s.names, table: s.table})
 tbl = u:write_cayley_svg("out/02-rpsls-cayley.svg", s)
 
+# --- View 4: one element at a time, animated --------------------------------
+# The whole labelled table stays on screen; each frame rings the pairings won
+# by one element and names it. The built-in svg(_, "life") animates a frames
+# array but is unlabelled, single-coloured and fixed at 0.35s per frame, which
+# is unreadable for a Cayley table -- see docs/upstream-asks.md #12 and #13.
+frames = u:write_frames_svg("out/02-rpsls-frames.svg",
+  {title: "RPSLS: who wins each pairing", names: s.names, table: s.table})
+
 # Every element beats exactly two others and loses to exactly two others: the
 # tournament is perfectly balanced, which is why the game is fair.
 beat_matrix = eq(s.table, u:index_matrix(5)) * (1 - eq(u:index_matrix(5), u:header_matrix(5)))
@@ -104,8 +112,20 @@ u:note("of 'beats the next two'.")
 u:note("Count the arrows at any circle: two leave and two arrive. Every choice wins twice and")
 u:note("loses twice, which is exactly why the game is fair.")
 
+u:explain("out/02-rpsls-frames.svg",
+  "The same 5x5 table, animated: one frame per element, about 1.6 seconds each.")
+u:note("The table never disappears. Each frame RINGS the pairings won by one element and")
+u:note("names it underneath, so you always know which element you are looking at.")
+u:note("WHAT TO NOTICE: every frame rings exactly five cells, in the same shape -- a hook")
+u:note("hinged on the diagonal. The tie at (x, x), the two wins read along x's row, and")
+u:note("those same two wins mirrored down x's column, because the operation is commutative.")
+u:note("As the frames advance the hook slides one step down the diagonal and wraps around.")
+u:note("That sliding is the five-fold symmetry: every element has the same shape of wins,")
+u:note("just rotated. It is the reason the game is fair, seen from the table side.")
+
 u:takeaway("Function, table, and graph are three views of ONE object, and going from three choices to five added rules but no laws. This is still a commutative magma: not associative, no identity, no inverses.")
 
+print("wrote out/02-rpsls-frames.svg:", is_ok(frames))
 print("wrote out/02-rpsls-dominance.svg:", is_ok(graph))
 print("wrote out/02-rpsls-cayley.svg:", is_ok(tbl))
 
@@ -118,7 +138,7 @@ rung_ok = c.magma * (1 - c.semigroup)
 # rock (4) beats scissors (3).
 spot = eq(take(take(s.table, 0, 4), 0, 3), 4)
 
-if laws_ok * rung_ok * balanced * spot * x.found * is_ok(graph) * is_ok(tbl) {
+if laws_ok * rung_ok * balanced * spot * x.found * is_ok(graph) * is_ok(tbl) * is_ok(frames) {
   ok("rpsls is a balanced commutative magma: five elements, no new laws")
 } else {
   err("rpsls invariants failed")

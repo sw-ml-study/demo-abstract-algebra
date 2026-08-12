@@ -329,31 +329,49 @@ this repository a day and made blockers B1–B4 far less urgent.
 
 ---
 
-## 12. `svg(_, "life")` is binary, so it cannot carry element identity
+## 12. `svg(_, "life")` cannot render a readable Cayley table
 
-`render_life` marks a cell alive when its value is `> 0.5` and paints every
-live cell the same green. That is right for Game of Life and it is the only
-reason the animated Cayley table above needs the `one_hot` trick: identity has
-to be moved from the cell VALUE onto a frame AXIS.
+Four separate deficiencies, each small, which together make the built-in
+animation unusable for algebra. Reader feedback on a demo built with it:
+*"The rows and columns are not labelled, the colors are all the same, the
+animation is kind of fast. What is the pattern supposed to convey?"*
 
-The trick is genuinely nice — a group's frames are each a permutation matrix,
-so the Latin square becomes something you watch rather than read — but it is a
-workaround. A categorical variant, where cell value selects a color from a
-palette, would render a Cayley table directly as one frame.
+1. **No row or column labels.** A bare grid; nothing says which row is `rock`.
+2. **One colour for every live cell.** `render_life` marks a cell alive when
+   its value is `> 0.5` and paints them all `#a6e3a1`, so a cell's VALUE cannot
+   carry identity. That is right for Game of Life and wrong here — it is the
+   only reason a Cayley table has to be exploded into one frame per element via
+   `one_hot` at all, moving identity from the cell onto a frame axis.
+3. **No caption.** With frames indistinguishable in style, nothing says which
+   element the current frame is about.
+4. **Fixed pace.** `FRAME_SECS = 0.35` is not adjustable, so a 5-frame loop is
+   1.75 seconds — far too fast to read a labelled table and think about it.
 
-**Related:** ask #5 wants headings and cell text on `heatmap`. The two together
-describe one missing renderer: a labelled, categorically-colored grid. That
-single addition would delete most of `lib/render.mlpl`.
+**What a reader needs instead,** demonstrated by the replacement in
+`lib/render.mlpl` (`u:frames_svg`): keep the whole labelled, colour-coded table
+on screen at all times, ring the cells belonging to the current frame, caption
+it with the element's name, and pace it around 1.6s per frame. Nothing blinks
+out of existence, so you never lose your place — and the actual pattern becomes
+visible. For Rock-Paper-Scissors-Lizard-Spock that pattern is a hook hinged on
+the diagonal (the tie, two wins along the row, the same two mirrored down the
+column) sliding one step per frame. With the built-in renderer it is invisible.
 
-**Severity:** medium. The workaround works and teaches something.
+**Related:** ask #5 wants headings and cell text on `heatmap`. Together these
+describe **one** missing renderer — a labelled, categorically-coloured grid,
+optionally animated — and that single addition would delete most of
+`lib/render.mlpl`.
+
+**Severity:** medium-high for teaching use. The animation is the marquee
+feature (`"life"` is what drew us to it) and it cannot label its own axes.
 
 ---
 
 ## 13. `svg(_, "life")` renders small boards small
 
-Cell size is `clamp(600 / max(h, w), 8, 36)`, tuned so a 40x40 Life board fits
-in 600px. A 3x3 board therefore renders at 132px — the cap binds long before
-the target edge does.
+Cell size is `clamp(600 / max(h, w), 8, 36)`
+(`components/viz/crates/mlpl-viz-marks/src/life.rs`), tuned so a 40x40 Life
+board fits in 600px. A 3x3 board therefore renders at 132px — the `MAX_CELL`
+cap binds long before the target edge does.
 
 Algebra tables are always small: orders 2 through 8. Every diagram this
 repository would draw with `life` sits in the range where the clamp makes it
@@ -361,7 +379,7 @@ tiny.
 
 **Severity:** low. A `MAX_CELL` of ~80, or an optional size argument, fixes it.
 Noted because the fix is one constant and the current default is wrong for
-every use in this repo.
+every use here.
 
 ---
 

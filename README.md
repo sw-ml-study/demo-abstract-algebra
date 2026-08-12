@@ -63,6 +63,25 @@ capability that the static diagram did not already need.
 *(If your viewer strips SVG animation you will see the first frame, which is a
 correct static table.)*
 
+### One element at a time
+
+<img src="assets/rpsls-frames.svg" alt="RPSLS Cayley table, animated: each frame rings the pairings won by one element" width="340">
+
+The 5×5 table for Rock-Paper-Scissors-Lizard-Spock, animated at about 1.6
+seconds a frame. The labelled table never leaves the screen; each frame **rings
+the pairings won by one element** and names it underneath.
+
+Every frame rings the same shape: a hook hinged on the diagonal — the tie at
+`(x, x)`, the two wins along `x`'s row, and those same two mirrored down `x`'s
+column, because the operation is commutative. As the frames advance the hook
+slides one step down the diagonal and wraps. That sliding *is* the five-fold
+symmetry: every choice has the same shape of wins, just rotated. It is why the
+game is fair, seen from the table side.
+
+*(sw-MLPL's built-in `svg(frames, "life")` animates a frames array, but it is
+unlabelled, single-coloured and fixed at 0.35s per frame — unreadable for a
+Cayley table. `docs/upstream-asks.md` #12 and #13.)*
+
 ### The same operation, drawn as a graph
 
 <img src="assets/rpsls-dominance.svg" alt="RPSLS dominance digraph: the pentagram" width="330">

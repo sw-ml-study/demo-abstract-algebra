@@ -1,4 +1,4 @@
-number = 10
+number = 11
 slug = "interactive-viewer"
 status = "pending"
 description = "Build viewer/cayley.html: a dependency-free single-file page that loads a str..."

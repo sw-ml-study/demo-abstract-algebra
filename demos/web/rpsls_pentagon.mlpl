@@ -7,7 +7,7 @@
 # * Rock-Paper-Scissors-Lizard-Spock has ten rules but only one idea:
 # * arrange the five choices in a circle, and each beats the NEXT TWO going
 # * around. Two pictures of that fact -- the arrows, and the operation as an
-# * animated table.
+# * table -- and the table itself is in latin_square.mlpl.
 # **************************************************************************
 ;
 def u:beats(x, y) { lt(mod(x - y + 5, 5) - 1, 2) * (1 - eq(mod(x - y + 5, 5), 0)) }  # beats the next two around
@@ -24,7 +24,7 @@ def u:arrows(i, k, acc) { if lt(i, k * k) { u:arrows(i + 1, k, if u:beats(floor(
 def u:nodes(i, k, nm, acc) { if lt(i, k) { u:nodes(i + 1, k, nm, u:cat(acc, u:dot(i, k, nm))) } else { acc } }
 def u:cycle(k, nm) { u:cat(u:cat("<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 380 380\"><rect width=\"100%\" height=\"100%\" fill=\"#1a1b26\"/><defs><marker id=\"a\" viewBox=\"0 0 10 10\" refX=\"9\" refY=\"5\" markerWidth=\"5\" markerHeight=\"5\" orient=\"auto-start-reverse\"><path d=\"M 0 0 L 10 5 L 0 10 z\" fill=\"#7aa2f7\"/></marker></defs>", u:arrows(0, k, "")), u:cat(u:nodes(0, k, nm, ""), "</svg>")) }
 # **************************************************************************
-# * PICTURE 1 -- THE BEATS GRAPH
+# * THE BEATS GRAPH
 # *
 # * Five circles on a ring: spock, paper, lizard, scissors, rock, going
 # * clockwise from the top. An arrow a -> b means "a beats b".
@@ -34,27 +34,12 @@ def u:cycle(k, nm) { u:cat(u:cat("<svg xmlns=\"http://www.w3.org/2000/svg\" view
 # **************************************************************************
 u:cycle(5, {names: ["spock", "paper", "lizard", "scissors", "rock"]})
 # **************************************************************************
-# * PICTURE 2 -- THE SAME OPERATION, ANIMATED
-# *
-# * A 5x5 table, rows and columns both spock, paper, lizard, scissors, rock.
-# * It cycles through 5 frames; in frame k a cell lights when that matchup is
-# * won by element k.
-# *
-# * Every frame lights exactly five cells: one tie on the diagonal, two wins
-# * as a row, and two as a column. The lit block slides steadily around as
-# * the frames advance.
-# **************************************************************************
-svg(reshape(transpose(one_hot(flatten(table(:u:fight, range(5), range(5))), 5)), [5, 5, 5]), "life")
-# **************************************************************************
 # * WHAT TO NOTICE
 # *
 # * WHY IT IS A STAR. Each choice beats the two AFTER it, not the one beside
 # * it, so no arrow follows the rim of the circle -- every one cuts across.
 # * Ten arrows cutting across five points draw the pentagram. The star is not
 # * decoration: it is the shape of "beats the next two".
-# *
-# * THE ROTATION in picture 2 is the same five-fold symmetry seen from the
-# * table side.
 # *
 # * THE POINT -- the arrows and the table are one object, not two. Growing
 # * from three choices to five added rules but no LAWS: this is still a
