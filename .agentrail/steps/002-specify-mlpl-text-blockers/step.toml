@@ -1,9 +1,10 @@
 number = 2
 slug = "specify-mlpl-text-blockers"
-status = "in-progress"
+status = "completed"
 description = "Dogfooding correction: the missing sw-MLPL text surface (string concatenation..."
 role = "production"
 context_files = []
 created_at = "2026-08-12T11:04:50"
+completed_at = "2026-08-12T11:10:45"
 task_type = "upstream-spec"
-commits = []
+commits = ["21fdcfda37a7318c177a4a16efc5f2d516ffede3"]

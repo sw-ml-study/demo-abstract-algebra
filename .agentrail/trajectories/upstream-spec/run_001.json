@@ -1,0 +1,11 @@
+{
+  "task_type": "upstream-spec",
+  "state": {
+    "number": 2,
+    "step": "specify-mlpl-text-blockers"
+  },
+  "action": "Executed every claim against mlpl-repl rather than trusting docs: probed :builtins for the string family, ran try/catch probes for +, concat, to_number, to_int, repr, to_json, size/tally/take/split/eq on strings, string-list concat and u: arguments, and the recursion abort; checked float formatting and confirmed round() mitigates it; sanity-checked the capability probe against all three detection states.",
+  "result": "success",
+  "reward": 1,
+  "timestamp": "2026-08-12T11:10:45"
+}
