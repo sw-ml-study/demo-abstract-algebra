@@ -1,0 +1,11 @@
+{
+  "task_type": "scaffold",
+  "state": {
+    "number": 1,
+    "step": "foundation-and-lesson-01"
+  },
+  "action": "Read sibling repos (demo-algorithms, demo-ml-utils) for the agentrail/AGENTS.md/harness convention; read sw-mlpl lang-reference for the builtin surface; ran a feasibility spike proving table/gather_rows/transpose_axes express the n^3 associativity check loop-free and that svg+write_text+to_json give a working visual pipeline; verified the emitted SVG renders via headless Chrome; agentrail instructions apply; just check green.",
+  "result": "success",
+  "reward": 1,
+  "timestamp": "2026-08-12T10:59:36"
+}
