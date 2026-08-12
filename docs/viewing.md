@@ -168,6 +168,38 @@ Where a builtin genuinely does not exist, the hand-rolling is the evidence:
 `rpsls_pentagon.mlpl` draws its own digraph because `svg()` has no graph type
 (upstream ask #14), and that hand-rolling is about half the demo.
 
+### Every demo explains its own picture
+
+A colored grid with no legend teaches nothing. sw-MLPL's built-in demo catalog
+gives each demo an `intro` and a `takeaway`
+(`components/web-demos/crates/mlpl-web-demos/demos.toml`); demos here use the
+same shape, expressed inside the file:
+
+| Part | How | Renders as |
+|---|---|---|
+| Prolog | a `"WHAT THIS SHOWS ..."` string as the **first** statement | an entry whose output is that prose |
+| Annotation | a trailing `# comment` on every code line | italic grey text beside the code |
+| Epilog | `"HOW TO READ ..."` strings, closing with `"THE POINT ..."` | prose entries after the picture |
+
+The epilog names the concrete thing on screen — what the rows and columns are,
+what a color or a lit cell means, what moves and where it lands — then says
+what to notice, including what is conspicuously *absent*.
+
+Because the epilog comes last, **a web demo's final value is prose, not an
+SVG.** That is correct: the playground makes one entry per statement group and
+renders any entry that starts with `<svg`, so pictures draw wherever they sit.
+`scripts/check-web-renders` proves it by evaluating growing prefixes of the file
+— prefix *k*'s value is exactly what entry *k* displays — and counting the
+entries that render. Its counts match the browser's: 1, 2, 2.
+
+CLI lessons do the same with `u:prolog`, `u:explain(path, ...)`, `u:note(...)`
+and `u:takeaway(...)` from `lib/render.mlpl`, printing a "HOW TO READ WHAT WAS
+JUST WRITTEN" section that names every file they produced.
+
+`scripts/check-narration` enforces the structure on both. It cannot check that
+the prose is any good.
+
+
 ## 5. The interactive viewer
 
 Planned, not built — saga step `005-interactive-viewer`. `viewer/cayley.html`
