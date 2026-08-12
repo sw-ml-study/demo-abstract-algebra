@@ -4,6 +4,7 @@
 # Order the five so each beats the NEXT TWO around a circle. Ten rules
 # collapse to one modular predicate, and the picture is why.
 # spock 0, paper 1, lizard 2, scissors 3, rock 4
+"WHAT THIS SHOWS -- Rock-Paper-Scissors-Lizard-Spock has ten rules, but only one idea: arrange the five choices in a circle and each one beats the NEXT TWO going around. Two pictures of that fact."
 def u:beats(x, y) { lt(mod(x - y + 5, 5) - 1, 2) * (1 - eq(mod(x - y + 5, 5), 0)) }
 def u:fight(x, y) { if u:beats(x, y) { x } else { y } }
 t = table(:u:fight, range(5), range(5))
@@ -12,7 +13,7 @@ def u:won(x, y) { u:beats(x, y) }
 reduce_add(table(:u:won, range(5), range(5)), 1)
 # Frame k lights the cells whose winner is k. Five lit cells each,
 # and the pattern rotates -- the five-fold symmetry, animated.
-svg(reshape(transpose(one_hot(flatten(t), 5)), [5, 5, 5]), "life")
+svg(reshape(transpose(one_hot(flatten(t), 5)), [5, 5, 5]), "life")  # ANIMATION -- frame k lights every pairing won by k
 # svg() has no graph type, so the pentagram is emitted by hand. That gap
 # is the forcing function: a "digraph" type would delete everything below.
 def u:cat(a, b) { decode_bytes(concat(tokenize_bytes(a), tokenize_bytes(b))) }
@@ -24,3 +25,6 @@ def u:dot(i) { u:cat(u:cat(u:cat("<circle cx=\"", u:n(u:px(i))), u:cat("\" cy=\"
 def u:edges(i, acc) { if lt(i, 25) { u:edges(i + 1, if u:beats(floor(i / 5), mod(i, 5)) { u:cat(acc, u:seg(floor(i / 5), mod(i, 5))) } else { acc }) } else { acc } }
 def u:dots(i, acc) { if lt(i, 5) { u:dots(i + 1, u:cat(acc, u:dot(i))) } else { acc } }
 u:cat(u:cat("<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 500 500\"><rect width=\"100%\" height=\"100%\" fill=\"#1a1b26\"/>", u:edges(0, "")), u:cat(u:dots(0, ""), "</svg>"))
+"HOW TO READ THE ANIMATION -- a 5x5 grid, rows and columns both running spock, paper, lizard, scissors, rock. It cycles through 5 frames; in frame k a cell lights when that matchup is won by element k. Every frame lights exactly five cells: one tie on the diagonal, two wins as a row, two as a column. The lit block slides steadily around as the frames advance, and that steady rotation is the five-fold symmetry -- the game is fair because every choice has the same shape of wins and losses."
+"HOW TO READ THE PENTAGRAM -- five nodes, one per choice, placed around a circle in the beats-the-next-two order. An edge joins two choices when one beats the other. Each node has exactly four edges: it beats two and loses to two. Because each beats its two neighbours-but-one, the edges skip across the circle and draw the five-pointed star."
+"THE POINT -- the same operation, three ways: a formula, a 5x5 array, and a drawing. None is more true than the others. Growing from three choices to five added a rule count, not a law: this is still only a magma."

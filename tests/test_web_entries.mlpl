@@ -30,9 +30,12 @@ include "lib/algebra.mlpl";
 # escaped -- not as the raw string (docs/upstream-asks.md #10). The browser
 # receives the raw value, so a leading quote byte is skipped here rather than
 # weakening the check.
-def u:starts_with_svg(s) {
+def u:starts_with_svg(s) { u:starts_with(s, "<svg") }
+
+def u:starts_with(s, prefix) {
   b = u:unquote(tokenize_bytes(s));
-  if lt(size(b), 4) { 0 } else { equal(u:head(b, 4), tokenize_bytes("<svg")) }
+  k = size(tokenize_bytes(prefix));
+  if lt(size(b), k) { 0 } else { equal(u:head(b, k), tokenize_bytes(prefix)) }
 }
 
 def u:unquote(b) {
@@ -46,20 +49,32 @@ def u:head(v, k) { compress(lt(range(size(v)), k), v) }
 # same way they do under scripts/run-all.
 def u:run_web(path) { unwrap(run_script(path, {source_dir: "."})) }
 
-@test {name: "web bundles render as SVG widgets", tags: ["web"]}
-def u:test_web_bundles_render() { "Every bundle must satisfy the UI's <svg test.";
+@test {name: "web demos open and close with narration", tags: ["web"]}
+def u:test_web_narration() { "Prolog first, epilog last -- the reader is never lost.";
+  # The FINAL value of a web demo is its epilog, not its picture. Pictures are
+  # in the middle and render wherever they appear, because the playground makes
+  # one entry per statement group. scripts/check-web-renders proves the
+  # pictures draw; this pins the narration that frames them.
   cayley = u:run_web("web/magma_rps.mlpl");
   u:assert_eq(cayley.status, "ok", "magma_rps did not run")?;
-  u:assert_true(u:starts_with_svg(cayley.value), "magma_rps is not an SVG")?;
+  u:assert_true(u:starts_with(cayley.value, "THE POINT"), "magma_rps has no epilog")?;
 
   latin = u:run_web("web/latin_square.mlpl");
   u:assert_eq(latin.status, "ok", "latin_square did not run")?;
-  u:assert_true(u:starts_with_svg(latin.value), "latin_square is not an SVG")?;
+  u:assert_true(u:starts_with(latin.value, "THE POINT"), "latin_square has no epilog")?;
 
   pent = u:run_web("web/rpsls_pentagon.mlpl");
   u:assert_eq(pent.status, "ok", "rpsls_pentagon did not run")?;
-  u:assert_true(u:starts_with_svg(pent.value), "rpsls_pentagon is not an SVG")?;
-  ok({test: "web-bundles-render", cases: 6})
+  u:assert_true(u:starts_with(pent.value, "THE POINT"), "rpsls_pentagon has no epilog")?;
+
+  # And each opens by saying what is about to appear.
+  u:assert_true(gt(u:count_in_file("web/magma_rps.mlpl", "WHAT THIS SHOWS"), 0),
+    "magma_rps has no prolog")?;
+  u:assert_true(gt(u:count_in_file("web/latin_square.mlpl", "WHAT THIS SHOWS"), 0),
+    "latin_square has no prolog")?;
+  u:assert_true(gt(u:count_in_file("web/rpsls_pentagon.mlpl", "WHAT THIS SHOWS"), 0),
+    "rpsls_pentagon has no prolog")?;
+  ok({test: "web-narration", cases: 9})
 }
 
 @test {name: "web demos are standalone and short", tags: ["web"]}

@@ -29,6 +29,11 @@
 include "../../lib/algebra.mlpl"
 include "../../lib/render.mlpl"
 
+u:prolog({
+  title: "LESSON 02 -- ONE OBJECT, THREE VIEWS: Rock-Paper-Scissors-Lizard-Spock",
+  intro: "Five choices, ten rules -- but only one idea: arrange them in a circle and each beats the next two. This lesson builds that operation as a function, prints it as a 5x5 Cayley table, and draws it as a directed graph. All three read the same array, so none can disagree with the others."
+})
+
 # --- View 1: the operation as a function ------------------------------------
 # Ordered so that x beats x+1 and x+2 (mod 5):
 #
@@ -68,15 +73,6 @@ graph = u:write_dominance_svg("out/02-rpsls-dominance.svg",
    names: s.names, table: s.table})
 tbl = u:write_cayley_svg("out/02-rpsls-cayley.svg", s)
 
-print("")
-print("wrote out/02-rpsls-dominance.svg:", is_ok(graph))
-print("wrote out/02-rpsls-cayley.svg:", is_ok(tbl))
-
-# --- Invariants -------------------------------------------------------------
-c = u:classify(s.table)
-laws_ok = c.closed * c.commutative * (1 - c.associative) * (1 - c.identity)
-rung_ok = c.magma * (1 - c.semigroup)
-
 # Every element beats exactly two others and loses to exactly two others: the
 # tournament is perfectly balanced, which is why the game is fair.
 beat_matrix = eq(s.table, u:index_matrix(5)) * (1 - eq(u:index_matrix(5), u:header_matrix(5)))
@@ -86,6 +82,37 @@ balanced = reduce(:and, eq(out_degree, 2)) * reduce(:and, eq(in_degree, 2))
 print("")
 print("out-degree per element:", out_degree)
 print("in-degree per element: ", in_degree)
+
+u:epilog_open()
+
+u:explain("out/02-rpsls-cayley.svg",
+  "A 5x5 grid: one square per matchup, rows and columns both spock, paper, lizard, scissors, rock.")
+u:note("Each square carries the winner's name and the winner's color.")
+u:note("WHAT TO NOTICE: the coloring runs in diagonal bands. That is the circular rule made")
+u:note("visible -- a choice beats the next two around the circle, so its wins sit at a fixed")
+u:note("offset from the diagonal, in every row.")
+
+u:explain("out/02-rpsls-dominance.svg",
+  "The SAME operation as a directed graph: five circles on a ring, one per choice.")
+u:note("An arrow runs a -> b exactly when a beats b, read straight off the table above.")
+u:note("Reading order around the ring is spock, paper, lizard, scissors, rock, clockwise")
+u:note("from the top -- the order in which each beats the next two.")
+u:note("WHAT TO NOTICE: because every choice beats the two AFTER it rather than the one next")
+u:note("to it, the arrows skip across the circle instead of following its rim, and the")
+u:note("skipping traces a five-pointed star. The pentagram is not decoration: it is the shape")
+u:note("of 'beats the next two'.")
+u:note("Count the arrows at any circle: two leave and two arrive. Every choice wins twice and")
+u:note("loses twice, which is exactly why the game is fair.")
+
+u:takeaway("Function, table, and graph are three views of ONE object, and going from three choices to five added rules but no laws. This is still a commutative magma: not associative, no identity, no inverses.")
+
+print("wrote out/02-rpsls-dominance.svg:", is_ok(graph))
+print("wrote out/02-rpsls-cayley.svg:", is_ok(tbl))
+
+# --- Invariants -------------------------------------------------------------
+c = u:classify(s.table)
+laws_ok = c.closed * c.commutative * (1 - c.associative) * (1 - c.identity)
+rung_ok = c.magma * (1 - c.semigroup)
 
 # The circular formula and the table must agree on a known rule:
 # rock (4) beats scissors (3).

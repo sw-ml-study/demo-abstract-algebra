@@ -390,6 +390,46 @@ def u:dominance_svg(s) {
 def u:write_dominance_svg(path, s) { write_text(path, u:dominance_svg(s)) }
 
 # ---------------------------------------------------------------------------
+# Prolog and epilog: a diagram nobody can read has not taught anything
+# ---------------------------------------------------------------------------
+#
+# sw-MLPL's own demo catalog gives every demo an `intro` (what this will show)
+# and a `takeaway` (what it showed). Lessons here follow the same shape: say
+# what is coming, run it, then describe the picture -- what the axes are, what
+# the colors mean, and what to notice. A learner who sees a colored grid with
+# no legend has been shown nothing.
+
+def u:prolog(s) {
+  print("=====================================================================")
+  print(s.title)
+  print("=====================================================================")
+  print(s.intro)
+  print("")
+}
+
+def u:epilog_open() {
+  print("")
+  print("---------------------------------------------------------------------")
+  print("HOW TO READ WHAT WAS JUST WRITTEN")
+  print("---------------------------------------------------------------------")
+}
+
+# One artifact, with the reading instructions that make it legible.
+def u:explain(path, what) {
+  print("")
+  print("  ", path)
+  print("     ", what)
+}
+
+def u:note(what) { print("     ", what) }
+
+def u:takeaway(s) {
+  print("")
+  print("  TAKEAWAY:", s)
+  print("")
+}
+
+# ---------------------------------------------------------------------------
 # JSON: the transport to viewer/ pages
 # ---------------------------------------------------------------------------
 

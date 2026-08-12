@@ -328,6 +328,33 @@ repository from a session working in this one.
   into lesson scripts, and do not invent new bridges without adding the blocker
   entry and the probe case first.
 
+## Every demo explains its own picture
+
+sw-MLPL's built-in demo catalog gives each demo an `intro` (what this will
+show) and a `takeaway` (what it showed). Demos here follow the same shape,
+because a diagram nobody can read has not taught anything. "What am I looking
+at?" is a bug.
+
+- **CLI lessons** call `u:prolog({title, intro})` first, then
+  `u:epilog_open()`, one `u:explain(path, ...)` per artifact written with
+  `u:note(...)` lines beneath it, and `u:takeaway(...)` last.
+- **Web demos** open with a `"WHAT THIS SHOWS ..."` string as their FIRST
+  statement, annotate every code line with a trailing `# comment`, and close
+  with `"HOW TO READ ..."` strings.
+- The explanation must name the concrete thing on screen: what the rows and
+  columns are, what a color or a lit cell means, what moves and where it ends
+  up. "Colored by result" is not an explanation; "blue = rock, and every square
+  holds one of the three, which is closure" is.
+- It must also say **what to notice** — the feature that carries the lesson,
+  and the feature that is conspicuously absent.
+
+`scripts/check-narration` enforces the structure. It cannot check that the
+prose is any good; that is on the author.
+
+Leading comments in a web demo RIDE WITH the statement after them in the
+playground transcript, so a web demo carries no preamble — `build-web-demos`
+strips the source header and the file begins with its prolog.
+
 ## Visual output rules
 
 - Every lesson writes its artifacts under `out/` (gitignored). No lesson

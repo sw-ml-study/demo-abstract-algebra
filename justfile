@@ -27,6 +27,8 @@ audit:
     ./scripts/check-docstrings
     ./scripts/check-generated
     ./scripts/check-web-size
+    ./scripts/check-narration
+    ./scripts/check-web-renders
 
 # Regenerate the standalone, paste-ready Web UI entries in web/.
 web:

@@ -1,0 +1,66 @@
+#!/bin/sh
+# Every demo must say what it will show, annotate what it runs, and explain
+# what the picture means.
+#
+# sw-MLPL's own demo catalog gives each demo an `intro` and a `takeaway`
+# (components/web-demos/.../demos.toml). Lessons and web demos here follow the
+# same shape. A diagram nobody can read has not taught anything, and "what am I
+# looking at" is a bug, not a documentation preference.
+#
+#   demos/**/*.mlpl  (CLI)  must call u:prolog, u:epilog_open and u:takeaway
+#   demos/web/*.mlpl        must open with "WHAT THIS SHOWS and carry a
+#                           "HOW TO READ line after its last visual
+set -eu
+
+repo_root=$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)
+failures=0
+
+require() {
+  file=$1; needle=$2; what=$3
+  if ! grep -qF "$needle" "$repo_root/$file"; then
+    echo "$file: missing $what" >&2
+    failures=$((failures + 1))
+  fi
+}
+
+for f in $(find "$repo_root/demos" -name '*.mlpl' | sort); do
+  rel=${f#$repo_root/}
+  case "$rel" in
+    demos/web/*)
+      # The generated copy is what a reader pastes, so check that one too.
+      gen="web/$(basename "$f")"
+      require "$rel" '"WHAT THIS SHOWS' 'a prolog string ("WHAT THIS SHOWS ...")'
+      require "$rel" '"HOW TO READ' 'an epilog string ("HOW TO READ ...")'
+      require "$rel" '"THE POINT' 'a closing string ("THE POINT ...")'
+      if [ -f "$repo_root/$gen" ]; then
+        # The prolog must be the FIRST statement: leading comments ride with
+        # the statement after them, so a preamble would swallow the narration.
+        first=$(grep -v '^[[:space:]]*$' "$repo_root/$gen" | head -n 1)
+        case "$first" in
+          '"WHAT THIS SHOWS'*) ;;
+          *) echo "$gen: first statement is not the prolog string" >&2
+             echo "  got: $(printf '%.60s' "$first")" >&2
+             failures=$((failures + 1)) ;;
+        esac
+        # ...and the LAST statement is the closing point, so the reader ends
+        # on what the pictures meant rather than on a bare value.
+        last=$(grep -v '^[[:space:]]*$' "$repo_root/$gen" | tail -n 1)
+        case "$last" in
+          '"THE POINT'*) ;;
+          *) echo "$gen: last statement is not the closing string" >&2
+             echo "  got: $(printf '%.60s' "$last")" >&2
+             failures=$((failures + 1)) ;;
+        esac
+      fi
+      ;;
+    *)
+      require "$rel" 'u:prolog(' 'a u:prolog(...) call'
+      require "$rel" 'u:epilog_open()' 'a u:epilog_open() call'
+      require "$rel" 'u:takeaway(' 'a u:takeaway(...) call'
+      require "$rel" 'u:explain(' 'at least one u:explain(path, ...) call'
+      ;;
+  esac
+done
+
+[ "$failures" -eq 0 ] || exit 1
+echo "narration: ok"

@@ -26,6 +26,11 @@
 include "../../lib/algebra.mlpl"
 include "../../lib/render.mlpl"
 
+u:prolog({
+  title: "LESSON 01 -- MAGMAS, via Rock-Paper-Scissors",
+  intro: "A magma is a set with one closed binary operation and nothing else. This lesson builds the Rock-Paper-Scissors 'who wins' operation, asks the machine which laws it obeys, and writes two diagrams: a colored Cayley table and an animation of the moment associativity fails."
+})
+
 # --- View 1: the operation as a function -----------------------------------
 # rock 0 beats scissors 2, paper 1 beats rock 0, scissors 2 beats paper 1,
 # so x beats y exactly when (x - y) mod 3 is 1.  The winner of x and y is
@@ -71,7 +76,32 @@ wrote = u:write_cayley_svg("out/01-rock-paper-scissors.svg", s)
 walked = u:write_assoc_walk_svg("out/01-rock-paper-scissors-associativity.svg",
   {title: "Rock-Paper-Scissors: associativity fails", names: s.names, table: s.table})
 
-print("")
+u:epilog_open()
+
+u:explain("out/01-rock-paper-scissors.svg",
+  "A 3x3 grid: one square per matchup. Rows and columns both run rock, paper, scissors.")
+u:note("Each square is filled with the COLOR OF THE WINNER, and labelled with the winner's name.")
+u:note("Blue = rock, red = paper, green = scissors, and the same three colors label the edges.")
+u:note("WHAT TO NOTICE: every square holds one of the three -- the operation never invents a")
+u:note("fourth outcome. That is CLOSURE, and closure is the only law a magma requires.")
+u:note("WHAT IS ABSENT: no row and no column repeats the header order left-to-right, so no")
+u:note("element leaves its opponent unchanged -- there is no identity. And no color appears")
+u:note("exactly once per row and column, so it is not a Latin square and not a group.")
+
+u:explain("out/01-rock-paper-scissors-associativity.svg",
+  "The same grid, ANIMATED, with two rings that move: white and red.")
+u:note("Both rings trace one bracketing of rock * paper * scissors. Each pauses on a cell,")
+u:note("slides to the cell its result names, and pauses again -- one hop per pair of brackets.")
+u:note("WHITE walks (a*b)*c: it starts on (rock, paper), reads paper, then hops to")
+u:note("(paper, scissors) and lands on scissors.")
+u:note("RED walks a*(b*c): it starts on (paper, scissors), reads scissors, then hops to")
+u:note("(rock, scissors) and lands on rock.")
+u:note("WHAT TO NOTICE: the two swatches in the legend end up DIFFERENT COLORS. Same three")
+u:note("elements, same order, only the brackets moved -- and the answer changed. That is what")
+u:note("non-associativity looks like, and it is why the checker returns a witness, not a 'no'.")
+
+u:takeaway("Rock-Paper-Scissors is closed and commutative, and that is all. It is a magma: the bottom rung of the ladder, with no associativity, no identity, and no inverses above it.")
+
 print("wrote out/01-rock-paper-scissors.svg:", is_ok(wrote))
 print("wrote out/01-rock-paper-scissors-associativity.svg:", is_ok(walked))
 

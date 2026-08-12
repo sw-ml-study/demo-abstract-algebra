@@ -14,9 +14,10 @@ trap 'rm -rf "$tmp"' EXIT
 
 failures=0
 for tree in web assets; do
-  if ! diff -r "$repo_root/$tree" "$tmp/$tree" >/dev/null 2>&1; then
+  # README.md in a generated tree is hand-written documentation, not output.
+  if ! diff -r -x 'README.md' "$repo_root/$tree" "$tmp/$tree" >/dev/null 2>&1; then
     echo "$tree/ is stale -- regenerate with \`just web\` / \`just assets\`" >&2
-    diff -r "$repo_root/$tree" "$tmp/$tree" | head -20 >&2
+    diff -r -x 'README.md' "$repo_root/$tree" "$tmp/$tree" | head -20 >&2
     failures=$((failures + 1))
   fi
 done
