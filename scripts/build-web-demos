@@ -19,11 +19,11 @@ for src in "$repo_root"/demos/web/*.mlpl; do
   target="$out_dir/$name"
 
   {
-    # No banner and no leading comments. The playground groups a file into
-    # statements and shows one REPL entry per group, and leading comment lines
-    # RIDE WITH the statement that follows -- so any preamble here would be
-    # glued onto the demo's opening narration. Provenance lives in web/README.md
-    # instead. The generated file therefore begins with its prolog string.
+    # No banner. The playground groups a file into statements and shows one
+    # REPL entry per group, and leading comment lines RIDE WITH the statement
+    # that follows -- so a provenance preamble here would be glued onto the
+    # opening narration block. Provenance lives in web/README.md
+    # instead, and the generated file begins with the first asterisk bar.
     #
     # Splice each include's target, resolved relative to the including file,
     # then emit the rest of the source verbatim.
@@ -40,10 +40,12 @@ for src in "$repo_root"/demos/web/*.mlpl; do
         printf "# ---- end %s ----\n\n", path
         next
       }
-      # Drop the source file header: comment and blank lines before the first
-      # statement are metadata for check-docstrings, not demo narration.
-      !started && (/^[[:space:]]*#/ || /^[[:space:]]*$/) { next }
-      { started = 1; print }
+      # Drop ONLY the source header -- the title / visual / loops lines that
+      # check-docstrings requires. Everything from the first asterisk bar on
+      # is narration and must survive.
+      !started && /^# \*\*\*/ { started = 1 }
+      !started { next }
+      { print }
     ' "$src"
   } > "$target"
 

@@ -28,7 +28,7 @@ include "../../lib/render.mlpl"
 
 u:prolog({
   title: "LESSON 01 -- MAGMAS, via Rock-Paper-Scissors",
-  intro: "A magma is a set with one closed binary operation and nothing else. This lesson builds the Rock-Paper-Scissors 'who wins' operation, asks the machine which laws it obeys, and writes two diagrams: a colored Cayley table and an animation of the moment associativity fails."
+  intro: "A magma is a set with one closed binary operation and nothing else. This lesson builds the Rock-Paper-Scissors 'who wins' operation, asks the machine which laws it obeys, and writes three diagrams: the beats-cycle you already know, the same operation as a colored Cayley table, and an animation of the moment associativity fails."
 })
 
 # --- View 1: the operation as a function -----------------------------------

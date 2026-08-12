@@ -1,6 +1,13 @@
-"WHAT THIS SHOWS -- Rock-Paper-Scissors-Lizard-Spock has ten rules but only one idea: arrange the five choices in a circle and each beats the NEXT TWO going around. Two pictures of that fact -- the arrows, and the operation as an animated table."
+# **************************************************************************
+# * WHAT THIS SHOWS
+# *
+# * Rock-Paper-Scissors-Lizard-Spock has ten rules but only one idea:
+# * arrange the five choices in a circle, and each beats the NEXT TWO going
+# * around. Two pictures of that fact -- the arrows, and the operation as an
+# * animated table.
+# **************************************************************************
 def u:beats(x, y) { lt(mod(x - y + 5, 5) - 1, 2) * (1 - eq(mod(x - y + 5, 5), 0)) }  # beats the next two around
-def u:fight(x, y) { if u:beats(x, y) { x } else { y } }  # the winner
+def u:fight(x, y) { if u:beats(x, y) { x } else { y } }  # spock 0 .. rock 4
 def u:cat(a, b) { decode_bytes(concat(tokenize_bytes(a), tokenize_bytes(b))) }  # plumbing: no graph type
 def u:nm(v) { unwrap(to_json(round(v))) }
 def u:px(i, k) { 190 + 130 * cos(2 * pi() * i / k - pi() / 2) }
@@ -12,9 +19,40 @@ def u:dot(i, k, nm) { u:cat(u:cat(u:cat("<circle cx=\"", u:nm(u:px(i, k))), u:ca
 def u:arrows(i, k, acc) { if lt(i, k * k) { u:arrows(i + 1, k, if u:beats(floor(i / k), mod(i, k)) { u:cat(acc, u:seg(floor(i / k), mod(i, k), k)) } else { acc }) } else { acc } }
 def u:nodes(i, k, nm, acc) { if lt(i, k) { u:nodes(i + 1, k, nm, u:cat(acc, u:dot(i, k, nm))) } else { acc } }
 def u:cycle(k, nm) { u:cat(u:cat("<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 380 380\"><rect width=\"100%\" height=\"100%\" fill=\"#1a1b26\"/><defs><marker id=\"a\" viewBox=\"0 0 10 10\" refX=\"9\" refY=\"5\" markerWidth=\"5\" markerHeight=\"5\" orient=\"auto-start-reverse\"><path d=\"M 0 0 L 10 5 L 0 10 z\" fill=\"#7aa2f7\"/></marker></defs>", u:arrows(0, k, "")), u:cat(u:nodes(0, k, nm, ""), "</svg>")) }
-u:cycle(5, {names: ["spock", "paper", "lizard", "scissors", "rock"]})  # the beats graph
-svg(reshape(transpose(one_hot(flatten(table(:u:fight, range(5), range(5))), 5)), [5, 5, 5]), "life")  # frame k = matchups won by k
-"HOW TO READ PICTURE 1 -- five circles on a ring, spock, paper, lizard, scissors, rock going clockwise from the top. An arrow a -> b means 'a beats b'. Count at any circle: two leave and two arrive, so every choice wins twice and loses twice. That balance is why the game is fair."
-"WHY IT IS A STAR -- each choice beats the two AFTER it, not the one beside it, so no arrow follows the rim; every one cuts across. Ten arrows cutting across five points draw the pentagram. The star is the shape of 'beats the next two'."
-"HOW TO READ PICTURE 2 -- the same operation as a 5x5 table, rows and columns both spock, paper, lizard, scissors, rock. It cycles through 5 frames; in frame k a cell lights when that matchup is won by element k. Every frame lights five cells -- one tie on the diagonal, two wins as a row, two as a column -- and the lit block slides steadily around. That rotation is the five-fold symmetry seen from the table side."
-"THE POINT -- the arrows and the table are one object, not two. Growing from three choices to five added rules but no laws: this is still a magma, not associative, with no identity and no inverses."
+# **************************************************************************
+# * PICTURE 1 -- THE BEATS GRAPH
+# *
+# * Five circles on a ring: spock, paper, lizard, scissors, rock, going
+# * clockwise from the top. An arrow a -> b means "a beats b".
+# *
+# * Count the arrows at any circle: two leave and two arrive. Every choice
+# * wins twice and loses twice, and that balance is why the game is fair.
+# **************************************************************************
+u:cycle(5, {names: ["spock", "paper", "lizard", "scissors", "rock"]})
+# **************************************************************************
+# * PICTURE 2 -- THE SAME OPERATION, ANIMATED
+# *
+# * A 5x5 table, rows and columns both spock, paper, lizard, scissors, rock.
+# * It cycles through 5 frames; in frame k a cell lights when that matchup is
+# * won by element k.
+# *
+# * Every frame lights exactly five cells: one tie on the diagonal, two wins
+# * as a row, and two as a column. The lit block slides steadily around as
+# * the frames advance.
+# **************************************************************************
+svg(reshape(transpose(one_hot(flatten(table(:u:fight, range(5), range(5))), 5)), [5, 5, 5]), "life")
+# **************************************************************************
+# * WHAT TO NOTICE
+# *
+# * WHY IT IS A STAR. Each choice beats the two AFTER it, not the one beside
+# * it, so no arrow follows the rim of the circle -- every one cuts across.
+# * Ten arrows cutting across five points draw the pentagram. The star is not
+# * decoration: it is the shape of "beats the next two".
+# *
+# * THE ROTATION in picture 2 is the same five-fold symmetry seen from the
+# * table side.
+# *
+# * THE POINT -- the arrows and the table are one object, not two. Growing
+# * from three choices to five added rules but no LAWS: this is still a
+# * magma. Not associative, no identity, no inverses.
+# **************************************************************************

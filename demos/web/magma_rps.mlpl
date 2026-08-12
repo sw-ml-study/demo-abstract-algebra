@@ -1,7 +1,15 @@
 # Rock-Paper-Scissors as a magma -- a Web UI demo. See docs/viewing.md.
 # visual: svg
 # loops: 0
-"WHAT THIS SHOWS -- the game you already know, drawn as a cycle of arrows, and then the SAME thing as an algebra table. Rock-Paper-Scissors is a MAGMA: a set with one closed binary operation, and nothing else."
+# **************************************************************************
+# * WHAT THIS SHOWS
+# *
+# * The game you already know, drawn as a cycle of arrows, and then the SAME
+# * thing as an algebra table.
+# *
+# * Rock-Paper-Scissors is a MAGMA: a set with one closed binary operation,
+# * and nothing else. No associativity, no identity, no inverses.
+# **************************************************************************
 def u:beats(x, y) { eq(mod(x - y + 3, 3), 1) }  # beats the next one around
 def u:fight(x, y) { if u:beats(x, y) { x } else { y } }  # the winner
 def u:cat(a, b) { decode_bytes(concat(tokenize_bytes(a), tokenize_bytes(b))) }  # plumbing: no graph type
@@ -15,11 +23,48 @@ def u:dot(i, k, nm) { u:cat(u:cat(u:cat("<circle cx=\"", u:nm(u:px(i, k))), u:ca
 def u:arrows(i, k, acc) { if lt(i, k * k) { u:arrows(i + 1, k, if u:beats(floor(i / k), mod(i, k)) { u:cat(acc, u:seg(floor(i / k), mod(i, k), k)) } else { acc }) } else { acc } }
 def u:nodes(i, k, nm, acc) { if lt(i, k) { u:nodes(i + 1, k, nm, u:cat(acc, u:dot(i, k, nm))) } else { acc } }
 def u:cycle(k, nm) { u:cat(u:cat("<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 380 380\"><rect width=\"100%\" height=\"100%\" fill=\"#1a1b26\"/><defs><marker id=\"a\" viewBox=\"0 0 10 10\" refX=\"9\" refY=\"5\" markerWidth=\"5\" markerHeight=\"5\" orient=\"auto-start-reverse\"><path d=\"M 0 0 L 10 5 L 0 10 z\" fill=\"#7aa2f7\"/></marker></defs>", u:arrows(0, k, "")), u:cat(u:nodes(0, k, nm, ""), "</svg>")) }
-u:cycle(3, {names: ["rock", "paper", "scissors"]})  # the beats cycle
+# **************************************************************************
+# * PICTURE 1 -- THE BEATS CYCLE
+# *
+# * Three circles, one per choice. An arrow a -> b means "a beats b": rock
+# * smashes scissors, scissors cuts paper, paper covers rock.
+# *
+# * The arrows form ONE closed loop, with no start and no end. That is why the
+# * game is fair -- no choice sits at the top -- and it is the first hint that
+# * the operation cannot be associative, because a cycle gives you no
+# * consistent way to bracket three steps.
+# **************************************************************************
+u:cycle(3, {names: ["rock", "paper", "scissors"]})
 t = table(:u:fight, range(3), range(3))  # every matchup at once
-svg(t, "heatmap")  # the same operation, as an array
-"HOW TO READ PICTURE 1 -- three circles, one per choice, and an arrow a -> b meaning 'a beats b'. Rock smashes scissors, scissors cuts paper, paper covers rock. The arrows form one closed loop with no start and no end, which is why the game is fair: no choice is best."
-"HOW TO READ PICTURE 2 -- a 3x3 grid, one square per matchup, rows and columns both rock, paper, scissors. A square's color is WHO WON, on the viridis ramp: dark purple = rock, teal = paper, yellow = scissors. Both pictures hold the same information; the arrows are just the off-diagonal squares where the row wins."
-"WHY IT IS A MAGMA -- every square holds one of the three choices. The operation never produces a fourth thing, so the set is CLOSED under it, and closure is the only law a magma requires."
-"WHAT IS MISSING -- the grid is symmetric across the diagonal, so the winner does not depend on who moved first. But no row and no column reproduces the header order, so no element leaves every opponent unchanged: there is no identity."
-"THE POINT -- closure alone buys you a magma, and a magma is the bottom rung. Associativity, an identity, inverses: each is an extra law this operation does not obey. The cycle you already knew was an algebraic structure all along."
+# **************************************************************************
+# * PICTURE 2 -- THE SAME OPERATION AS AN ARRAY
+# *
+# * A 3x3 grid, one square per matchup. Rows and columns both run
+# * rock, paper, scissors, in that order.
+# *
+# * A square's color is WHO WON, on the viridis ramp:
+# *   dark purple = rock (0)   teal = paper (1)   yellow = scissors (2)
+# *
+# * Both pictures hold the same information. The arrows above are just the
+# * off-diagonal squares where the row beats the column.
+# **************************************************************************
+svg(t, "heatmap")
+# **************************************************************************
+# * WHAT TO NOTICE
+# *
+# * CLOSURE. Every square holds one of the three choices. The operation never
+# * produces a fourth thing, so the set is closed under it -- and closure is
+# * the only law a magma requires. Picture 2 is what closure looks like.
+# *
+# * SYMMETRY. The grid is a mirror image across its diagonal, so the winner
+# * does not depend on who moved first. The operation is commutative.
+# *
+# * NO IDENTITY. No row and no column reproduces the header order
+# * rock, paper, scissors. So no choice leaves every opponent unchanged,
+# * and there is no identity element.
+# *
+# * THE POINT -- closure alone buys you a magma, and a magma is the bottom
+# * rung of the ladder. Associativity, an identity, inverses: each is a
+# * further law this operation does not obey. The cycle you already knew was
+# * an algebraic structure all along.
+# **************************************************************************

@@ -1,4 +1,4 @@
-number = 7
+number = 8
 slug = "lessons-05-08-the-ladder"
 status = "in-progress"
 description = "Implement lessons 05-08 per docs/plan.md: semigroup (associative, no identity..."

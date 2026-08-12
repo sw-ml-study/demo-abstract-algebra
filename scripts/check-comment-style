@@ -36,17 +36,17 @@ for f in "$repo_root"/demos/web/*.mlpl; do
   fi
 done
 
-# A full-line comment RIDES with the statement after it, and the UI splits the
-# whole group at its FIRST `#` -- so the code after a leading comment block
-# renders inside the comment span and effectively disappears. Only the source
-# header (stripped by build-web-demos) may use full-line comments.
+# Narration must be COMMENTS, never string literals. A string statement echoes
+# twice -- once as the input line, again as its own evaluated output -- which is
+# the repetition readers notice. A comment renders once, as the input
+# annotation, with no output at all (verified against the wasm evaluator).
 for f in "$repo_root"/web/*.mlpl; do
   [ -f "$f" ] || continue
   name=${f#$repo_root/}
-  bad=$(grep -n '^[[:space:]]*#' "$f" || true)
+  bad=$(grep -n '^[[:space:]]*"' "$f" || true)
   if [ -n "$bad" ]; then
-    echo "$name: full-line comment -- it rides with the next statement and hides its code" >&2
-    printf '%s\n' "$bad" | sed 's/^/  /' >&2
+    echo "$name: string-literal narration -- it echoes twice; use a # comment block" >&2
+    printf '%s\n' "$bad" | head -5 | sed 's/^/  /' >&2
     failures=$((failures + 1))
   fi
 done

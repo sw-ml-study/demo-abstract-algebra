@@ -49,32 +49,33 @@ def u:head(v, k) { compress(lt(range(size(v)), k), v) }
 # same way they do under scripts/run-all.
 def u:run_web(path) { unwrap(run_script(path, {source_dir: "."})) }
 
-@test {name: "web demos open and close with narration", tags: ["web"]}
-def u:test_web_narration() { "Prolog first, epilog last -- the reader is never lost.";
-  # The FINAL value of a web demo is its epilog, not its picture. Pictures are
-  # in the middle and render wherever they appear, because the playground makes
-  # one entry per statement group. scripts/check-web-renders proves the
-  # pictures draw; this pins the narration that frames them.
+@test {name: "narration is comments, not strings", tags: ["web"]}
+def u:test_web_narration() { "A string echoes twice; a comment renders once.";
+  # Narration lives in # comment blocks, so it contributes no VALUE at all --
+  # which is the whole point. A demo's final value is therefore its last
+  # picture, and the explanation around it is invisible to the evaluator.
   cayley = u:run_web("web/magma_rps.mlpl");
   u:assert_eq(cayley.status, "ok", "magma_rps did not run")?;
-  u:assert_true(u:starts_with(cayley.value, "THE POINT"), "magma_rps has no epilog")?;
+  u:assert_true(u:starts_with_svg(cayley.value), "magma_rps final value is not a picture")?;
 
   latin = u:run_web("web/latin_square.mlpl");
   u:assert_eq(latin.status, "ok", "latin_square did not run")?;
-  u:assert_true(u:starts_with(latin.value, "THE POINT"), "latin_square has no epilog")?;
+  u:assert_true(u:starts_with_svg(latin.value), "latin_square final value is not a picture")?;
 
   pent = u:run_web("web/rpsls_pentagon.mlpl");
   u:assert_eq(pent.status, "ok", "rpsls_pentagon did not run")?;
-  u:assert_true(u:starts_with(pent.value, "THE POINT"), "rpsls_pentagon has no epilog")?;
+  u:assert_true(u:starts_with_svg(pent.value), "rpsls_pentagon final value is not a picture")?;
 
-  # And each opens by saying what is about to appear.
-  u:assert_true(gt(u:count_in_file("web/magma_rps.mlpl", "WHAT THIS SHOWS"), 0),
-    "magma_rps has no prolog")?;
-  u:assert_true(gt(u:count_in_file("web/latin_square.mlpl", "WHAT THIS SHOWS"), 0),
-    "latin_square has no prolog")?;
-  u:assert_true(gt(u:count_in_file("web/rpsls_pentagon.mlpl", "WHAT THIS SHOWS"), 0),
-    "rpsls_pentagon has no prolog")?;
-  ok({test: "web-narration", cases: 9})
+  # No string-literal narration anywhere: it would echo as input AND output.
+  u:assert_eq(u:count_in_file("web/magma_rps.mlpl", "\n\"WHAT"), 0, "string prolog")?;
+  u:assert_eq(u:count_in_file("web/latin_square.mlpl", "\n\"WHAT"), 0, "string prolog")?;
+  u:assert_eq(u:count_in_file("web/rpsls_pentagon.mlpl", "\n\"THE POINT"), 0, "string epilog")?;
+
+  # And the comment blocks are present, framed as blocks.
+  u:assert_true(gt(u:count_in_file("web/magma_rps.mlpl", "# * WHAT THIS SHOWS"), 0), "no prolog")?;
+  u:assert_true(gt(u:count_in_file("web/magma_rps.mlpl", "# * WHAT TO NOTICE"), 0), "no closing block")?;
+  u:assert_true(gt(u:count_in_file("web/magma_rps.mlpl", "# ****"), 2), "no framing bars")?;
+  ok({test: "web-narration", cases: 15})
 }
 
 @test {name: "web demos are standalone and short", tags: ["web"]}

@@ -27,27 +27,28 @@ for f in $(find "$repo_root/demos" -name '*.mlpl' | sort); do
   rel=${f#$repo_root/}
   case "$rel" in
     demos/web/*)
-      # The generated copy is what a reader pastes, so check that one too.
       gen="web/$(basename "$f")"
-      require "$rel" '"WHAT THIS SHOWS' 'a prolog string ("WHAT THIS SHOWS ...")'
-      require "$rel" '"HOW TO READ' 'an epilog string ("HOW TO READ ...")'
-      require "$rel" '"THE POINT' 'a closing string ("THE POINT ...")'
+      require "$rel" 'WHAT THIS SHOWS' 'a prolog block (# * WHAT THIS SHOWS)'
+      require "$rel" 'WHAT TO NOTICE' 'a closing block (# * WHAT TO NOTICE)'
+      require "$rel" 'THE POINT' 'a closing point (# * THE POINT)'
       if [ -f "$repo_root/$gen" ]; then
-        # The prolog must be the FIRST statement: leading comments ride with
-        # the statement after them, so a preamble would swallow the narration.
+        # The generated file must OPEN on the prolog bar: build-web-demos drops
+        # the source header, because leading comments ride with the statement
+        # after them and a preamble would be glued onto the narration.
         first=$(grep -v '^[[:space:]]*$' "$repo_root/$gen" | head -n 1)
         case "$first" in
-          '"WHAT THIS SHOWS'*) ;;
-          *) echo "$gen: first statement is not the prolog string" >&2
+          '# ***'*) ;;
+          *) echo "$gen: does not open on a narration bar" >&2
              echo "  got: $(printf '%.60s' "$first")" >&2
              failures=$((failures + 1)) ;;
         esac
-        # ...and the LAST statement is the closing point, so the reader ends
-        # on what the pictures meant rather than on a bare value.
+        # ...and CLOSE on one, so the last entry is prose with no output --
+        # a trailing comment-only group is its own entry (statement_groups.rs
+        # emits it deliberately "for narration").
         last=$(grep -v '^[[:space:]]*$' "$repo_root/$gen" | tail -n 1)
         case "$last" in
-          '"THE POINT'*) ;;
-          *) echo "$gen: last statement is not the closing string" >&2
+          '# ***'*) ;;
+          *) echo "$gen: does not close on a narration bar" >&2
              echo "  got: $(printf '%.60s' "$last")" >&2
              failures=$((failures + 1)) ;;
         esac

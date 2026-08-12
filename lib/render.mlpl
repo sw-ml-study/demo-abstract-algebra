@@ -399,19 +399,22 @@ def u:write_dominance_svg(path, s) { write_text(path, u:dominance_svg(s)) }
 # the colors mean, and what to notice. A learner who sees a colored grid with
 # no legend has been shown nothing.
 
+def u:bar() { "**********************************************************************" }
+
 def u:prolog(s) {
-  print("=====================================================================")
-  print(s.title)
-  print("=====================================================================")
-  print(s.intro)
+  print(u:bar())
+  print("*", s.title)
+  print("*")
+  print("*", s.intro)
+  print(u:bar())
   print("")
 }
 
 def u:epilog_open() {
   print("")
-  print("---------------------------------------------------------------------")
-  print("HOW TO READ WHAT WAS JUST WRITTEN")
-  print("---------------------------------------------------------------------")
+  print(u:bar())
+  print("* HOW TO READ WHAT WAS JUST WRITTEN")
+  print(u:bar())
 }
 
 # One artifact, with the reading instructions that make it legible.
@@ -425,7 +428,8 @@ def u:note(what) { print("     ", what) }
 
 def u:takeaway(s) {
   print("")
-  print("  TAKEAWAY:", s)
+  print("* THE POINT:", s)
+  print(u:bar())
   print("")
 }
 

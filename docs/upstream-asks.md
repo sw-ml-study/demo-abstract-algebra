@@ -453,6 +453,44 @@ in generated web demos; annotations are trailing-only.
 
 ---
 
+## 17. No block comment syntax
+
+`#` starts a line comment and runs to end of line. There is no block form:
+
+```mlpl
+/* not a comment */      # error: unexpected token '/' at 0..1
+#* also not a block *#   # just a line comment; the closing marker is inert
+```
+
+**Where it bit:** narration. A demo's framing has to be a **comment**, not a
+string literal, because a string statement echoes twice in the playground
+transcript — once as the input line and again as its own evaluated output —
+while a comment renders once with no output. So every paragraph of explanation
+is a run of `#` lines, and this repository frames them with asterisk bars to
+read as blocks:
+
+```mlpl
+# **********************************************************************
+# * WHAT THIS SHOWS
+# *
+# * Rock-Paper-Scissors is a MAGMA: a set with one closed binary
+# * operation, and nothing else.
+# **********************************************************************
+```
+
+That works and is legible, but every line carries `# * ` scaffolding that a
+block form would not need, and reflowing a paragraph means re-prefixing it.
+
+**Ask:** a block comment. `#* ... *#` would fit the existing `#` lexeme and
+stay unambiguous with the line form. This pairs with #15: whatever syntax marks
+a block is also the natural place to mark it as *narration*.
+
+**Severity:** low on its own, medium combined with #15 and #16 — together they
+decide whether a companion repo can produce a demo that reads like sw-MLPL's
+own.
+
+---
+
 ## Not asks
 
 Recorded so a later session does not re-litigate them:

@@ -51,17 +51,17 @@ for f in "$repo_root"/web/*.mlpl; do
   ' "$f"
 
   # Evaluate growing prefixes; prefix k's value is what entry k displays.
-  pictures=0
+  # All prefixes share one output directory, and the CLI names an SVG by its
+  # CONTENT HASH -- so identical pictures collapse to one file. That matters:
+  # a trailing narration block adds no value of its own, so its prefix still
+  # reports the previous picture, and counting runs would double-count it.
+  rm -rf "$work/svg"; mkdir -p "$work/svg"
   : > "$work/prefix.mlpl"
   for g in "$work"/g/*; do
     cat "$g" >> "$work/prefix.mlpl"
-    rm -rf "$work/svg"; mkdir -p "$work/svg"
-    if "$mlpl" --source-dir "$work" --svg-out "$work/svg" "$work/prefix.mlpl" >/dev/null 2>&1; then
-      if [ -n "$(ls -A "$work/svg" 2>/dev/null)" ]; then
-        pictures=$((pictures + 1))
-      fi
-    fi
+    "$mlpl" --source-dir "$work" --svg-out "$work/svg" "$work/prefix.mlpl" >/dev/null 2>&1 || true
   done
+  pictures=$(ls -1 "$work/svg" 2>/dev/null | wc -l | tr -d ' ')
 
   if [ "$pictures" -eq 0 ]; then
     echo "$name: renders NO pictures -- a web demo that draws nothing is a bug" >&2
