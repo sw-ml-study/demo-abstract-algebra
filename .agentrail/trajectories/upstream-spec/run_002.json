@@ -1,0 +1,11 @@
+{
+  "task_type": "upstream-spec",
+  "state": {
+    "number": 7,
+    "step": "sw-mlpl-work-order"
+  },
+  "action": "Traced the CLI bug to its exact line in include_script.rs to give a one-line fix rather than a symptom report; collected fix sites across mlpl-viz, mlpl-viz-marks, statement_groups, entry.rs, comment.rs and the web handlers so each item names where to change it.",
+  "result": "success",
+  "reward": 1,
+  "timestamp": "2026-08-12T14:12:30"
+}
