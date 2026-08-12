@@ -14,8 +14,8 @@ esac
 [ -f "$catalog_path" ] || { echo "catalog not found: $catalog_path" >&2; exit 1; }
 
 case "$catalog_path" in
-  */tests.tsv) tree=tests ;;
-  *) tree=demos ;;
+  */tests.tsv) tree="tests" ;;
+  *) tree="demos|probes" ;;
 esac
 
 awk -v repo="$repo_root" -v tree="$tree" -v name="$catalog" '
@@ -34,7 +34,7 @@ NR == 1 {
   seen_id[id] = 1
   if (path in seen_path) { printf "%s:%d: duplicate path %s\n", name, NR, path > "/dev/stderr"; bad = 1 }
   seen_path[path] = 1
-  if (path !~ ("^" tree "/")) { printf "%s:%d: path %s is not under %s/\n", name, NR, path, tree > "/dev/stderr"; bad = 1 }
+  if (path !~ ("^(" tree ")/")) { printf "%s:%d: path %s is not under %s/\n", name, NR, path, tree > "/dev/stderr"; bad = 1 }
   if (path !~ /\.mlpl$/) { printf "%s:%d: path %s is not a .mlpl file\n", name, NR, path > "/dev/stderr"; bad = 1 }
   if (loops !~ /^[0-9]+$/) { printf "%s:%d: explicit_loops must be an integer\n", name, NR > "/dev/stderr"; bad = 1 }
   if (target !~ /^[0-9]+$/) { printf "%s:%d: target_loops must be an integer\n", name, NR > "/dev/stderr"; bad = 1 }

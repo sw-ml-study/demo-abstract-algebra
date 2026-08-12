@@ -31,9 +31,10 @@ than a test suite. Two pictures do most of the teaching:
 
 ```
 lib/algebra.mlpl     laws, classification, counterexamples, homomorphisms
-lib/render.mlpl      ASCII / SVG / JSON renderers + the string primitives
-                     sw-MLPL lacks
+lib/render.mlpl      ASCII / SVG / JSON renderers + temporary bridges for the
+                     text surface sw-MLPL lacks (docs/mlpl-blockers.md)
 demos/NN-topic/*.mlpl one self-checking lesson per file; writes to out/
+probes/*.mlpl        capability probes against the interpreter itself
 tests/test_*.mlpl    mlplunit conformance, including viewer fixtures
 viewer/*.html        dependency-free interactive pages
 out/                 every artifact, gitignored, rebuilt by `just render`
@@ -44,7 +45,9 @@ Contracts that hold everywhere:
 - Elements are indices `0 .. n-1`. Names live in a parallel string list, never
   inside the table.
 - A "structure" is the record `{title, names, table}` — bundled because
-  sw-MLPL will not accept a string list as a `u:` function argument.
+  sw-MLPL will not accept a string list as a `u:` function argument
+  (`docs/mlpl-blockers.md`, B5). The bundling is good design and will likely
+  outlive the fix, but it was forced, not chosen.
 - Classification is **derived, never declared.** No lesson says "this is a
   monoid"; each hands `elements` and `operation` to `u:classify` and reports
   what came back. That is the pedagogy and the acceptance test at once.
@@ -63,7 +66,7 @@ than the subject — they are gone by lesson 03.
 | 02 | `02-rpsls/lizard_spock` | The same structure at n=5; function / table / graph as three views of one object | Dominance digraph in SVG, drawn on a circle | planned |
 | 03 | `03-closure/escaping_the_set` | Closure by counterexample: an operation that leaves the set | Out-of-set cells struck out in grey | planned |
 | 04 | `04-associativity/bracketing` | The `n^3` triple check; why the witness matters | The two bracketing cubes as stacked slices | planned |
-| 05 | `05-semigroups/string_joins` | Associative but no identity | Latin-square-ness absent; no white cross | planned |
+| 05 | `05-semigroups/string_joins` | Associative but no identity | Latin-square-ness absent; no white cross | **needs blocker B3** |
 | 06 | `06-monoids/identity_cross` | Identity discovered, not asserted; uniqueness | The white cross | planned |
 | 07 | `07-inverses/undoing` | Inverses relative to the identity | Inverse pairs joined by chords over the table | planned |
 | 08 | `08-groups/latin_square` | Groups; `Z_n` and the Klein four-group | The Latin square, side by side with a non-group | planned |
@@ -74,6 +77,23 @@ than the subject — they are gone by lesson 03.
 
 Lessons 13+ (rings, fields, two interacting operations) are a later saga, not
 part of this plan.
+
+### Lesson 05 is currently blocked upstream
+
+Its natural subject is string concatenation — the canonical semigroup that is
+not a monoid until you add `""`. sw-MLPL cannot concatenate strings
+(`docs/mlpl-blockers.md`, B1) and cannot measure or search them (B3), so the
+lesson is unwritable in its intended form today. Two ways forward, decided when
+step 3 reaches it:
+
+- Wait for B1/B3 and write the lesson as intended. Preferred — it is the best
+  example of the concept, and the lesson doubles as the adoption test for the
+  new builtins.
+- Substitute a non-string semigroup (`max` on a bounded set, or left
+  projection) and note in the header that the natural example is blocked.
+
+Ship the substitute rather than stall the ladder, and replace it when B1/B3
+land.
 
 ### Lesson 10 is the serious array-programming workload
 
@@ -87,8 +107,8 @@ The array formulation: an operation is a base-`n` numeral with `n^2` digits, so
 all operations are one `[n^(n^2), n, n]` array produced by digit extraction over
 `range(n^(n^2))`. Every law predicate then applies along the leading axis at
 once. If the associativity cube cannot be lifted to a batch of tables without a
-loop, that is a genuine finding for `docs/upstream-asks.md`, and the loop-based
-version ships with the friction recorded.
+loop, that is a genuine finding — record it and ship the loop-based version
+with the friction noted.
 
 ### Lesson 11 falls out of lesson 10
 
@@ -105,7 +125,8 @@ the count.
 2. **SVG second.** `lib/render.mlpl` emits its own SVG — headings, cell values,
    per-element color, and the identity cross. The built-in
    `svg(t, "heatmap")` colors cells but draws no headings, values, or
-   highlights, which is most of the teaching (upstream ask #5).
+   highlights, which is most of the teaching (upstream ask #5). Both bridges
+   this depends on are blockers: `docs/mlpl-blockers.md`, B1 and B2.
 3. **The interactive page last.** `viewer/cayley.html`: load a structure's
    JSON, edit a cell, watch the law verdicts recompute. This is where the
    brief's best idea lives — *"Make this magma associative"*, *"Turn this
@@ -121,20 +142,29 @@ the page is wrong.
 
 1. **Foundation** *(done)* — agentrail setup, harness, `lib/algebra.mlpl`,
    `lib/render.mlpl`, lesson 01, catalog, docs.
-2. **Lessons 02-04** — RPSLS and the graph view; closure and associativity as
+2. **Upstream text blockers** *(done)* — `docs/mlpl-blockers.md` and
+   `probes/text_capabilities.mlpl`. No lesson work; the specification exists so
+   the missing surface gets fixed rather than permanently worked around.
+3. **Lessons 02-04** — RPSLS and the graph view; closure and associativity as
    lessons in their own right. Adds the digraph renderer.
-3. **Lessons 05-08** — the ladder proper, semigroup through group. Adds the
+4. **Lessons 05-08** — the ladder proper, semigroup through group. Adds the
    Latin-square check and the side-by-side comparison renderer.
-4. **The viewer** — `viewer/cayley.html` plus the conformance fixture, wired to
+5. **The viewer** — `viewer/cayley.html` plus the conformance fixture, wired to
    the structures from lessons 01-08. Editable cells, live verdicts, the two
    puzzles.
-5. **Lesson 09 + 10** — commutativity, then the enumeration workload. Expect
+6. **Lesson 09 + 10** — commutativity, then the enumeration workload. Expect
    the largest crop of upstream asks here.
-6. **Lessons 11-12** — isomorphism classes, then homomorphisms. Step 6 closes
+7. **Lessons 11-12** — isomorphism classes, then homomorphisms. The final step closes
    with a handoff note for `../demo-category-theory`.
 
-Steps 2-6 are queued in `.agentrail/`. Each ends with the suite green, the
-catalog updated, and any new friction appended to `docs/upstream-asks.md`.
+These are queued in `.agentrail/`, behind a step that specified the upstream
+text blockers. Each ends with the suite green, the catalog updated, and any new
+friction recorded — in `docs/mlpl-blockers.md` if it blocks, with a case added
+to `probes/text_capabilities.mlpl`, otherwise in `docs/upstream-asks.md`.
+
+When a blocker closes upstream, adopting the builtin and deleting the bridge it
+justified belongs in the same step — see the bridge list in
+`docs/mlpl-blockers.md`.
 
 ## What would make this plan wrong
 
@@ -143,6 +173,11 @@ Worth stating so a later session can notice:
 - **If the batch-of-tables formulation in lesson 10 needs a loop per table**,
   the enumeration lesson becomes a language-limitation demo rather than an
   array-programming showcase. Still worth shipping, with the framing changed.
+- **If the text blockers (`docs/mlpl-blockers.md`) never close**, the visual
+  layer stays built on a byte-array round trip and a dependency on `to_json`'s
+  incidental scalar formatting. That is survivable but not the point of
+  dogfooding: the repository would be demonstrating sw-MLPL's limits rather
+  than its expressiveness.
 - **If the SVG string-building recursion does not scale past `n=8`**, the
   larger structures (`S_3` is order 6, but `S_4` would be 24) need a different
   emitter — most likely JSON to the viewer, with SVG reserved for small

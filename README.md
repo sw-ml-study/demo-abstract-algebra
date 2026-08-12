@@ -62,19 +62,31 @@ The interpreter is found at `../sw-mlpl/target/release/mlpl-repl`, or wherever
 lib/algebra.mlpl      laws, classification, counterexamples, homomorphisms
 lib/render.mlpl       ASCII / SVG / JSON renderers
 demos/NN-topic/*.mlpl one self-checking lesson per file
+probes/*.mlpl         capability probes against the interpreter
 tests/test_*.mlpl     mlplunit conformance
 viewer/*.html         dependency-free interactive pages (planned)
 out/                  every artifact, gitignored
 ```
 
-## The second job: forcing function
+## The second job: dogfooding sw-MLPL
 
 When a law check, an enumeration, or a rendering turns out to be awkward or
 impossible in ordinary `.mlpl`, the gap is recorded precisely rather than
-worked around silently. Eight findings so far — including no string
-concatenation, no number-to-string conversion, and a `u:` function's refusal to
-accept a string list — each with a reproducing snippet and a working
-workaround, in [docs/upstream-asks.md](docs/upstream-asks.md).
+worked around silently.
+
+**Six of the eight findings so far are blockers**, and they are all the same
+missing surface: sw-MLPL cannot concatenate two strings, cannot turn a number
+into one, cannot measure or search one, and cannot build a string list. Since
+every lesson here has to *generate* a diagram, that surface is load-bearing.
+These are specified for implementation — signatures, semantics, acceptance
+tests, and the bridge each one deletes — in
+**[docs/mlpl-blockers.md](docs/mlpl-blockers.md)**. They are to be fixed
+upstream and then used; the bridges in `lib/render.mlpl` are temporary.
+
+`probes/text_capabilities.mlpl` runs under `just demos` and reports open vs.
+closed, so the day any of this lands, one command says so. It reports; it does
+not gate. The other two findings have honest workarounds and live in
+[docs/upstream-asks.md](docs/upstream-asks.md).
 
 The wins are recorded too. `table(f, a, b)` gives the Cayley table in one line,
 and `gather_rows` + `transpose_axes` express the `n^3` associativity check with
@@ -99,7 +111,9 @@ not boilerplate.
 - [docs/plan.md](docs/plan.md) — the twelve-lesson sequence and delivery order
 - [docs/scope-boundary.md](docs/scope-boundary.md) — the contract with
   demo-category-theory
-- [docs/upstream-asks.md](docs/upstream-asks.md) — sw-MLPL friction found here
+- [docs/mlpl-blockers.md](docs/mlpl-blockers.md) — the sw-MLPL capabilities
+  that block this work, specified for implementation
+- [docs/upstream-asks.md](docs/upstream-asks.md) — the full friction record
 - [docs/terminology.md](docs/terminology.md) — the word-collision register
 - [docs/research.txt](docs/research.txt) — the source brief
 - [AGENTS.md](AGENTS.md) — agent instructions and the AgentRail protocol

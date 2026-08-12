@@ -1,4 +1,5 @@
 id	path	lesson	concept	explicit_loops	target_loops	visual	required_features	status
+text-capabilities	probes/text_capabilities.mlpl	probes	upstream-blocker-probe	0	0	ascii	current	runnable
 rock-paper-scissors	demos/01-magmas/rock_paper_scissors.mlpl	01-magmas	closed-binary-operation	0	0	ascii,svg	current	runnable
 lizard-spock	demos/02-rpsls/lizard_spock.mlpl	02-rpsls	function-table-graph-views	0	0	ascii,svg	current	gated
 escaping-the-set	demos/03-closure/escaping_the_set.mlpl	03-closure	closure-counterexample	0	0	ascii,svg	current	gated

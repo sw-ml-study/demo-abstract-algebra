@@ -1,13 +1,33 @@
 # Upstream asks: sw-MLPL friction found building visual algebra demos
 
 Every entry is something a lesson in this repository actually needed. None is
-speculative, and none blocks the plan — each has a working workaround, recorded
-here so the workaround can be deleted when the language grows.
+speculative. Each has a working bridge, recorded here so the bridge can be
+deleted when the language grows.
+
+> **Six of these are blockers, not asks.** This repository is dogfooding
+> sw-MLPL, and the missing text surface — no string concatenation, no
+> number-to-string, no string length or search, no way to build a string list —
+> is a set of deficiencies to be **fixed upstream and then used**, not worked
+> around permanently. They are specified for implementation, with acceptance
+> tests, in **[docs/mlpl-blockers.md](mlpl-blockers.md)**. Entries #3, #4, #6,
+> #7, and #8 below are summaries; that file is authoritative for them.
+>
+> `probes/text_capabilities.mlpl` reports open vs. closed on every run of
+> `just demos`.
+
+The remaining entries (#1, #2, #5) are genuine friction with honest workarounds
+and can wait.
 
 Per `AGENTS.md`, this repository does not modify `../sw-mlpl`. This file is the
 record; promoting any of it upstream is a separately authorized task.
 
-Baseline: `mlpl-repl 0.20.0`.
+Baseline: `mlpl-repl 0.20.0`, build `d373584c`. Every claim below was executed
+against the binary, not read out of the reference doc — the two disagree in at
+least one place (see `docs/mlpl-blockers.md`, "Documentation drift").
+
+A correction to an earlier draft of this file: **`to_number` and `to_int` exist
+and work correctly.** Parsing a number *from* a string is not a gap; only the
+reverse direction is missing.
 
 ---
 
@@ -48,7 +68,7 @@ at least spelled once.
 
 ---
 
-## 3. No string concatenation
+## 3. No string concatenation — **BLOCKER B1**
 
 Strings are a separate value kind and cannot be combined with any operator.
 `print` is variadic specifically to avoid needing concatenation.
@@ -65,13 +85,12 @@ def u:cat(a, b) { decode_bytes(concat(tokenize_bytes(a), tokenize_bytes(b))) }
 That round-trips through a byte array for every join — correct, `O(len)` per
 call, and quadratic across a fold.
 
-**Severity:** high for any lesson that generates its own visual output. The ask
-is a `str_concat(a, b)` builtin (or a `join(string_list)`, which would also
-give the fold a linear form).
+**Blocker B1.** Specified with acceptance tests in
+[docs/mlpl-blockers.md](mlpl-blockers.md#b1--string-concatenation-blocking-highest-priority).
 
 ---
 
-## 4. No number-to-string conversion
+## 4. No number-to-string conversion — **BLOCKER B2**
 
 `to_number` / `to_int` parse strings into numbers. There is no inverse.
 `repr(3)` returns `"array[] [3]"` — a diagnostic rendering, not a numeral.
@@ -86,8 +105,8 @@ This works and is deterministic, but it depends on an encoder's incidental
 output format. If `to_json`'s scalar formatting ever changes, every SVG in this
 repo changes with it.
 
-**Severity:** high, and cheap to fix. A `to_string(x)` builtin — the honest
-inverse of `to_number` — would make `u:num` deletable.
+**Blocker B2.** Specified with acceptance tests in
+[docs/mlpl-blockers.md](mlpl-blockers.md#b2--number--string-blocking).
 
 ---
 
@@ -116,7 +135,7 @@ The second is the better fix and is a small addition.
 
 ---
 
-## 6. A `u:` function cannot take a string list
+## 6. A `u:` function cannot take a string list — **BLOCKER B5**
 
 Passing a `string-list` to a user-defined function is rejected:
 
@@ -140,7 +159,7 @@ oversight rather than a decision. Everything else on that list is accepted.
 
 ---
 
-## 7. No string reduction or fold
+## 7. No string reduction or fold — **BLOCKER B1/B4**
 
 There is no `reduce` over strings and no `join`. Building text from `n` pieces
 means threading an accumulator through recursion by hand.
@@ -156,7 +175,7 @@ and the fold half of #3.
 
 ---
 
-## 8. Deep `u:` recursion aborts the process instead of erroring
+## 8. Deep `u:` recursion aborts the process instead of erroring — **BLOCKER B6**
 
 With no string fold (#7), an accumulator has to be threaded through recursion.
 At a few thousand frames the interpreter dies:

@@ -247,10 +247,25 @@ Two jobs, in this order:
    produce something a learner can *look at* — an ASCII `disp()` grid, an SVG
    table with highlighted rows/columns, or a page in `viewer/`. A lesson that
    only prints `associative: 0` has failed its brief.
-2. **Act as a forcing function.** When a law check, an enumeration, or a
-   rendering is awkward or impossible in ordinary `.mlpl`, record the missing
-   capability precisely in `docs/upstream-asks.md` as an executable acceptance
-   case. Do not work around friction silently.
+2. **Act as a forcing function.** This repository is **dogfooding sw-MLPL**.
+   When a law check, an enumeration, or a rendering is awkward or impossible in
+   ordinary `.mlpl`, record the missing capability precisely as an executable
+   acceptance case. Do not work around friction silently.
+
+   The distinction matters:
+
+   - A capability that **blocks** — the language cannot express something a
+     lesson genuinely needs — goes in `docs/mlpl-blockers.md`, specified for
+     implementation with signatures and acceptance tests. It is to be **fixed
+     upstream and then used**. Any bridge shipped meanwhile is temporary, is
+     named in that document, and is deleted in the step that adopts the
+     builtin. Add a case to `probes/text_capabilities.mlpl` so the fix
+     announces itself.
+   - Ordinary friction with an honest workaround goes in
+     `docs/upstream-asks.md`.
+
+   Verify every claim against the interpreter before writing it down. The
+   reference doc and the binary have already been found to disagree.
 
 ## Scope boundary — read before adding a lesson
 
@@ -307,9 +322,11 @@ repository from a session working in this one.
   remaining explicit loop and the future combinator that could remove it.
 - Document logical complexity and the explicit-loop count in the header
   comment.
-- Treat strings as static messages and labels wherever possible; the byte-array
-  concatenation idiom (`lib/text.mlpl`) is permitted only where a lesson must
-  emit its own SVG or HTML.
+- Treat strings as static messages and labels wherever possible. The byte-array
+  concatenation idiom in `lib/render.mlpl` is a **temporary bridge** for
+  blocker B1 (`docs/mlpl-blockers.md`), confined to that file. Do not spread it
+  into lesson scripts, and do not invent new bridges without adding the blocker
+  entry and the probe case first.
 
 ## Visual output rules
 
@@ -335,6 +352,8 @@ mathematics are disambiguated, not glossed over. Every lesson README carries a
 
 - Implementation plan and lesson sequence: `docs/plan.md`
 - Repository boundary with demo-category-theory: `docs/scope-boundary.md`
-- Language friction found while building lessons: `docs/upstream-asks.md`
+- sw-MLPL capabilities that BLOCK this work, specified for implementation:
+  `docs/mlpl-blockers.md` (probe: `probes/text_capabilities.mlpl`)
+- Other language friction found while building lessons: `docs/upstream-asks.md`
 - Word-collision glossary: `docs/terminology.md`
 - Source brief: `docs/research.txt`

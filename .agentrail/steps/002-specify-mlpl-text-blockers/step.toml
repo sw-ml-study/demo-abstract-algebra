@@ -1,0 +1,9 @@
+number = 2
+slug = "specify-mlpl-text-blockers"
+status = "in-progress"
+description = "Dogfooding correction: the missing sw-MLPL text surface (string concatenation..."
+role = "production"
+context_files = []
+created_at = "2026-08-12T11:04:50"
+task_type = "upstream-spec"
+commits = []
