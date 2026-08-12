@@ -1,0 +1,6 @@
+# sw-MLPL script outputs (every lesson writes its artifacts here)
+out/
+
+# Local binary/configuration overrides
+.env
+.DS_Store

@@ -1,0 +1,30 @@
+#!/bin/sh
+# Every lesson and test script must open with a comment header that names its
+# concept, its visual output, and its explicit-loop count.
+set -eu
+
+repo_root=$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)
+failures=0
+
+for f in $(find "$repo_root/demos" "$repo_root/tests" "$repo_root/lib" -name '*.mlpl' 2>/dev/null | sort); do
+  head -n 24 "$f" | grep -q '^# ' || {
+    echo "missing comment header: ${f#$repo_root/}" >&2
+    failures=$((failures + 1))
+    continue
+  }
+  case "$f" in
+    "$repo_root"/demos/*)
+      head -n 24 "$f" | grep -q '^# loops:' || {
+        echo "missing '# loops:' line: ${f#$repo_root/}" >&2
+        failures=$((failures + 1))
+      }
+      head -n 24 "$f" | grep -q '^# visual:' || {
+        echo "missing '# visual:' line: ${f#$repo_root/}" >&2
+        failures=$((failures + 1))
+      }
+      ;;
+  esac
+done
+
+[ "$failures" -eq 0 ] || exit 1
+echo "docstrings: ok"

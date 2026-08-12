@@ -1,0 +1,9 @@
+number = 1
+slug = "foundation-and-lesson-01"
+status = "in-progress"
+description = "Stand up the repository: AgentRail briefing in AGENTS.md, the just/scripts/ca..."
+role = "production"
+context_files = []
+created_at = "2026-08-12T10:58:04"
+task_type = "scaffold"
+commits = []

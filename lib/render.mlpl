@@ -1,0 +1,206 @@
+# lib/render.mlpl -- turning Cayley tables into things a learner can look at.
+#
+# THE STRUCTURE RECORD.  Every renderer here takes one argument:
+#
+#   s = {title: "Rock-Paper-Scissors", names: ["rock", ...], table: t}
+#
+# That is not decoration.  sw-MLPL refuses a string-list as a `u:` function
+# argument, but accepts one inside a record, so bundling is the only way to
+# hand element names to a helper (docs/upstream-asks.md #6).
+#
+# sw-MLPL also has no string concatenation operator and no number-to-string
+# builtin, so both are constructed here from the primitives that do exist:
+#
+#   concat: decode_bytes(concat(tokenize_bytes(a), tokenize_bytes(b)))
+#   number: unwrap(to_json(x))         -- to_json of a scalar IS its digits
+#
+# Both are recorded as friction in docs/upstream-asks.md (#3, #4) and are
+# confined to this file so lesson scripts stay readable.
+#
+# The built-in svg(t, "heatmap") colors a table but draws no headings, no cell
+# values, and no highlights, which is most of what teaches (upstream ask #5).
+# cayley_svg below emits its own SVG instead.
+#
+# loops: 0
+
+# ---------------------------------------------------------------------------
+# String primitives
+# ---------------------------------------------------------------------------
+
+def u:cat(a, b) { decode_bytes(concat(tokenize_bytes(a), tokenize_bytes(b))) }
+def u:cat3(a, b, c) { u:cat(a, u:cat(b, c)) }
+def u:cat5(a, b, c, d, e) { u:cat(u:cat3(a, b, c), u:cat(d, e)) }
+def u:num(x) { unwrap(to_json(x)) }
+def u:nth(s, i) { unwrap(list_get(s.names, i)) }
+def u:tick(b) { unwrap(list_get(["no", "yes"], b)) }
+
+# ---------------------------------------------------------------------------
+# ASCII: the first visual, and the one that always works
+# ---------------------------------------------------------------------------
+
+def u:show_table(s) {
+  print(s.title)
+  print("  elements:", s.names)
+  print(disp(s.table))
+}
+
+# A law checklist, plus the rung of the ladder the structure reaches.
+def u:show_laws(s) {
+  c = u:classify(s.table)
+  print("  closed      ", u:tick(c.closed))
+  print("  associative ", u:tick(c.associative))
+  print("  commutative ", u:tick(c.commutative))
+  print("  identity    ", u:tick(c.identity))
+  print("  inverses    ", u:tick(c.inverses))
+  print("  =>", u:structure_name(s.table))
+}
+
+# A failed law must name a witness, never just say "no".
+def u:show_assoc_counterexample(s) {
+  x = u:assoc_counterexample(s.table)
+  print("  associativity counterexample:")
+  print("    a =", u:nth(s, x.a), " b =", u:nth(s, x.b), " c =", u:nth(s, x.c))
+  print("    (a*b)*c:  a*b =", u:nth(s, x.ab), " -> ", u:nth(s, x.left))
+  print("    a*(b*c):  b*c =", u:nth(s, x.bc), " -> ", u:nth(s, x.right))
+  x
+}
+
+def u:show_comm_counterexample(s) {
+  x = u:comm_counterexample(s.table)
+  print("  commutativity counterexample:")
+  print("    a =", u:nth(s, x.a), " b =", u:nth(s, x.b))
+  print("    a*b =", u:nth(s, x.left), "  b*a =", u:nth(s, x.right))
+  x
+}
+
+# ---------------------------------------------------------------------------
+# SVG fragments
+# ---------------------------------------------------------------------------
+
+def u:svg_open(w, h) {
+  u:cat5("<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 ",
+    u:num(w), " ", u:num(h),
+    "\" font-family=\"ui-monospace,Menlo,monospace\" font-size=\"12\">")
+}
+
+def u:svg_rect(x, y, w, h, fill) {
+  u:cat5(u:cat5("<rect x=\"", u:num(x), "\" y=\"", u:num(y), "\" width=\""),
+    u:num(w), "\" height=\"", u:num(h), u:cat3("\" fill=\"", fill, "\"/>"))
+}
+
+def u:svg_frame(x, y, w, h, stroke) {
+  u:cat5(u:cat5("<rect x=\"", u:num(x), "\" y=\"", u:num(y), "\" width=\""),
+    u:num(w), "\" height=\"", u:num(h),
+    u:cat3("\" fill=\"none\" stroke-width=\"3\" stroke=\"", stroke, "\"/>"))
+}
+
+def u:svg_text(x, y, fill, s) {
+  u:cat5(u:cat5("<text x=\"", u:num(x), "\" y=\"", u:num(y), "\" fill=\""),
+    fill, "\" text-anchor=\"middle\" dominant-baseline=\"central\">", s,
+    "</text>")
+}
+
+# ---------------------------------------------------------------------------
+# SVG: the labelled, colored, highlighted Cayley table
+# ---------------------------------------------------------------------------
+#
+# One color per element, so structure is visible before a single name is read:
+# a constant row is one stripe; an identity row reproduces the header's colors;
+# a group's table is a Latin square -- every color exactly once per row and
+# column.  That last one is the payoff, and it is visible at a glance.
+
+def u:palette(i) {
+  unwrap(list_get(
+    ["#7aa2f7", "#f7768e", "#9ece6a", "#e0af68", "#bb9af7",
+     "#7dcfff", "#ff9e64", "#73daca"], mod(i, 8)))
+}
+
+def u:cell_px() { 64 }
+def u:pad_px() { 68 }
+def u:top_px() { 34 }
+
+def u:cell_svg(s, a, b) {
+  n = u:order(s.table)
+  v = take(take(s.table, 0, a), 0, b)
+  x = u:pad_px() + b * u:cell_px()
+  y = u:top_px() + u:pad_px() + a * u:cell_px()
+  inside = (1 - lt(v, 0)) * lt(v, n)
+  fill = if inside { u:palette(v) } else { "#3b3b4d" }
+  label = if inside { u:nth(s, v) } else { u:cat("!", u:num(v)) }
+  u:cat(u:svg_rect(x + 2, y + 2, u:cell_px() - 4, u:cell_px() - 4, fill),
+    u:svg_text(x + u:cell_px() / 2, y + u:cell_px() / 2, "#12131c", label))
+}
+
+# Recursive fold over the n*n cells: sw-MLPL has no string reduction, so the
+# accumulator is threaded by hand.  Recursion, not an explicit loop.
+def u:cells_svg(s, i, acc) {
+  n = u:order(s.table)
+  if lt(i, n * n) {
+    u:cells_svg(s, i + 1, u:cat(acc, u:cell_svg(s, floor(i / n), mod(i, n))))
+  } else { acc }
+}
+
+def u:headers_svg(s, i, acc) {
+  if lt(i, u:order(s.table)) {
+    col = u:svg_text(u:pad_px() + i * u:cell_px() + u:cell_px() / 2,
+      u:top_px() + u:pad_px() - 14, "#c0caf5", u:nth(s, i))
+    row = u:svg_text(u:pad_px() / 2,
+      u:top_px() + u:pad_px() + i * u:cell_px() + u:cell_px() / 2,
+      "#c0caf5", u:nth(s, i))
+    u:headers_svg(s, i + 1, u:cat3(acc, col, row))
+  } else { acc }
+}
+
+# A white ring around the identity's row and column, when one exists.  This is
+# the picture of "e * x = x and x * e = x": both bands reproduce the headings.
+def u:identity_svg(s) {
+  n = u:order(s.table)
+  e = u:identity_of(s.table)
+  if u:has_identity(s.table) {
+    u:cat(
+      u:svg_frame(u:pad_px(), u:top_px() + u:pad_px() + e * u:cell_px(),
+        n * u:cell_px(), u:cell_px(), "#ffffff"),
+      u:svg_frame(u:pad_px() + e * u:cell_px(), u:top_px() + u:pad_px(),
+        u:cell_px(), n * u:cell_px(), "#ffffff"))
+  } else { "" }
+}
+
+def u:cayley_svg(s) {
+  n = u:order(s.table)
+  w = u:pad_px() + n * u:cell_px() + 16
+  h = u:top_px() + u:pad_px() + n * u:cell_px() + 16
+  u:cat3(
+    u:cat3(u:svg_open(w, h), u:svg_rect(0, 0, w, h, "#1a1b26"),
+      u:svg_text(w / 2, 18, "#c0caf5", s.title)),
+    u:cat(u:headers_svg(s, 0, ""), u:cells_svg(s, 0, "")),
+    u:cat(u:identity_svg(s), "</svg>"))
+}
+
+# Render and write in one call; returns the Result from write_text.
+def u:write_cayley_svg(path, s) { write_text(path, u:cayley_svg(s)) }
+
+# ---------------------------------------------------------------------------
+# JSON: the transport to viewer/ pages
+# ---------------------------------------------------------------------------
+
+# Everything a viewer page needs about one structure, as a JSON string.  The
+# MLPL side stays authoritative: the page renders these verdicts, and
+# tests/test_viewer_conformance.mlpl pins the fixture it is checked against.
+def u:structure_record(s) {
+  {
+    title: s.title,
+    elements: s.names,
+    table: s.table,
+    laws: u:classify(s.table),
+    structure: u:structure_name(s.table),
+    identity: u:identity_of(s.table),
+    identity_mask: u:identity_mask(s.table),
+    invertible_mask: u:invertible_mask(s.table),
+    assoc_counterexample: u:assoc_counterexample(s.table),
+    comm_counterexample: u:comm_counterexample(s.table)
+  }
+}
+
+def u:structure_json(s) { unwrap(to_json(u:structure_record(s), {tagged: 1})) }
+
+def u:write_structure_json(path, s) { write_text(path, u:structure_json(s)) }

@@ -1,0 +1,98 @@
+# Conformance for lib/render.mlpl: the string primitives sw-MLPL does not
+# supply, and the SVG they build.  These exist because the workarounds in
+# docs/upstream-asks.md (#3, #4, #7) rest on incidental behavior of to_json and
+# the byte-array round trip; if either drifts, every diagram in this repository
+# drifts with it, silently.  This test makes that loud instead.
+#
+# loops: 0
+
+include "lib/algebra.mlpl";
+include "lib/render.mlpl";
+
+@test {name: "string primitives", tags: ["render"]}
+def u:test_string_primitives() { "cat and num are the SVG emitter's floor.";
+  u:assert_eq(u:cat("ab", "cd"), "abcd", "cat failed")?;
+  u:assert_eq(u:cat("", "x"), "x", "cat with empty left")?;
+  u:assert_eq(u:cat("x", ""), "x", "cat with empty right")?;
+  u:assert_eq(u:cat3("a", "b", "c"), "abc", "cat3 failed")?;
+  u:assert_eq(u:cat5("a", "b", "c", "d", "e"), "abcde", "cat5 failed")?;
+  # The load-bearing assumption: to_json of a scalar IS its numeral.
+  u:assert_eq(u:num(0), "0", "num 0")?;
+  u:assert_eq(u:num(12), "12", "num 12")?;
+  u:assert_eq(u:num(1.5), "1.5", "num 1.5")?;
+  u:assert_eq(u:num(0 - 3), "-3", "num negative")?;
+  ok({test: "string-primitives", cases: 9})
+}
+
+@test {name: "cayley svg is well formed", tags: ["render"]}
+def u:test_cayley_svg() { "Structure and highlights land in the emitted SVG.";
+  rps = {
+    title: "rps",
+    names: ["rock", "paper", "scissors"],
+    table: [[0, 1, 0], [1, 1, 2], [0, 2, 2]]
+  };
+  doc = u:cayley_svg(rps);
+  u:assert_true(gt(size(tokenize_bytes(doc)), 500), "svg suspiciously short")?;
+  # 3x3 cells + 1 background = 10 rects, and no identity frame: rps has none.
+  u:assert_eq(u:count_substr(doc, "<rect"), 10, "wrong rect count")?;
+  # 1 title + 3 column headings + 3 row headings + 9 cell labels = 16 texts.
+  u:assert_eq(u:count_substr(doc, "<text"), 16, "wrong text count")?;
+  u:assert_eq(u:count_substr(doc, "</svg>"), 1, "svg not closed")?;
+  u:assert_eq(u:count_substr(doc, "stroke="), 0, "rps drew an identity frame")?;
+
+  # Z3 has an identity, so two frames appear: its row and its column.
+  z3 = {
+    title: "Z3",
+    names: ["0", "1", "2"],
+    table: table(:u:z3_add, u:elements(3), u:elements(3))
+  };
+  z = u:cayley_svg(z3);
+  u:assert_eq(u:count_substr(z, "stroke="), 2, "identity cross not drawn")?;
+  u:assert_eq(u:count_substr(z, "<rect"), 12, "z3 rect count")?;
+  ok({test: "cayley-svg", cases: 7})
+}
+
+def u:z3_add(x, y) { mod(x + y, 3) }
+
+# Count occurrences of a needle.  sw-MLPL has no substring search, so this is
+# the array formulation: rotate the haystack once per needle byte and AND the
+# per-position equalities together.  The recursion is over the NEEDLE, so it is
+# a handful of frames deep regardless of document size -- walking the haystack
+# byte by byte instead overflows the interpreter's stack outright
+# (docs/upstream-asks.md #8).
+def u:count_substr(hay, needle) {
+  h = tokenize_bytes(hay);
+  ndl = tokenize_bytes(needle);
+  n = size(h);
+  k = size(ndl);
+  hits = u:match_mask(h, ndl, 0, ones([n]));
+  # Drop wrap-around matches: a rotation makes the tail see the head.
+  reduce_add(hits * lt(range(n), n - k + 1))
+}
+
+def u:match_mask(h, ndl, j, acc) {
+  if lt(j, size(ndl)) {
+    u:match_mask(h, ndl, j + 1, acc * eq(rotate(h, j, 0), take(ndl, 0, j)))
+  } else { acc }
+}
+
+@test {name: "structure json round trips", tags: ["render", "viewer"]}
+def u:test_structure_json() { "The viewer's transport must survive a round trip.";
+  rps = {
+    title: "rps",
+    names: ["rock", "paper", "scissors"],
+    table: [[0, 1, 0], [1, 1, 2], [0, 2, 2]]
+  };
+  text = u:structure_json(rps);
+  back = unwrap(parse_json(text));
+  u:assert_eq(back.title, "rps", "title lost")?;
+  u:assert_eq(back.structure, "magma", "classification lost")?;
+  u:assert_eq(back.identity, 0 - 1, "absent identity should encode as -1")?;
+  u:assert_true(equal(back.table, rps.table), "table did not round trip")?;
+  u:assert_eq(back.laws.associative, 0, "law verdict lost")?;
+  u:assert_eq(back.assoc_counterexample.found, 1, "witness lost")?;
+  u:assert_eq(back.assoc_counterexample.a, 0, "witness a lost")?;
+  ok({test: "structure-json", cases: 7})
+}
+
+u:run_registered_tests()

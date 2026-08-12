@@ -1,0 +1,1211 @@
+ChatGPT Pro
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Sunday 5:33 PM
+So before chatbots, I was trying to learn Category Theory.  I have a lot of notes, I've read some books.  I wonder if sw-MLPL could be a way to better learn/teach and demonstrate concepts from Category Theory.  I also wonder if Category Theory concepts could be useful or appropriate forcing functions for sw-MLPL, the language.  If not, is this an area worth exploring via demo- repos?
+
+Yes. I think Category Theory is unusually well matched to what you are already doing with sw-MLPL, but I would not initially make “support Category Theory” a language-design objective. I would use it as a forcing function and explanatory framework for functions, composition, data transformation, pipelines, effects, and abstractions that ought to stand on their own.
+
+The distinction I would make is:
+
+Category Theory should initially exercise sw-MLPL, not infect its syntax.
+
+That gives you useful pressure on the language without turning sw-MLPL into a category-theory DSL.
+
+Why sw-MLPL is a particularly interesting vehicle
+A lot of introductory Category Theory material has an unfortunate gap:
+
+diagram/equation → Haskell-ish notation → hand waving → next concept
+
+sw-MLPL could instead provide:
+
+concept → tiny executable example → inspect values → compose operations → visualize structure → verify laws
+
+That fits your teaching-language direction very well.
+
+And the APL/J influence makes this more interesting than simply recreating Haskell examples. Category Theory talks heavily about structure-preserving mappings and composition, while array programming is largely about structured transformations of structured data.
+
+Those ideas intersect naturally.
+
+For example, you already care about:
+
+data -> transform -> transform -> result
+Category theory gives a vocabulary for asking:
+
+What kind of thing is this transformation?
+Can these transformations compose?
+What structure does the transformation preserve?
+Does an identity transformation exist?
+Do the expected laws hold?
+Can we lift an operation into another context?
+That could make Category Theory useful both for learning CT and for stress-testing MLPL's functional model.
+
+I would create a demo repo
+Given the direction we've established for demo-extensions, I would not put this there.
+
+I would create:
+
+demo-category-theory
+
+alongside things such as:
+
+demo-algorithms
+demo-combinators
+demo-functional-pipelines
+demo-memory
+demo-extensions
+demo-category-theory
+Its purpose is fundamentally different from demo-extensions.
+
+demo-extensions asks:
+
+What useful capabilities can we add outside the core language, and which eventually deserve promotion?
+
+demo-category-theory asks:
+
+Can ordinary sw-MLPL clearly express and demonstrate these mathematical/programming abstractions?
+
+That distinction is valuable.
+
+And there is an important success criterion:
+
+A large fraction of demo-category-theory should ideally contain zero Rust.
+
+If demonstrating something as basic as function composition requires a Rust extension, you've found a language deficiency.
+
+Start with categories without saying much about categories
+I'd build the repo progressively. The first examples could almost look like ordinary programming.
+
+01 — Functions and composition
+Suppose:
+
+inc    : Number -> Number
+double : Number -> Number
+Demonstrate:
+
+inc >> double
+or whatever the established MLPL composition idiom becomes.
+
+Then demonstrate associativity:
+
+(f >> g) >> h
+versus:
+
+f >> (g >> h)
+and identity:
+
+identity >> f
+f >> identity
+The lesson isn't merely "here is the definition of a category."
+
+It's:
+
+You have already been programming with one.
+
+That's much more compelling.
+
+Then arrays make it distinctly sw-MLPL
+Suppose:
+
+f = u:fn(x) ...
+You can explore transformations over arrays:
+
+xs
+  |> each(f)
+  |> each(g)
+and compare that with:
+
+xs
+  |> each(f >> g)
+Now you've reached something much more interesting:
+
+Does lifting a composition give the same result as composing the lifted functions?
+
+Conceptually:
+
+map(g∘f)=map(g)∘map(f)
+That is exactly the sort of relationship I would want a teaching system to execute and demonstrate, rather than merely state.
+
+And your proposed mathematical-documentation view becomes especially useful here.
+
+An Org/Babel document could contain the MLPL program and derive/display:
+
+F(g∘f)=F(g)∘F(f)
+next to its executable demonstration.
+
+That is a potentially excellent Category Theory teaching environment.
+
+A progression I'd use
+I would organize demo-category-theory roughly around one increasing sequence of abstractions:
+
+Stage	CT concept	sw-MLPL forcing function
+1	Objects/morphisms	values/types/functions
+2	Identity	identity function
+3	Composition	first-class composition
+4	Associativity	compositional semantics
+5	Commutative diagrams	equivalence/testing
+6	Products	tuples/records/arrays
+7	Coproducts	variants/tagged values
+8	Functors	each/map/lifting
+9	Natural transformations	transformations between contexts
+10	Monoids	reductions/folds
+11	Applicatives	structured independent computation
+12	Monads	dependent/contextual computation
+13	Kleisli composition	pipelines with context
+14	Fold/catamorphism	generalized reduction
+15	Unfold/anamorphism	generation
+16	Bifunctors/profunctors	richer transformations
+17	lenses/optics	composable data access
+18	adjunctions	relationships between constructions
+I would not implement these abstractions in the language in advance.
+
+Try expressing each one using MLPL as it exists.
+
+That produces a much better roadmap.
+
+The forcing-function aspect could be extremely valuable
+For every lesson, classify what happens.
+
+A. Already elegant in pure MLPL
+Excellent.
+
+Document it.
+
+No language change.
+
+B. Possible in MLPL, but awkward
+This is possibly a library problem.
+
+For example, perhaps you repeatedly need:
+
+compose
+identity
+constant
+flip
+curry
+uncurry
+Those could become ordinary .mlpl library functions.
+
+This is closely related to the work you've already been doing around combinators and functional pipelines.
+
+C. Impossible because MLPL lacks an abstraction
+Now you've found a legitimate language-design question.
+
+Examples might eventually include:
+
+first-class functions
+
+higher-order polymorphism
+
+algebraic data types
+
+parametric polymorphism
+
+type constructors
+
+generic constraints
+
+lazy evaluation
+
+effects
+
+pattern matching
+
+But CT shouldn't automatically justify adding any of them.
+
+The question remains:
+
+Would this capability materially improve sw-MLPL as a general-purpose/ML language?
+
+If yes, Category Theory has revealed a real gap.
+
+If its only justification is "then we can implement Monad," leave it in the experiment.
+
+D. Requires behavior inappropriate for the language
+Then it might belong in an extension—or simply remain theoretical/documentary.
+
+There is an especially strong connection to demo-combinators
+I wouldn't merge the two, though.
+
+Think of:
+
+demo-combinators
+
+as demonstrating:
+
+useful ways of combining functions.
+
+And:
+
+demo-category-theory
+
+as explaining:
+
+why these compositions have structure and what laws they satisfy.
+
+The same operation can therefore legitimately appear in both.
+
+For example:
+
+compose(f, g)
+In demo-combinators, the interesting thing is how you use it.
+
+In demo-category-theory, the interesting things are:
+
+h∘(g∘f)=(h∘g)∘f
+and
+
+f∘id=f=id∘f
+That's not duplication so much as different pedagogical views of the same primitive.
+
+demo-functional-pipelines becomes another adjacent layer
+You could eventually have a rather elegant progression across repositories:
+
+demo-combinators
+        |
+        v
+How do functions combine?
+
+demo-functional-pipelines
+        |
+        v
+How do combinations become readable programs?
+
+demo-category-theory
+        |
+        v
+What mathematical structures/laws explain these combinations?
+And then:
+
+demo-ml-utils
+        |
+        v
+How do we use them for actual ML/data work?
+That architecture appeals to me more than creating something like a sw-mlpl-category extension.
+
+Arrays give you something most CT tutorials don't have
+This may ultimately be the most interesting part.
+
+Consider an array operation such as:
+
+reshape
+transpose
+each
+reduce
+scan
+take
+drop
+window
+table
+Rather than merely documenting these as language operations, you can ask:
+
+What structures do these operations preserve?
+
+That gets surprisingly deep.
+
+For example:
+
+each(f)
+is an obvious candidate for explaining functorial mapping.
+
+Reduction naturally leads into monoids:
+
+reduce(add, xs)
+where you can discuss:
+
+binary operation
+
+identity
+
+associativity
+
+and why those properties matter for parallelization.
+
+That connects the mathematics directly to practical MLPL implementation concerns.
+
+Associativity isn't just:
+
+"Here's a law category theorists care about."
+
+It becomes:
+
+"Because this operation is associative, MLPL is free to partition and parallelize this reduction."
+
+That's a great sw-MLPL lesson.
+
+Category Theory → parallelism could be a killer angle
+For example, if:
+
+(a⊗b)⊗c=a⊗(b⊗c)
+then instead of:
+
+a ⊗ b ⊗ c ⊗ d ⊗ e ⊗ f
+being evaluated strictly left-to-right, the implementation may evaluate:
+
+(a ⊗ b)
+(c ⊗ d)
+(e ⊗ f)
+concurrently and combine the results.
+
+Now the user has learned simultaneously:
+
+associativity,
+
+monoids,
+
+reduction,
+
+array programming,
+
+parallel execution,
+
+why mathematical laws matter to an optimizer.
+
+That is much more aligned with sw-MLPL than simply teaching what a monad is.
+
+Property/law testing may become a language forcing function
+I'd pay particular attention to this.
+
+A Category Theory demo repeatedly wants to say things like:
+
+assert_equivalent(
+    each(compose(f, g), xs),
+    compose(each(f), each(g))(xs)
+)
+or conceptually:
+
+law associativity:
+    compose(compose(f, g), h)
+    ==
+    compose(f, compose(g, h))
+You probably don't want special law syntax.
+
+But you may discover that MLPL needs a good property-testing library.
+
+Something like:
+
+check(property, generated_inputs)
+would be generally useful far beyond Category Theory.
+
+Then CT has done exactly what you want a forcing-function demo to do:
+
+reveal a generally useful capability without demanding CT-specific syntax.
+
+Commutative diagrams are another excellent opportunity
+This could eventually distinguish the project visually.
+
+Given:
+
+A --f--> B
+|         |
+g         h
+|         |
+v         v
+C --k--> D
+the lesson asks whether:
+
+h∘f=k∘g
+Instead of treating that purely as notation, sw-MLPL could execute both paths:
+
+path1 = f >> h
+path2 = g >> k
+
+check_equivalent(path1, path2, examples)
+A web demo could then actually show the diagram and animate a value moving through both paths.
+
+Green paths:
+
+A -> B -> D
+A -> C -> D
+produce the same result.
+
+That would be an unusually tangible explanation of what commutativity means.
+
+And later this connects directly to ML
+This is where I think the experiment could become more than a Category Theory tutorial.
+
+ML systems are enormous compositions:
+
+x→embedding→layer 
+1
+​
+ →layer 
+2
+​
+ →⋯→logits
+Data preparation is composition.
+
+Tensor transforms are composition.
+
+Model layers are composition.
+
+Backpropagation concerns compositional differentiation.
+
+Batching is structured lifting.
+
+Parallel reductions rely on algebraic laws.
+
+Effects appear around:
+
+randomness,
+
+state,
+
+files,
+
+devices,
+
+GPU execution,
+
+errors,
+
+async operations.
+
+So eventually you could have examples where a seemingly abstract CT lesson culminates in:
+
+load
+>> decode
+>> normalize
+>> batch
+>> model
+>> softmax
+>> classify
+and explain which pieces of that pipeline have which algebraic properties.
+
+That would connect the mathematical foundations to the reason MLPL exists.
+
+What I would explicitly avoid
+I would resist early proposals for things like:
+
+category
+morphism
+functor
+monad
+natural
+adjunction
+as MLPL keywords.
+
+Likewise I wouldn't make sw-MLPL's type system contort itself just so that textbook Category Theory can be encoded with maximal type-level fidelity.
+
+Instead:
+
+Category Theory
+      |
+      v
+demo-category-theory
+      |
+      +---- pure MLPL works ------> document it
+      |
+      +---- repetitive -----------> MLPL library
+      |
+      +---- awkward --------------> investigate language design
+      |
+      +---- impossible -----------> extension experiment
+      |
+      +---- generally useful -----> candidate for sw-mlpl core
+That keeps the dependency pointing in the right direction.
+
+One thing I'd add to the repository structure
+I wouldn't make it merely a directory full of .mlpl programs.
+
+I'd treat it as an executable textbook:
+
+demo-category-theory/
+  README.md
+
+  01-composition/
+  02-identity/
+  03-associativity/
+  04-products/
+  05-monoids/
+  06-functors/
+  07-natural-transformations/
+  08-applicatives/
+  09-monads/
+  10-folds/
+  11-optics/
+  ...
+
+  examples/
+  properties/
+  diagrams/
+  org/
+Each lesson could have four parts:
+
+Concept → MLPL → Law → Application
+
+For example:
+
+Monoids
+Concept
+
+Associative operation plus identity.
+
+MLPL
+
+reduce(add, values)
+Law
+
+(a + b) + c == a + (b + c)
+0 + a == a
+Why care?
+
+MLPL can safely restructure/parallelize the reduction.
+
+That's the teaching style I'd optimize for.
+
+There's also a nice feedback loop here
+Your original objective was to learn Category Theory better yourself.
+
+That's important because you don't have to design the curriculum perfectly first.
+
+Implement the concept you are studying:
+
+read CT concept
+      ↓
+explain it in plain English
+      ↓
+express it in MLPL
+      ↓
+write executable example
+      ↓
+state its laws
+      ↓
+test those laws
+      ↓
+find practical ML/array example
+      ↓
+identify MLPL friction
+If you cannot make a concept understandable through an executable example, that's useful information either about your understanding, the teaching approach, or MLPL.
+
+In other words, building demo-category-theory itself becomes your Category Theory study method.
+
+I think that's considerably more promising than studying CT first and later trying to figure out how it applies to sw-MLPL.
+
+And it creates exactly the kind of pressure you want: whenever you encounter a concept, first ask "Can ordinary .mlpl express this cleanly?" Only after the answer is "no" do you have a library/extension/language-design discussion.
+
+
+I have problems with terms that mean different things in different branches of mathematics.  Some Category Theory terms seem to have different meanings in other parts of math.  This might not be a good example of that, but take, for example, magmas.  This would make an interesting demo (and possibly a forcing function) for sw-mlpl.  Rock-Paper-Scissors, Rock-Paper-Scissors-Lizard-Spock, and maybe others might be interesting visually.  What can we do with this?
+
+Yes. Magmas may actually be a better starting point than “Category Theory” itself, because they give you something concrete, executable, visual, and progressively generalizable. They also let you address your terminology concern explicitly: teach the structure first, while being precise about what a word means in the current context.
+
+A magma here means simply a set M with a closed binary operation:
+
+∗:M×M→M
+No associativity, identity, inverses, commutativity, ordering, etc. are implied. That sparseness makes it an excellent forcing function.
+
+Rock–Paper–Scissors is almost the perfect first demo
+Define:
+
+M = { rock, paper, scissors }
+and an operation such as:
+
+fight : M × M -> M
+where fight(a,b) returns the winner. Ties return the same element:
+
+fight	rock	paper	scissors
+rock	rock	paper	rock
+paper	paper	paper	scissors
+scissors	rock	scissors	scissors
+That's already an executable Cayley table.
+
+And it gives sw-MLPL several things to demonstrate at once:
+
+choices = ["rock", "paper", "scissors"]
+
+table(fight, choices, choices)
+Ideally something approximately that simple should generate the table.
+
+If MLPL can't express this elegantly, we've found useful language/library friction.
+
+Then RPSLS makes the example substantially better
+
+https://images.openai.com/static-rsc-4/Ur1SZ0uNowTC-AtSVUHPvcE73wel8iKHpMsfkWUkgSVNI4TJeM5cizNzDKkwQ_bSxKZ1PXOmr9bL1Z7cpyoVfm52hGDB_NtBZK1DCTaRJgqeFmBVKcU3If4nJ5Z5AiW2j7v3w1-hlConUKUUdEaXvEEGmW3ejSWyQEU5IKfHOnegoNqHYDL3WjClfSDiVaNq?purpose=fullsize
+
+https://images.openai.com/static-rsc-4/AqDS602YmH2wsWZ9MIaKCEejbvXihDMcjnFRY_B5wtxt2BvEvfmLO6cdXsWQNelBv_V-8B7lXw1JERZ1iaT4AnRu6FFxLXXuXMHYzntaDkFaIxzLCHUenWnAIFJgTvk49zEFx2w_X7lj-HRQ-H6LpQunu_m0HxMGVgJKqhL4FHixIiqeU873OW1rs4ZWo26Q?purpose=fullsize
+
+https://images.openai.com/static-rsc-4/G0MAMB0FCdmtBk2Wxkm6djKZWhOLshpKsyzTGl4AsuyzYmwHr_ukrs000mLRtlZqcog55TmmVOBH_60_WFG75aGw29C-iLEYY8GO2yUWf4JTn33LwZ43ha8sT9pNlV5XHurI2xZ0ACSj_EFisB_2SAEJUvBCvqBOPqlYMmjwviGfYQegTwOQJnlgV3LaxpP5?purpose=fullsize
+5
+Rock–Paper–Scissors–Lizard–Spock gives:
+
+rock
+paper
+scissors
+lizard
+spock
+with a directed dominance relationship.
+
+That immediately gives us three views of exactly the same structure.
+
+1. Function
+fight(rock, scissors) -> rock
+fight(spock, rock)    -> spock
+2. Table
+A 5×5 Cayley table.
+
+3. Directed graph
+rock -----> scissors
+rock -----> lizard
+...
+That is pedagogically valuable because someone can see:
+
+function, table, and graph are different representations of the same operation.
+
+And that's very much in the spirit of your idea of providing multiple mathematical/documentation "views" over MLPL code.
+
+But then I would deliberately break away from games
+RPS is the hook, not the subject.
+
+I'd make the progression something like:
+
+01-rock-paper-scissors
+02-rock-paper-scissors-lizard-spock
+03-operation-tables
+04-closure
+05-associativity
+06-semigroups
+07-identities
+08-monoids
+09-inverses
+10-groups
+11-commutativity
+12-homomorphisms
+That creates a beautiful algebraic structure ladder:
+
+              magma
+                |
+        + associativity
+                |
+            semigroup
+                |
+          + identity
+                |
+             monoid
+                |
+          + inverses
+                |
+              group
+With commutativity as an additional property rather than another mandatory rung.
+
+This is much easier to learn than dropping someone directly into functors and natural transformations.
+
+More importantly: let MLPL discover the properties
+This is where I think the demo becomes genuinely interesting.
+
+Don't tell MLPL:
+
+this is a semigroup
+Give it:
+
+elements
+operation
+and have a library determine what laws hold.
+
+Conceptually:
+
+analyze(elements, operation)
+might produce:
+
+closed:       yes
+associative:  no
+commutative:  yes/no
+identity:     none
+inverses:     no
+For another operation:
+
+closed:       yes
+associative:  yes
+commutative:  yes
+identity:     0
+inverses:     ...
+Therefore:
+
+magma
+semigroup
+monoid
+group
+abelian group
+...
+can be derived classifications rather than declarations.
+
+That's an excellent learning tool.
+
+This becomes a particularly good array-language problem
+For a finite magma with n elements, the operation is fundamentally an:
+
+n×n
+array.
+
+Suppose elements are encoded:
+
+rock     = 0
+paper    = 1
+scissors = 2
+Then the complete binary operation is just something like:
+
+[
+  [0, 1, 0],
+  [1, 1, 2],
+  [0, 2, 2]
+]
+Now we're squarely in MLPL territory.
+
+Operations on finite algebraic structures become array operations.
+
+That is much more interesting for sw-MLPL than implementing a conventional OO abstraction:
+
+class Magma {
+   ...
+}
+I'd actively avoid that approach.
+
+Associativity is a fantastic forcing function
+To determine whether op is associative, we need to check every:
+
+(a,b,c)∈M 
+3
+ 
+and determine whether:
+
+op(op(a,b),c)=op(a,op(b,c))
+For a finite structure, that sounds like exactly the kind of thing an APL-inspired language should express beautifully.
+
+Conceptually I'd like MLPL eventually to get close to:
+
+all(
+  op(op(a, b), c) == op(a, op(b, c))
+  for a, b, c in M
+)
+But not necessarily with Python-style comprehensions.
+
+The interesting research question is:
+
+What is the natural array-language formulation of checking a law over M 
+3
+ ?
+
+Perhaps generate the Cartesian cube:
+
+table(table(op, M, M), M, ...)
+or use generalized table, each, broadcasting, outer products, reshape, etc.
+
+Finding the elegant MLPL formulation is itself the experiment.
+
+Even better: don't just return false
+Suppose associativity fails.
+
+A mediocre system says:
+
+associative: false
+A teaching system says:
+
+associative: false
+
+counterexample:
+
+a = rock
+b = paper
+c = scissors
+
+(rock * paper) * scissors
+= paper * scissors
+= scissors
+
+rock * (paper * scissors)
+= rock * scissors
+= rock
+
+scissors != rock
+That is exactly the kind of explanatory behavior I think sw-MLPL should cultivate.
+
+And it has implications well beyond Category Theory.
+
+Imagine:
+
+check_law(associative, operation, values)
+returning not just Boolean success/failure but a witness/counterexample.
+
+That starts resembling property-based testing.
+
+Closure is another surprisingly useful forcing function
+A magma requires closure.
+
+Suppose:
+
+M = [0, 1, 2]
+and:
+
+op(2, 2) -> 4
+Then it isn't a binary operation M×M→M.
+
+A visual table could highlight:
+
+    0  1  2
+  +---------
+0 | 0  1  2
+1 | 1  2  3   <-- outside M
+2 | 2  3  4   <-- outside M
+That teaches closure much more effectively than a paragraph defining it.
+
+And it raises useful MLPL questions about:
+
+membership,
+
+domains,
+
+enumeration,
+
+Cartesian products,
+
+validation,
+
+counterexamples.
+
+Identities become visually obvious
+Given an operation table, search for an element e such that:
+
+e∗x=x
+and:
+
+x∗e=x
+The UI can highlight the corresponding row and column.
+
+For a monoid, the identity's row/column reproduce the headings.
+
+So instead of merely saying:
+
+0 is the identity for addition.
+
+the visualization can show why.
+
+That leads naturally to inverses: given identity e, locate entries where:
+
+a∗b=e
+Again, arrays and visualization are doing the teaching.
+
+This suggests a more general artifact than demo-category-theory
+I would slightly revise my previous recommendation.
+
+I think there's enough here to consider:
+
+demo-abstract-algebra
+
+rather than putting everything into demo-category-theory.
+
+The conceptual hierarchy is really more like:
+
+demo-abstract-algebra
+    |
+    +-- magmas
+    +-- semigroups
+    +-- monoids
+    +-- groups
+    +-- rings
+    +-- fields
+    +-- homomorphisms
+    +-- ...
+
+demo-category-theory
+    |
+    +-- categories
+    +-- morphisms
+    +-- functors
+    +-- natural transformations
+    +-- products/coproducts
+    +-- monads
+    +-- ...
+And then there are deliberate bridges between them.
+
+That also helps your terminology concern: don't pretend all of mathematics is Category Theory merely because Category Theory talks about these structures.
+
+In fact, terminology could become an explicit feature of the demos
+Since this is something that caused you trouble while learning, I'd make it part of the pedagogy.
+
+Each lesson could start with something like:
+
+Magma
+Meaning here: a set equipped with a closed binary operation.
+
+Also called / related: groupoid in some older algebra literature—but not the same meaning as “groupoid” in category theory.
+
+Not to be confused with: unrelated uses of “magma” outside abstract algebra.
+
+That would be genuinely useful.
+
+There are lots of mathematical words where this matters:
+
+groupoid
+
+ring
+
+field
+
+kernel
+
+image
+
+product
+
+category
+
+object
+
+map
+
+function
+
+operator
+
+tensor
+
+module
+
+algebra
+
+monad
+
+Some collisions are harmless; some are spectacularly confusing.
+
+A teaching project that explicitly says "this word means X in this context" would be better than most textbooks.
+
+And RPS gives you a very nice interactive web demo
+Imagine the browser demo showing five icons arranged in a circle.
+
+Click:
+
+Rock
+
+Then click:
+
+Lizard
+
+The edge animates:
+
+Rock ─────> Lizard
+and underneath:
+
+fight(rock, lizard)
+=> rock
+Beside it, highlight the corresponding Cayley-table cell.
+
+Then switch views:
+
+[ Game ]
+[ Graph ]
+[ Table ]
+[ MLPL ]
+[ Laws ]
+The MLPL view shows the executable implementation.
+
+The Laws view says something like:
+
+Closure       ✓
+Associative   ✗
+Identity      ✗
+Commutative   ✓/✗
+and clicking ✗ Associative shows a counterexample.
+
+That's an excellent demo.
+
+Then make the operation editable
+This is where it becomes much more than an RPS toy.
+
+Let the learner edit the Cayley table.
+
+Change one cell:
+
+paper * scissors
+from:
+
+scissors
+to:
+
+paper
+Immediately recompute:
+
+closure
+associativity
+commutativity
+identity
+inverses
+Now the learner can construct algebraic structures experimentally.
+
+Even better:
+
+"Make this magma associative."
+
+The learner edits cells until the associativity checker passes.
+
+Or:
+
+"Turn this semigroup into a monoid."
+
+Now they have to create an identity.
+
+Or:
+
+"Can you turn this monoid into a group?"
+
+That's dramatically more engaging than memorizing definitions.
+
+We can eventually enumerate small structures
+This could become a wonderful sw-MLPL workload.
+
+For a set of size n, a binary operation table contains n 
+2
+  entries, each having n possibilities.
+
+So there are:
+
+n 
+n 
+2
+ 
+ 
+possible binary operations.
+
+For n=2:
+
+2 
+4
+ =16
+That's tiny.
+
+Enumerate all 16 two-element magmas.
+
+Then classify them.
+
+How many are:
+
+closed          16
+associative      ?
+commutative      ?
+monoids          ?
+groups           ?
+Now MLPL is doing:
+
+array generation,
+
+combinatorics,
+
+higher-order functions,
+
+predicates,
+
+filtering,
+
+grouping,
+
+classification,
+
+reductions.
+
+That's a superb forcing function.
+
+For n=3:
+
+3 
+9
+ =19,683
+Still perfectly reasonable.
+
+Now:
+
+Generate all 19,683 binary operations on three elements and classify them.
+
+That's a legitimate little computational algebra experiment.
+
+Then symmetry/isomorphism becomes unavoidable
+Some of those 19,683 tables differ only because we've renamed:
+
+a -> b
+b -> c
+c -> a
+So the next problem becomes:
+
+Which apparently different magmas are actually isomorphic?
+
+Now we've naturally arrived at:
+
+permutations,
+
+canonicalization,
+
+equivalence classes,
+
+graph isomorphism-ish problems,
+
+quotienting a collection by equivalence.
+
+Again, excellent MLPL forcing functions.
+
+Nothing had to be artificially invented for a language benchmark. The mathematics generated the workload.
+
+And then Category Theory enters naturally
+Eventually you have two magmas M and N, and a function:
+
+f:M→N
+Ask whether:
+
+f(a∗b)=f(a)∗f(b)
+Now we're talking about structure-preserving maps.
+
+That is the conceptual bridge I would use to Category Theory:
+
+things
+        ↓
+structured things
+        ↓
+operations
+        ↓
+laws
+        ↓
+structure-preserving maps
+        ↓
+composition of those maps
+        ↓
+categories
+That's a much gentler route into Category Theory than beginning with:
+
+A category consists of objects and morphisms satisfying...
+
+You discover why anyone would want categories in the first place.
+
+This could become a broader sw-MLPL theme
+I'd therefore consider three connected research/demo repos:
+
+demo-combinators
+        ↓
+functions and composition
+
+demo-abstract-algebra
+        ↓
+operations, laws, structures,
+Cayley tables, RPS, groups...
+
+demo-category-theory
+        ↓
+structure-preserving maps,
+composition, functors...
+And the interesting language pressure coming out of demo-abstract-algebra would likely include Cartesian products, generalized table/outer operations, broadcasting, permutations, higher-order predicates, all/any, property/law testing with counterexamples, finite-set membership, enumeration/generation, equivalence/classification, and visualization-friendly data representations.
+
+Those are almost all useful capabilities for ML/data programming independently of abstract algebra.
+
+So I'd put magmas near the very beginning of this effort. RPS/RPSLS gives you the approachable visual hook; editable Cayley tables give you the teaching tool; exhaustive enumeration gives you the serious array-programming demo; property checking gives you the forcing function; and homomorphisms give you a natural bridge from abstract algebra into the Category Theory material you originally wanted to understand better.
+
+

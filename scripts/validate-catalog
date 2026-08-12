@@ -1,0 +1,56 @@
+#!/bin/sh
+# Validate a catalog TSV: header contract, unique ids/paths, well-formed
+# values, existing files for non-gated rows, and target_loops <= explicit_loops.
+set -eu
+
+catalog=${1:?usage: validate-catalog <catalog.tsv>}
+repo_root=$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)
+
+case "$catalog" in
+  /*) catalog_path=$catalog ;;
+  *) catalog_path="$repo_root/$catalog" ;;
+esac
+
+[ -f "$catalog_path" ] || { echo "catalog not found: $catalog_path" >&2; exit 1; }
+
+case "$catalog_path" in
+  */tests.tsv) tree=tests ;;
+  *) tree=demos ;;
+esac
+
+awk -v repo="$repo_root" -v tree="$tree" -v name="$catalog" '
+BEGIN { FS = "\t"; bad = 0 }
+NR == 1 {
+  expected = "id\tpath\tlesson\tconcept\texplicit_loops\ttarget_loops\tvisual\trequired_features\tstatus"
+  if ($0 != expected) { printf "%s: bad header\n  want: %s\n  got:  %s\n", name, expected, $0 > "/dev/stderr"; bad = 1 }
+  next
+}
+/^[[:space:]]*$/ { next }
+{
+  if (NF != 9) { printf "%s:%d: expected 9 fields, got %d\n", name, NR, NF > "/dev/stderr"; bad = 1; next }
+  id = $1; path = $2; loops = $5; target = $6; visual = $7; status = $9
+  if (id !~ /^[a-z0-9_-]+$/) { printf "%s:%d: bad id %s\n", name, NR, id > "/dev/stderr"; bad = 1 }
+  if (id in seen_id) { printf "%s:%d: duplicate id %s\n", name, NR, id > "/dev/stderr"; bad = 1 }
+  seen_id[id] = 1
+  if (path in seen_path) { printf "%s:%d: duplicate path %s\n", name, NR, path > "/dev/stderr"; bad = 1 }
+  seen_path[path] = 1
+  if (path !~ ("^" tree "/")) { printf "%s:%d: path %s is not under %s/\n", name, NR, path, tree > "/dev/stderr"; bad = 1 }
+  if (path !~ /\.mlpl$/) { printf "%s:%d: path %s is not a .mlpl file\n", name, NR, path > "/dev/stderr"; bad = 1 }
+  if (loops !~ /^[0-9]+$/) { printf "%s:%d: explicit_loops must be an integer\n", name, NR > "/dev/stderr"; bad = 1 }
+  if (target !~ /^[0-9]+$/) { printf "%s:%d: target_loops must be an integer\n", name, NR > "/dev/stderr"; bad = 1 }
+  if (loops ~ /^[0-9]+$/ && target ~ /^[0-9]+$/ && target + 0 > loops + 0) {
+    printf "%s:%d: target_loops (%s) exceeds explicit_loops (%s)\n", name, NR, target, loops > "/dev/stderr"; bad = 1
+  }
+  if (visual !~ /^(none|ascii|svg|page)(,(none|ascii|svg|page))*$/) {
+    printf "%s:%d: bad visual %s (want none|ascii|svg|page)\n", name, NR, visual > "/dev/stderr"; bad = 1
+  }
+  if (status != "runnable" && status != "constrained" && status != "gated") {
+    printf "%s:%d: bad status %s\n", name, NR, status > "/dev/stderr"; bad = 1
+  }
+  if (status != "gated") {
+    cmd = "test -f " repo "/" path
+    if (system(cmd) != 0) { printf "%s:%d: missing file %s\n", name, NR, path > "/dev/stderr"; bad = 1 }
+  }
+}
+END { if (bad) exit 1; printf "%s: ok (%d entries)\n", name, length(seen_id) }
+' "$catalog_path"

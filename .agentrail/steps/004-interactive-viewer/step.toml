@@ -1,0 +1,9 @@
+number = 4
+slug = "interactive-viewer"
+status = "pending"
+description = "Build viewer/cayley.html: a dependency-free single-file page that loads a str..."
+role = "production"
+context_files = []
+created_at = "2026-08-12T10:58:04"
+task_type = "viewer"
+commits = []

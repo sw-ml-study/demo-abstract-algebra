@@ -1,0 +1,43 @@
+#!/bin/sh
+# Delegate the conformance suite to mlplunit; the catalog stays metadata.
+set -eu
+
+repo_root=$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)
+catalog=${TEST_CATALOG:-"$repo_root/catalog/tests.tsv"}
+config=${MLPLUNIT_CONFIG:-"$repo_root/mlplunit.conf"}
+mlpl=$("$repo_root/scripts/select-mlpl")
+mlplunit=${MLPLUNIT:-}
+
+"$repo_root/scripts/validate-catalog" "$catalog"
+"$repo_root/scripts/check-docstrings"
+
+if [ -z "$mlplunit" ]; then
+  mlplunit=$(command -v mlplunit 2>/dev/null || true)
+fi
+if [ -z "$mlplunit" ]; then
+  adjacent="$repo_root/../../softwarewrighter/mlplunit/bin/mlplunit"
+  if [ -x "$adjacent" ]; then
+    mlplunit=$adjacent
+  fi
+fi
+if [ -z "$mlplunit" ] || [ ! -x "$mlplunit" ]; then
+  echo "mlplunit is not executable: ${mlplunit:-not found}" >&2
+  echo "install mlplunit, add it to PATH, or set MLPLUNIT=/absolute/path/to/mlplunit" >&2
+  exit 1
+fi
+
+if [ "$#" -gt 0 ]; then
+  exec "$mlplunit" --mlpl "$mlpl" --config "$config" "$@"
+fi
+
+set --
+tab=$(printf '\t')
+while IFS="$tab" read -r id path lesson concept explicit_loops target_loops visual required_features status; do
+  [ "$id" = "id" ] && continue
+  [ -z "$id" ] && continue
+  [ "$status" = "gated" ] && continue
+  set -- "$@" "$repo_root/$path"
+done < "$catalog"
+
+[ "$#" -gt 0 ] || { echo "no runnable test entries in $catalog"; exit 0; }
+exec "$mlplunit" --mlpl "$mlpl" --config "$config" "$@"

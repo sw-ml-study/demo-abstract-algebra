@@ -1,0 +1,133 @@
+# Conformance for lib/algebra.mlpl: the law predicates, the classification
+# ladder, and the counterexample witnesses, checked against structures whose
+# answers are known independently of this code.
+#
+# loops: 0
+
+include "lib/algebra.mlpl";
+
+@test {name: "known structures classify correctly", tags: ["laws"]}
+def u:test_known_structures() { "Every rung of the ladder, one witness each.";
+  # Z3 under addition: an abelian group.
+  z3 = table(:u:z3_add, u:elements(3), u:elements(3));
+  cz3 = u:classify(z3);
+  u:assert_eq(cz3.closed, 1, "Z3 not closed")?;
+  u:assert_eq(cz3.associative, 1, "Z3 not associative")?;
+  u:assert_eq(cz3.commutative, 1, "Z3 not commutative")?;
+  u:assert_eq(cz3.identity, 1, "Z3 has no identity")?;
+  u:assert_eq(cz3.inverses, 1, "Z3 lacks inverses")?;
+  u:assert_eq(cz3.abelian_group, 1, "Z3 is not an abelian group")?;
+  u:assert_eq(u:identity_of(z3), 0, "Z3 identity is not 0")?;
+
+  # max on {0,1,2}: associative, commutative, identity 0, but no inverses.
+  mx = table(:u:max2, u:elements(3), u:elements(3));
+  cmx = u:classify(mx);
+  u:assert_eq(cmx.monoid, 1, "max is not a monoid")?;
+  u:assert_eq(cmx.group, 0, "max should not be a group")?;
+  u:assert_eq(u:identity_of(mx), 0, "max identity is not 0")?;
+
+  # Left projection: associative, no identity above order 1.
+  lp = table(:u:first, u:elements(3), u:elements(3));
+  clp = u:classify(lp);
+  u:assert_eq(clp.semigroup, 1, "left projection is not a semigroup")?;
+  u:assert_eq(clp.monoid, 0, "left projection should have no identity")?;
+  u:assert_eq(clp.commutative, 0, "left projection should not commute")?;
+  u:assert_eq(u:identity_of(lp), -1, "missing identity should report -1")?;
+
+  # Rock-paper-scissors: a commutative magma and nothing more.
+  rps = [[0, 1, 0], [1, 1, 2], [0, 2, 2]];
+  crps = u:classify(rps);
+  u:assert_eq(crps.magma, 1, "rps is not a magma")?;
+  u:assert_eq(crps.semigroup, 0, "rps should not be associative")?;
+  u:assert_eq(crps.commutative, 1, "rps should commute")?;
+  ok({test: "known-structures", cases: 14})
+}
+
+def u:z3_add(x, y) { mod(x + y, 3) }
+def u:max2(x, y) { if lt(x, y) { y } else { x } }
+
+@test {name: "counterexamples name a real witness", tags: ["laws"]}
+def u:test_counterexamples() { "A failed law must exhibit the failing triple.";
+  rps = [[0, 1, 0], [1, 1, 2], [0, 2, 2]];
+  x = u:assoc_counterexample(rps);
+  u:assert_eq(x.found, 1, "rps associativity failure not detected")?;
+  # (rock * paper) * scissors = scissors, rock * (paper * scissors) = rock.
+  u:assert_eq(x.a, 0, "witness a")?;
+  u:assert_eq(x.b, 1, "witness b")?;
+  u:assert_eq(x.c, 2, "witness c")?;
+  u:assert_eq(x.left, 2, "witness left value")?;
+  u:assert_eq(x.right, 0, "witness right value")?;
+  # The witness must actually disagree, not merely be reported.
+  u:assert_true(1 - eq(x.left, x.right), "witness sides agree")?;
+
+  # An associative table reports no witness.
+  z3 = table(:u:z3_add, u:elements(3), u:elements(3));
+  y = u:assoc_counterexample(z3);
+  u:assert_eq(y.found, 0, "Z3 should have no associativity witness")?;
+
+  # Non-commutative left projection: 0 * 1 = 0 but 1 * 0 = 1.
+  lp = table(:u:first, u:elements(3), u:elements(3));
+  cx = u:comm_counterexample(lp);
+  u:assert_eq(cx.found, 1, "left projection commutativity failure missed")?;
+  u:assert_true(1 - eq(cx.left, cx.right), "commutativity witness agrees")?;
+
+  # Closure: an entry outside the element set is caught and located.
+  open = [[0, 1], [1, 2]];
+  cl = u:closure_counterexample(open);
+  u:assert_eq(cl.found, 1, "escape from the set not detected")?;
+  u:assert_eq(cl.a, 1, "closure witness row")?;
+  u:assert_eq(cl.b, 1, "closure witness column")?;
+  u:assert_eq(cl.value, 2, "closure witness value")?;
+  u:assert_eq(u:is_closed(open), 0, "open table reported closed")?;
+  ok({test: "counterexamples", cases: 15})
+}
+
+@test {name: "homomorphisms and isomorphism", tags: ["maps"]}
+def u:test_structure_preserving() { "Structure-preserving maps between tables.";
+  z4 = table(:u:z4_add, u:elements(4), u:elements(4));
+  z2 = table(:u:z2_add, u:elements(2), u:elements(2));
+  # Parity is a homomorphism Z4 -> Z2.
+  parity = [0, 1, 0, 1];
+  u:assert_eq(u:is_homomorphism(parity, z4, z2), 1, "parity is a hom")?;
+  # A map that is not: send everything but 1 to 0.
+  bogus = [0, 1, 1, 1];
+  u:assert_eq(u:is_homomorphism(bogus, z4, z2), 0, "bogus map accepted")?;
+  b = u:hom_counterexample(bogus, z4, z2);
+  u:assert_eq(b.found, 1, "bogus map produced no witness")?;
+  u:assert_true(1 - eq(b.left, b.right), "hom witness sides agree")?;
+  # The constant map to the identity is always a homomorphism.
+  u:assert_eq(u:is_homomorphism([0, 0, 0, 0], z4, z2), 1, "constant map")?;
+
+  # Isomorphism: relabeling a table under a permutation, then back.
+  p = [1, 2, 0];
+  z3 = table(:u:z3_add, u:elements(3), u:elements(3));
+  moved = u:permute_table(z3, p);
+  u:assert_eq(u:is_isomorphic_under(z3, moved, p), 1, "permute/compare")?;
+  u:assert_eq(u:is_isomorphic_under(z3, z3, [0, 1, 2]), 1, "identity perm")?;
+  # Relabeling preserves every law: it is the same structure, renamed.
+  u:assert_eq(u:classify(moved).abelian_group, 1, "relabel broke the group")?;
+  u:assert_eq(u:is_associative(moved), 1, "relabel broke associativity")?;
+  ok({test: "structure-preserving", cases: 9})
+}
+
+def u:z4_add(x, y) { mod(x + y, 4) }
+def u:z2_add(x, y) { mod(x + y, 2) }
+
+@test {name: "trivial and edge-case orders", tags: ["laws", "edges"]}
+def u:test_edges() { "Order-1 structures and boundary shapes.";
+  # The trivial group: one element, which is its own identity and inverse.
+  one = [[0]];
+  c = u:classify(one);
+  u:assert_eq(c.abelian_group, 1, "trivial structure is not a group")?;
+  u:assert_eq(u:identity_of(one), 0, "trivial identity")?;
+  u:assert_eq(u:order(one), 1, "trivial order")?;
+  # An order-2 constant table: associative, but no identity.
+  const0 = [[0, 0], [0, 0]];
+  cc = u:classify(const0);
+  u:assert_eq(cc.semigroup, 1, "constant table is not a semigroup")?;
+  u:assert_eq(cc.identity, 0, "constant table should have no identity")?;
+  u:assert_eq(u:has_inverses(const0), 0, "constant table has no inverses")?;
+  ok({test: "edges", cases: 6})
+}
+
+u:run_registered_tests()

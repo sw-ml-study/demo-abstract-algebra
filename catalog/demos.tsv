@@ -1,0 +1,13 @@
+id	path	lesson	concept	explicit_loops	target_loops	visual	required_features	status
+rock-paper-scissors	demos/01-magmas/rock_paper_scissors.mlpl	01-magmas	closed-binary-operation	0	0	ascii,svg	current	runnable
+lizard-spock	demos/02-rpsls/lizard_spock.mlpl	02-rpsls	function-table-graph-views	0	0	ascii,svg	current	gated
+escaping-the-set	demos/03-closure/escaping_the_set.mlpl	03-closure	closure-counterexample	0	0	ascii,svg	current	gated
+bracketing	demos/04-associativity/bracketing.mlpl	04-associativity	associativity-cube	0	0	ascii,svg	current	gated
+string-joins	demos/05-semigroups/string_joins.mlpl	05-semigroups	associative-without-identity	0	0	ascii,svg	current	gated
+identity-cross	demos/06-monoids/identity_cross.mlpl	06-monoids	identity-discovery	0	0	ascii,svg	current	gated
+undoing	demos/07-inverses/undoing.mlpl	07-inverses	inverse-pairs	0	0	ascii,svg	current	gated
+latin-square	demos/08-groups/latin_square.mlpl	08-groups	group-recognition	0	0	ascii,svg	current	gated
+symmetry	demos/09-commutativity/symmetry.mlpl	09-commutativity	abelian-vs-nonabelian	0	0	ascii,svg,page	current	gated
+all-small-magmas	demos/10-enumeration/all_small_magmas.mlpl	10-enumeration	exhaustive-classification	0	0	ascii,svg	current	gated
+same-up-to-naming	demos/11-isomorphism/same_up_to_naming.mlpl	11-isomorphism	permutation-equivalence	0	0	ascii,svg	current	gated
+structure-preserving	demos/12-homomorphisms/structure_preserving.mlpl	12-homomorphisms	homomorphism-check	0	0	ascii,svg	current	gated

@@ -1,0 +1,32 @@
+#!/bin/sh
+# Run every non-gated lesson demo from the catalog.
+set -eu
+
+repo_root=$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)
+catalog=${CATALOG:-"$repo_root/catalog/demos.tsv"}
+mlpl=$("$repo_root/scripts/select-mlpl")
+
+"$repo_root/scripts/validate-catalog" "$catalog"
+"$repo_root/scripts/check-docstrings"
+
+mkdir -p "$repo_root/out"
+
+failures=0
+ran=0
+tab=$(printf '\t')
+while IFS="$tab" read -r id path lesson concept explicit_loops target_loops visual required_features status; do
+  [ "$id" = "id" ] && continue
+  [ -z "$id" ] && continue
+  [ "$status" = "gated" ] && continue
+  ran=$((ran + 1))
+  echo "RUN $id ($lesson: $concept)"
+  if ! "$mlpl" --source-dir "$repo_root" "$repo_root/$path"; then
+    echo "FAIL $id" >&2
+    failures=$((failures + 1))
+  else
+    echo "PASS $id"
+  fi
+done < "$catalog"
+
+echo "Ran $ran lesson demo(s); $failures failure(s)."
+[ "$failures" -eq 0 ]

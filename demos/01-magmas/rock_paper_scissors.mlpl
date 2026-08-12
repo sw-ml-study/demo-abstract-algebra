@@ -1,0 +1,71 @@
+# Lesson 01 -- Magmas, via Rock-Paper-Scissors.
+#
+# Meaning here: a MAGMA is a set with a closed binary operation.  Nothing else
+# is assumed -- no associativity, no identity, no inverses, no order.
+# Also called: "groupoid" in older algebra texts -- NOT the category-theory
+# groupoid, which is a different object entirely.  See docs/terminology.md.
+#
+# fight(a, b) returns the winner; a tie returns the shared choice.  That is a
+# closed binary operation on {rock, paper, scissors}, so it is a magma -- and
+# this lesson shows it is nothing more than a magma.
+#
+# The same operation is shown three ways: as a function, as a Cayley table,
+# and as a colored diagram.  They are one object seen from three sides.
+#
+# visual: ascii, svg
+# loops: 0
+# complexity: n^2 to build the table, n^3 to check associativity
+
+include "../../lib/algebra.mlpl"
+include "../../lib/render.mlpl"
+
+# --- View 1: the operation as a function -----------------------------------
+# rock 0 beats scissors 2, paper 1 beats rock 0, scissors 2 beats paper 1,
+# so x beats y exactly when (x - y) mod 3 is 1.  The winner of x and y is
+# whichever of them the other does not beat.
+def u:beats(x, y) { eq(mod(x - y + 3, 3), 1) }
+def u:fight(x, y) { if u:beats(x, y) { x } else { y } }
+
+# --- View 2: the same operation as a Cayley table ---------------------------
+# table() is the outer product: every pair of choices, evaluated at once.
+# One line replaces the nine-row table a textbook prints by hand.
+s = {
+  title: "Rock-Paper-Scissors (magma)",
+  names: ["rock", "paper", "scissors"],
+  table: table(:u:fight, u:elements(3), u:elements(3))
+}
+
+u:show_table(s)
+
+# The function and the table are the same object; assert it rather than say it.
+spot = eq(u:fight(0, 2), take(take(s.table, 0, 0), 0, 2))
+
+print("")
+print("Which laws hold?")
+u:show_laws(s)
+
+# --- Closed, commutative, and nothing else ---------------------------------
+# Closure is what makes this a magma at all: fight never invents a fourth
+# choice.  Commutativity holds because the winner does not depend on which
+# player moved first.  Associativity fails -- and the failure is exhibited,
+# not merely reported.
+print("")
+x = u:show_assoc_counterexample(s)
+
+# --- View 3: the diagram ----------------------------------------------------
+# Color by result element.  Nothing about this table is a Latin square, no
+# band reproduces the headings: that is what "magma and no more" looks like.
+wrote = u:write_cayley_svg("out/01-rock-paper-scissors.svg", s)
+print("")
+print("wrote out/01-rock-paper-scissors.svg:", is_ok(wrote))
+
+# --- Invariants -------------------------------------------------------------
+c = u:classify(s.table)
+laws_ok = c.closed * c.commutative * (1 - c.associative) * (1 - c.identity)
+witness_ok = x.found * eq(x.a, 0) * eq(x.b, 1) * eq(x.c, 2)
+rung_ok = c.magma * (1 - c.semigroup) * (1 - c.monoid) * (1 - c.group)
+if laws_ok * witness_ok * rung_ok * spot * is_ok(wrote) {
+  ok("rock-paper-scissors is a commutative magma and no more")
+} else {
+  err("rock-paper-scissors invariants failed")
+}
