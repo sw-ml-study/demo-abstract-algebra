@@ -1,10 +1,9 @@
-number = 5
+number = 6
 slug = "lessons-02-04-views-closure-associativity"
-status = "completed"
+status = "in-progress"
 description = "Implement lessons 02-04 per docs/plan.md. 02: Rock-Paper-Scissors-Lizard-Spoc..."
 role = "production"
 context_files = []
 created_at = "2026-08-12T10:58:04"
-completed_at = "2026-08-12T13:32:21"
 task_type = "lesson"
 commits = ["264c16b50d8658fe6710674d791020bdd420bfaf"]

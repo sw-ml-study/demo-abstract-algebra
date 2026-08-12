@@ -289,8 +289,18 @@ repository from a session working in this one.
   explains what changed and why, `agentrail complete`, commit the `.agentrail/`
   metadata, and **`git push`** — before starting the next step. Work that only
   exists locally is invisible: a reviewer looking at the remote sees nothing,
-  and a later session cannot build on it. If a push fails, say so explicitly
-  rather than moving on.
+  and a later session cannot build on it.
+
+  *Where push access is absent* — some environments run agents as an
+  unprivileged user with no credentials, while only the developer's account can
+  push — do everything up to and including the `.agentrail/` commit, then
+  **state plainly in the reply and in the `agentrail complete --summary` that
+  the branch is committed but unpushed**, naming the branch and the commit
+  count. Do not retry a failing push in a loop; a missing key or unauthenticated
+  `gh` will not fix itself. Check capability with `git remote -v` and
+  `git push --dry-run` rather than assuming either way. This repository does
+  have push access (SSH origin on the `sw-ml-study` org), so here the rule is
+  simply: push.
 - Follow `agentrail next`, `agentrail begin`, work, test, commit,
   `agentrail complete`, then stop. Never edit `.agentrail/` by hand.
 - Use TDD for executable behavior. Add a failing fixture or assertion before

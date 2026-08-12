@@ -1,0 +1,9 @@
+number = 5
+slug = "narration-beats-cycle-and-web-readmes"
+status = "pending"
+description = "Record the work actually done after step 004, which was mis-filed onto the le..."
+role = "production"
+context_files = []
+created_at = "2026-08-12T13:49:18"
+task_type = "viz"
+commits = []
