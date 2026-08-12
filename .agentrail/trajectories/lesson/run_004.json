@@ -1,0 +1,11 @@
+{
+  "task_type": "lesson",
+  "state": {
+    "number": 10,
+    "step": "lessons-05-08-the-ladder"
+  },
+  "action": "Reused the ringed-cells renderer across two lessons rather than writing per-lesson SVG; cross-checked the Latin-square predicate against the four-law classifier on five structures as an invariant inside the lesson itself.",
+  "result": "success",
+  "reward": 1,
+  "timestamp": "2026-08-12T15:55:31"
+}
