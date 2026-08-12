@@ -379,6 +379,80 @@ language's wheelhouse.
 
 ---
 
+## 15. A pasted file cannot produce a narration panel
+
+The playground has exactly the right affordance for framing a demo:
+`EntryKind::Narration` renders prose with no `mlpl>` prompt, and the built-in
+catalog uses it for each demo's `intro` and `takeaway`
+(`components/web-demos/crates/mlpl-web-demos/demos.toml`).
+
+Only three places create one, and none is reachable from source:
+
+```
+mlpl-web-handlers-eval/src/demo.rs      the catalog demo runner (intro/takeaway)
+mlpl-web-handlers-upload/src/upload.rs  the upload handler's own status lines
+mlpl-web-handlers-eval/src/running.rs   the "evaluating..." placeholder
+```
+
+So a `.mlpl` file pasted or uploaded into the editor can be narrated only by
+(a) string literals, which render as `mlpl> "..."` plus echoed output, or
+(b) comments, which render as italic annotations beside code. Neither looks
+like a demo's intro or takeaway, and a reader can see the difference.
+
+**Where it bit:** every demo in `web/`. They open with a
+`"WHAT THIS SHOWS ..."` string and close with `"THE POINT ..."` strings,
+because that is the only way to get prose *output* out of a pasted file. The
+framing works but it does not match the house style, and a downstream repo
+cannot fix that from its side.
+
+**What would fix it,** cheapest first:
+
+- treat a **leading** comment block as the intro and a **trailing**
+  comment-only group as the takeaway, promoting both to `EntryKind::Narration`
+  — the grouper already isolates the trailing case deliberately, and
+  `statement_groups.rs` documents it as "a closing summary ... emitted for
+  narration", so the intent is already there;
+- or honour the existing annotation syntax: `@intro "..."` / `@takeaway "..."`
+  at the top level, harvestable through `annotations(...)`;
+- or let the upload handler read a companion `.toml` beside the file.
+
+**Severity:** medium. Nothing is blocked, but the demo format sw-MLPL defines
+for itself is not available to the companion repositories that exist to
+demonstrate it.
+
+---
+
+## 16. A multi-line entry renders its code inside the comment span
+
+`render_input_line` passes an entry's WHOLE input to `split_inline_comment`,
+which splits on the first `#` outside a string
+(`mlpl-web-render-aux/src/entry.rs`, `mlpl-web-tutorial/src/comment.rs`).
+
+Entries are statement GROUPS, not lines, and a full-line comment rides with the
+statement that follows it. So this group:
+
+```mlpl
+# build the operation table
+t = table(:u:fight, range(3), range(3))
+```
+
+splits at index 0: `code` is empty and `comment` becomes
+`build the operation table
+t = table(:u:fight, range(3), range(3))`. The code
+renders inside the italic comment span — visually, the statement vanishes.
+
+Single-line entries are unaffected, which is why the built-in catalog never
+hits it: every `lines` entry there is one line. It bites any *file* whose
+narrative lives in leading comments — including `docs/apl2-idioms.mlpl`, which
+`statement_groups.rs` cites as the reason comments ride with their statement.
+
+**Workaround here:** `scripts/check-comment-style` forbids full-line comments
+in generated web demos; annotations are trailing-only.
+
+**Fix:** split per line inside the group rather than once over the whole entry.
+
+---
+
 ## Not asks
 
 Recorded so a later session does not re-litigate them:

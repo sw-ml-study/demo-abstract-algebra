@@ -16,11 +16,19 @@ that array; and the array is directly renderable — which is why this is a
 
 ## Rock-Paper-Scissors is a magma, and no more
 
+<img src="assets/rps-cycle.svg" alt="Rock-Paper-Scissors as a cycle of arrows: rock beats scissors beats paper beats rock" width="300">
+
+The game you already know: an arrow `a -> b` means *a beats b*. One closed loop,
+no start and no end — which is why the game is fair, and the first hint that the
+operation cannot be associative.
+
 <img src="assets/rps-cayley.svg" alt="Rock-Paper-Scissors Cayley table, colored by winner" width="330">
 
-`fight(a, b)` returns the winner. That is a closed binary operation on three
-elements, so it is a magma — and the table above is the whole of it. One color
-per element, so the structure is visible before a single name is read.
+The same thing as algebra. `fight(a, b)` returns the winner — a closed binary
+operation on three elements, so it is a magma, and this table is the whole of
+it. Each square is colored by who won, so the structure is visible before a
+single name is read. The arrows above are just the off-diagonal squares where
+the row wins.
 
 Nothing here *declares* what a structure is. Each lesson hands `elements` and
 `operation` to a classifier and reports what came back:

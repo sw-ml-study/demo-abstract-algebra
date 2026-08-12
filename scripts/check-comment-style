@@ -1,0 +1,55 @@
+#!/bin/sh
+# Trailing code comments in demos stay TERSE.
+#
+# sw-MLPL's own demo catalog annotates ~70% of its lines, and the annotations
+# are labels -- "base corpus", "rank-16 LoRA, freeze the base" -- not sentences.
+# The narrative lives in the intro and takeaway. Writing full explanations in
+# BOTH places makes the transcript repeat itself, and the transcript already
+# echoes every line the editor is showing.
+#
+# Prose belongs in the "WHAT THIS SHOWS" / "HOW TO READ" strings, which this
+# check ignores.
+set -eu
+
+repo_root=$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)
+limit=${COMMENT_LIMIT:-52}
+failures=0
+
+for f in "$repo_root"/demos/web/*.mlpl; do
+  [ -f "$f" ] || continue
+  name=${f#$repo_root/}
+  # Only trailing comments on code lines: skip full-line comments and strings.
+  long=$(awk -v lim="$limit" '
+    /^[[:space:]]*#/ { next }
+    /^[[:space:]]*"/ { next }
+    {
+      i = index($0, "  # ")
+      if (i == 0) next
+      c = substr($0, i + 4)
+      if (length(c) > lim) printf "%d: %s\n", NR, c
+    }
+  ' "$f")
+  if [ -n "$long" ]; then
+    echo "$name: trailing comments over $limit chars -- move prose to the epilog" >&2
+    printf '%s\n' "$long" | sed 's/^/  /' >&2
+    failures=$((failures + 1))
+  fi
+done
+
+# A full-line comment RIDES with the statement after it, and the UI splits the
+# whole group at its FIRST `#` -- so the code after a leading comment block
+# renders inside the comment span and effectively disappears. Only the source
+# header (stripped by build-web-demos) may use full-line comments.
+for f in "$repo_root"/web/*.mlpl; do
+  [ -f "$f" ] || continue
+  name=${f#$repo_root/}
+  bad=$(grep -n '^[[:space:]]*#' "$f" || true)
+  if [ -n "$bad" ]; then
+    echo "$name: full-line comment -- it rides with the next statement and hides its code" >&2
+    printf '%s\n' "$bad" | sed 's/^/  /' >&2
+    failures=$((failures + 1))
+  fi
+done
+
+[ "$failures" -eq 0 ] || exit 1
+echo "comment style: ok"

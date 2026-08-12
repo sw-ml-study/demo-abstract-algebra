@@ -1,9 +1,9 @@
 "WHAT THIS SHOWS -- the difference between a MAGMA and a GROUP, as two animations. Both are 3x3 operation tables; only one is a group, and you will be able to tell at a glance."
-def u:frames(t, n) { reshape(transpose(one_hot(flatten(t), n)), [n, n, n]) }  # frame k lights every cell where row * column = k
-def u:fight(x, y) { if eq(mod(x - y + 3, 3), 1) { x } else { y } }  # Rock-Paper-Scissors: the winner
-def u:add3(x, y) { mod(x + y, 3) }  # Z3: addition modulo 3
-svg(u:frames(table(:u:fight, range(3), range(3)), 3), "life")  # ANIMATION 1 -- the magma
-svg(u:frames(table(:u:add3, range(3), range(3)), 3), "life")   # ANIMATION 2 -- the group
+def u:frames(t, n) { reshape(transpose(one_hot(flatten(t), n)), [n, n, n]) }  # frame k = cells where a*b = k
+def u:fight(x, y) { if eq(mod(x - y + 3, 3), 1) { x } else { y } }  # Rock-Paper-Scissors
+def u:add3(x, y) { mod(x + y, 3) }  # Z3, addition mod 3
+svg(u:frames(table(:u:fight, range(3), range(3)), 3), "life")  # the magma
+svg(u:frames(table(:u:add3, range(3), range(3)), 3), "life")   # the group
 "HOW TO READ THEM -- each animation is one 3x3 Cayley table, cycling through 3 frames. Rows and columns are the elements 0, 1, 2. In frame k, a cell lights up when row * column equals k. So frame 0 shows every pairing that produces 0, frame 1 every pairing that produces 1, and so on."
 "ANIMATION 1, THE MAGMA -- the lit cells clump and drift. Some frames light three cells in a lopsided pattern, and some rows get two lit cells while other rows get none. Rock wins three of the nine matchups, scissors only two. Nothing about it is regular."
 "ANIMATION 2, THE GROUP -- every frame lights exactly one cell per row and exactly one per column. That shape is a permutation matrix, and a table whose frames are all permutation matrices is a LATIN SQUARE: each element appears once in every row and once in every column."

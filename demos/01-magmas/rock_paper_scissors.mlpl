@@ -69,7 +69,13 @@ x = u:show_assoc_counterexample(s)
 # band reproduces the headings: that is what "magma and no more" looks like.
 wrote = u:write_cayley_svg("out/01-rock-paper-scissors.svg", s)
 
-# --- View 4: the failure, animated ------------------------------------------
+# --- View 4: the game you already know --------------------------------------
+# The same operation as a directed graph: a -> b when a * b = a. Read off the
+# table, so the drawing cannot disagree with the algebra.
+cycle = u:write_dominance_svg("out/01-rock-paper-scissors-cycle.svg",
+  {title: "Rock-Paper-Scissors: who beats whom", names: s.names, table: s.table})
+
+# --- View 5: the failure, animated ------------------------------------------
 # Two markers walk the two bracketings of the same three elements and land on
 # different colors.  SMIL is just more SVG text, so this costs nothing that the
 # static diagram did not already cost -- no encoder, no new builtin.
@@ -77,6 +83,14 @@ walked = u:write_assoc_walk_svg("out/01-rock-paper-scissors-associativity.svg",
   {title: "Rock-Paper-Scissors: associativity fails", names: s.names, table: s.table})
 
 u:epilog_open()
+
+u:explain("out/01-rock-paper-scissors-cycle.svg",
+  "Three circles, one per choice, and an arrow a -> b meaning 'a beats b'.")
+u:note("Rock smashes scissors, scissors cuts paper, paper covers rock.")
+u:note("WHAT TO NOTICE: the arrows form ONE closed loop with no start and no end. Nothing")
+u:note("sits at the top of the order, which is exactly why the game is fair -- and it is")
+u:note("also the first hint that this operation cannot be associative, because a cycle has")
+u:note("no consistent way to bracket three steps.")
 
 u:explain("out/01-rock-paper-scissors.svg",
   "A 3x3 grid: one square per matchup. Rows and columns both run rock, paper, scissors.")
@@ -102,6 +116,7 @@ u:note("non-associativity looks like, and it is why the checker returns a witnes
 
 u:takeaway("Rock-Paper-Scissors is closed and commutative, and that is all. It is a magma: the bottom rung of the ladder, with no associativity, no identity, and no inverses above it.")
 
+print("wrote out/01-rock-paper-scissors-cycle.svg:", is_ok(cycle))
 print("wrote out/01-rock-paper-scissors.svg:", is_ok(wrote))
 print("wrote out/01-rock-paper-scissors-associativity.svg:", is_ok(walked))
 
@@ -110,7 +125,7 @@ c = u:classify(s.table)
 laws_ok = c.closed * c.commutative * (1 - c.associative) * (1 - c.identity)
 witness_ok = x.found * eq(x.a, 0) * eq(x.b, 1) * eq(x.c, 2)
 rung_ok = c.magma * (1 - c.semigroup) * (1 - c.monoid) * (1 - c.group)
-if laws_ok * witness_ok * rung_ok * spot * is_ok(wrote) * is_ok(walked) {
+if laws_ok * witness_ok * rung_ok * spot * is_ok(wrote) * is_ok(walked) * is_ok(cycle) {
   ok("rock-paper-scissors is a commutative magma and no more")
 } else {
   err("rock-paper-scissors invariants failed")
