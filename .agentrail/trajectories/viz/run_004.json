@@ -1,0 +1,11 @@
+{
+  "task_type": "viz",
+  "state": {
+    "number": 6,
+    "step": "comment-based-narration"
+  },
+  "action": "Tested comment-only groups, leading comment blocks, /* */ and #* *# against the real wasm evaluator before choosing the convention; dumped the full entry-by-entry transcript to confirm nothing is said twice.",
+  "result": "success",
+  "reward": 1,
+  "timestamp": "2026-08-12T14:00:27"
+}
