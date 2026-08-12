@@ -1,0 +1,119 @@
+# Conformance for the generated web/ bundles -- the Web UI contract.
+#
+# The sw-MLPL playground renders a result as an inline SVG widget when, and
+# only when, the entry's output STARTS WITH "<svg"
+# (components/web-render/crates/mlpl-web-render-aux/src/entry.rs). Three things
+# break that, and all three are natural to write:
+#
+#   include      rejected outright by the browser session
+#   write_text   no sandboxed filesystem in the browser
+#   ok(...)      the output then starts with "Ok(", so there is nothing to render
+#
+# That last one is the quiet trap: the script runs perfectly and the UI shows a
+# line of text. A lesson under demos/ ends in ok()/err() on purpose, so it can
+# gate the CLI suite -- which is exactly why it CANNOT be the file you paste.
+#
+# These assertions run the generated bundles the way the browser would and
+# check what the browser checks.
+#
+# loops: 0
+
+include "lib/algebra.mlpl";
+
+# Does the value begin with "<svg"?
+#
+# One wrinkle: run_script reports a string result as its REPR -- quoted and
+# escaped -- not as the raw string (docs/upstream-asks.md #10). The browser
+# receives the raw value, so a leading quote byte is skipped here rather than
+# weakening the check.
+def u:starts_with_svg(s) {
+  b = u:unquote(tokenize_bytes(s));
+  if lt(size(b), 4) { 0 } else { equal(u:head(b, 4), tokenize_bytes("<svg")) }
+}
+
+def u:unquote(b) {
+  if eq(take(b, 0, 0), 34) { compress(gt(range(size(b)), 0), b) } else { b }
+}
+
+def u:head(v, k) { compress(lt(range(size(v)), k), v) }
+
+# Run a generated bundle in a fresh environment, as the browser would.
+# source_dir roots the sandbox at the repository so relative paths resolve the
+# same way they do under scripts/run-all.
+def u:run_web(path) { unwrap(run_script(path, {source_dir: "."})) }
+
+@test {name: "web bundles render as SVG widgets", tags: ["web"]}
+def u:test_web_bundles_render() { "Every bundle must satisfy the UI's <svg test.";
+  cayley = u:run_web("web/rps_cayley_web.mlpl");
+  u:assert_eq(cayley.status, "ok", "rps cayley bundle did not run")?;
+  u:assert_true(u:starts_with_svg(cayley.value), "rps cayley is not an SVG")?;
+
+  walk = u:run_web("web/rps_associativity_web.mlpl");
+  u:assert_eq(walk.status, "ok", "animated bundle did not run")?;
+  u:assert_true(u:starts_with_svg(walk.value), "animated bundle is not an SVG")?;
+
+  graph = u:run_web("web/rpsls_dominance_web.mlpl");
+  u:assert_eq(graph.status, "ok", "rpsls bundle did not run")?;
+  u:assert_true(u:starts_with_svg(graph.value), "rpsls bundle is not an SVG")?;
+  ok({test: "web-bundles-render", cases: 6})
+}
+
+@test {name: "web bundles are standalone", tags: ["web"]}
+def u:test_web_bundles_standalone() { "No include, no filesystem, no Result.";
+  u:assert_eq(u:count_in_file("web/rps_cayley_web.mlpl", "\ninclude \""), 0,
+    "include survived the splice")?;
+  u:assert_eq(u:count_in_file("web/rps_associativity_web.mlpl", "\ninclude \""), 0,
+    "include survived the splice")?;
+  u:assert_eq(u:count_in_file("web/rpsls_dominance_web.mlpl", "\ninclude \""), 0,
+    "include survived the splice")?;
+  # The bundles carry the whole spliced library, which DEFINES filesystem
+  # helpers like u:write_cayley_svg. Definitions are inert -- builtins bind
+  # late, at call time -- so what matters is that no bundle CALLS one at top
+  # level. The final-value assertions above prove that: a write_text call
+  # would make the result a Result, and the UI would print "Ok(1)".
+  u:assert_eq(u:count_in_file("web/rps_cayley_web.mlpl", "\nwrite_text("), 0,
+    "bundle calls write_text at top level")?;
+  ok({test: "web-bundles-standalone", cases: 4})
+}
+
+# A lesson under demos/ deliberately fails this contract: it ends in a Result
+# so the CLI suite can gate on it. Asserting that keeps the two file kinds from
+# quietly converging, and documents WHY pasting a lesson shows text.
+@test {name: "lessons are not web entries, by design", tags: ["web"]}
+def u:test_lessons_are_cli() { "The distinction is intentional, so pin it.";
+  lesson = unwrap(run_script("demos/01-magmas/rock_paper_scissors.mlpl",
+    {source_dir: ".", capture: 1}));
+  u:assert_eq(lesson.status, "ok", "lesson did not run under the CLI")?;
+  u:assert_eq(u:starts_with_svg(lesson.value), 0,
+    "a lesson's value should NOT be an SVG -- paste web/ instead")?;
+  ok({test: "lessons-are-cli", cases: 2})
+}
+
+def u:count_in_file(path, needle) {
+  text = unwrap(read_text(path));
+  u:count_substr(text, needle)
+}
+
+# Occurrence count via the array formulation: rotate the haystack once per
+# needle byte and AND the per-position equalities.  Recursion is over the
+# NEEDLE, so depth stays small no matter how large the document is.
+def u:count_substr(hay, needle) {
+  h = tokenize_bytes(hay);
+  ndl = tokenize_bytes(needle);
+  if lt(size(h), size(ndl)) { 0 } else { u:count_found(h, ndl) }
+}
+
+def u:count_found(h, ndl) {
+  n = size(h);
+  k = size(ndl);
+  hits = u:match_mask(h, ndl, 0, ones([n]));
+  reduce_add(hits * lt(range(n), n - k + 1))
+}
+
+def u:match_mask(h, ndl, j, acc) {
+  if lt(j, size(ndl)) {
+    u:match_mask(h, ndl, j + 1, acc * eq(rotate(h, j, 0), take(ndl, 0, j)))
+  } else { acc }
+}
+
+u:run_registered_tests()

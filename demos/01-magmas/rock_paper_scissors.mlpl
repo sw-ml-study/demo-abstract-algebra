@@ -12,6 +12,13 @@
 # The same operation is shown three ways: as a function, as a Cayley table,
 # and as a colored diagram.  They are one object seen from three sides.
 #
+# NOT a Web UI file. This is a CLI lesson: it uses include and write_text,
+# neither of which the browser session has, and it ends in ok(...) so the
+# suite can gate on it -- which means the playground would print "Ok(...)"
+# instead of drawing anything. To see these diagrams in the browser, paste
+# web/rps_cayley_web.mlpl and web/rps_associativity_web.mlpl.
+# See docs/viewing.md.
+#
 # visual: ascii, svg
 # loops: 0
 # complexity: n^2 to build the table, n^3 to check associativity

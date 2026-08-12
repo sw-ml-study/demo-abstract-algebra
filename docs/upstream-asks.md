@@ -255,6 +255,38 @@ empty parent as `.`.
 
 ---
 
+## 10. `run_script` returns a string result's REPR, not the string
+
+`run_script(path, opts)` answers `ok({status, value, ...})`. When the child
+script's final value is a string, `value` carries the quoted, escaped
+*rendering* rather than the string itself:
+
+```mlpl
+r = unwrap(run_script("web/rps_cayley_web.mlpl", {source_dir: "."}))
+type_of(r.value)                         # "string"
+# first bytes are 34 60 115 118 103 ...  -->  "  <  s  v  g
+```
+
+So `r.value` begins with a `"` byte and every interior quote is backslashed.
+`type_of` still says `string`, which makes the wrapping easy to miss.
+
+**Where it bit:** `tests/test_web_entries.mlpl` runs each generated Web UI
+bundle and asserts the result begins with `<svg` — the exact predicate the
+playground uses to decide whether to draw an SVG widget. The check failed
+against a value that *was* an SVG.
+
+**Workaround:** skip a leading quote byte before comparing. That is correct for
+the prefix test but cannot recover an escaped string in general — a child
+script's textual output is not reliably retrievable by its caller.
+
+**Severity:** medium. `run_script` is the composition primitive for programs
+that orchestrate other programs, and a caller cannot use a returned string
+without unescaping it by hand. Either return the value unmodified, or document
+`value` as a rendering and add a raw field beside it. The first is better; the
+Result and record fields already round-trip fine, so strings are the outlier.
+
+---
+
 ## Not asks
 
 Recorded so a later session does not re-litigate them:

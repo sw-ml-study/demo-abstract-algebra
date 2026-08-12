@@ -1,0 +1,7 @@
+r = unwrap(run_script("web/rps_cayley_web.mlpl"))
+print("status:", r.status)
+print("type:", type_of(r.value))
+print("first bytes:", compress(lt(range(size(tokenize_bytes(r.value))), 8), tokenize_bytes(r.value)))
+print("as text:", decode_bytes(compress(lt(range(size(tokenize_bytes(r.value))), 20), tokenize_bytes(r.value))))
+l = run_script("demos/01-magmas/rock_paper_scissors.mlpl", {source_dir: "."})
+print("lesson ok?", is_ok(l))

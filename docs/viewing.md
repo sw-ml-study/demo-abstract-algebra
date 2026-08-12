@@ -95,9 +95,37 @@ rather than accumulating.
 
 **Use the files in `web/`, not the ones in `demos/`.**
 
-The browser session rejects `include`, has no sandboxed filesystem, and shows
-a program's *final value*. So a web entry must be one self-contained file whose
-last expression is the SVG. Three exist today:
+The playground already renders SVG as a widget, not as raw text. From
+`components/web-render/crates/mlpl-web-render-aux/src/entry.rs`:
+
+```rust
+if !entry.is_error && out.starts_with("<svg") {
+    return render_svg_body(&entry.output);
+}
+```
+
+`render_svg_body` puts it in a `.svg-output` panel — bordered, padded,
+`max-width: 100%`, with a download button in the corner. Nothing needs to be
+written to a file; there is no filesystem in the browser and none is wanted.
+
+**The whole contract is: the entry's output must start with `<svg`.** Three
+things break it, and all three are natural to write:
+
+| In the script | What the UI shows |
+|---|---|
+| `include "../../lib/x.mlpl"` | An error — the browser session rejects `include` outright |
+| `write_text("out/x.svg", doc)` | Nothing useful — there is no sandboxed filesystem |
+| `ok("...")` as the final value | The text `Ok(...)` — the output starts with `Ok(`, so there is no SVG to draw |
+
+That last one is the quiet trap, and it is why **pasting a lesson from
+`demos/` shows a line of text rather than a picture.** A lesson ends in
+`ok(...)` / `err(...)` on purpose so `just demos` can gate on it. The value it
+returns is a verdict, not a diagram.
+
+A web entry inverts that: no `include`, no `write_text`, and the SVG *is* the
+final expression. `tests/test_web_entries.mlpl` runs each bundle and asserts
+exactly the predicate the playground checks, so a bundle cannot regress into a
+lesson. Three exist today:
 
 | Paste this | What you get |
 |---|---|
@@ -110,8 +138,12 @@ whole file into the editor, and run. The browser REPL detects an SVG return
 value and renders it inline beneath the input.
 
 Those files are **generated** — `scripts/build-web-demos` splices the `include`
-lines of `demos/web/*.mlpl` into standalone programs. Edit the source under
-`demos/web/`, then:
+lines of `demos/web/*.mlpl` into standalone programs, so the paste-ready copies
+cannot drift from `lib/`. They carry the whole library, including the
+`u:write_*` file helpers; those are only ever *defined*, never called, and
+sw-MLPL binds builtins at call time, so they are inert in the browser.
+
+Edit the source under `demos/web/`, then:
 
 ```sh
 just web           # regenerate web/

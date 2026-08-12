@@ -15,6 +15,13 @@
 # hand-written rules to one modular-arithmetic predicate -- and the pentagram
 # the graph draws is a picture of that fact.
 #
+# NOT a Web UI file. This is a CLI lesson: it uses include and write_text,
+# neither of which the browser session has, and it ends in ok(...) so the
+# suite can gate on it -- which means the playground would print "Ok(...)"
+# instead of drawing anything. To see these diagrams in the browser, paste
+# web/rpsls_dominance_web.mlpl.
+# See docs/viewing.md.
+#
 # visual: ascii, svg
 # loops: 0
 # complexity: n^2 to build the table, n^3 to check associativity
