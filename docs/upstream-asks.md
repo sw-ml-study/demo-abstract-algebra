@@ -422,7 +422,7 @@ demonstrate it.
 
 ---
 
-## 16. A multi-line entry renders its code inside the comment span
+## 16. A multi-line entry renders its code inside the comment span — **BUG**
 
 `render_input_line` passes an entry's WHOLE input to `split_inline_comment`,
 which splits on the first `#` outside a string
@@ -437,21 +437,26 @@ t = table(:u:fight, range(3), range(3))
 ```
 
 splits at index 0: `code` is empty and `comment` becomes
-`build the operation table
-t = table(:u:fight, range(3), range(3))`. The code
-renders inside the italic comment span — visually, the statement vanishes.
+`build the operation table\nt = table(:u:fight, range(3), range(3))`. The code
+renders inside the italic comment span — visually, the statement vanishes into
+the prose.
 
 Single-line entries are unaffected, which is why the built-in catalog never
 hits it: every `lines` entry there is one line. It bites any *file* whose
 narrative lives in leading comments — including `docs/apl2-idioms.mlpl`, which
-`statement_groups.rs` cites as the reason comments ride with their statement.
+`statement_groups.rs` cites as the reason comments ride with their statement at
+all.
 
-**Workaround here:** `scripts/check-comment-style` forbids full-line comments
-in generated web demos; annotations are trailing-only.
+**This one is a bug, not a request.** Nothing in the design wants a statement
+rendered as commentary; `split_inline_comment` is documented as splitting *a
+line*, and it is being handed a group. **Fix: split per line inside the group,**
+rendering each line's code and comment separately.
 
-**Fix:** split per line inside the group rather than once over the whole entry.
+**Workaround here:** see #18 — a bare `;` closes a comment block into its own
+entry, which removes the case where it matters most (a demo's opening block).
 
 ---
+
 
 ## 17. No block comment syntax
 
@@ -488,6 +493,70 @@ a block is also the natural place to mark it as *narration*.
 **Severity:** low on its own, medium combined with #15 and #16 — together they
 decide whether a companion repo can produce a demo that reads like sw-MLPL's
 own.
+
+---
+
+## 18. A blank line cannot separate a comment block — **small feature request**
+
+`group_statements` discards blank lines before doing anything else:
+
+```rust
+let trimmed = line.trim();
+if trimmed.is_empty() { continue; }     // blank lines vanish
+```
+
+So a comment block always rides with the statement after it, no matter how it
+is spaced. Measured against the real evaluator — one blank line, three blank
+lines, and no blank line all produce **one** group:
+
+```
+# block line one
+# block line two
+                      <- any number of blank lines here
+def u:f(x) { x }      ->  1 group
+```
+
+A blank line is the universal paragraph separator, and a file has no other way
+to say "this commentary stands on its own".
+
+**Workaround, and it works today:** a bare `;` after the block. It is a
+statement with balanced brackets, so it closes the group, and it evaluates to
+nothing:
+
+```
+# block line one
+# block line two
+;                     ->  group 1: the comment block, empty output
+def u:f(x) { x }      ->  group 2: the definition
+```
+
+Every web demo here now closes its opening block with `;` for exactly this
+reason. It works, and it is a wart: `;` is punctuation standing in for a
+paragraph break.
+
+**Ask:** flush a pending comment-only buffer when a blank line is seen. One
+condition in `group_statements`, and it makes blank lines mean what they look
+like. Note it *is* a behavior change — files that today merge a comment block
+into the following statement would split into two entries — but that split is
+the improvement, and it makes #16 much less reachable.
+
+---
+
+## Bug or feature?
+
+Four findings concern the playground's handling of narration. They are not the
+same kind of thing:
+
+| # | What | Kind | Size |
+|---|---|---|---|
+| 16 | code renders inside the comment span | **bug** | split per line instead of per entry |
+| 18 | a blank line cannot separate a comment block | feature | one condition in the grouper |
+| 17 | no block comment syntax | feature | lexer: `#* ... *#` |
+| 15 | a pasted file cannot declare narration | feature | promote leading/trailing blocks, or `@intro` / `@takeaway` |
+
+Only #16 produces visibly wrong output; the other three are absences with
+workarounds. Fixing #18 alone would remove the `;` wart and most of #16's
+reach, which makes it the best value of the four.
 
 ---
 

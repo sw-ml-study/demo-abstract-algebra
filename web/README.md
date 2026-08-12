@@ -43,7 +43,7 @@ fourth thing. It also shows what is *missing* — no row reproduces the header
 order, so there is no identity element, and Rock-Paper-Scissors stops at the
 bottom rung.
 
-*17 steps, 2 pictures.*
+*18 steps, 2 pictures.*
 
 ---
 
@@ -67,7 +67,7 @@ This one is pure sw-MLPL: the animation is `svg(frames, "life")`, a built-in
 renderer, and the frames come from one line of array work — no hand-written SVG
 anywhere.
 
-*6 steps, 2 pictures.*
+*7 steps, 2 pictures.*
 
 ---
 
@@ -86,7 +86,7 @@ Count the arrows at any circle: two leave, two arrive. Every choice wins twice
 and loses twice, which is exactly why the game is fair. And five elements
 instead of three added rules but no **laws** — this is still just a magma.
 
-*16 steps, 2 pictures.*
+*17 steps, 2 pictures.*
 
 ---
 
@@ -110,11 +110,21 @@ u:cycle(3, {names: ["rock", "paper", "scissors"]})
 
 Comments, not strings, and the reason is concrete: a string statement echoes
 **twice** in the transcript — once as the input line, again as its own evaluated
-output — while a comment renders once, as prose, with no output at all. A block
-placed just before a picture shares that picture's entry, so the explanation
-sits directly above the thing it explains; the closing block is a group of its
-own and ends the run on prose. (MLPL has no block-comment syntax, so the bars
-are made of line comments; see `docs/upstream-asks.md` #17.)
+output — while a comment renders once, as prose, with no output at all.
+
+Placement does real work:
+
+- the **opening** block is closed with a bare `;`, which makes it a transcript
+  entry of its own with no output;
+- a block placed **just before a picture** shares that picture's entry, so the
+  explanation sits directly above the thing it explains;
+- the **closing** block is a trailing group and ends the run on prose.
+
+That lone `;` is a wart, and a deliberate one: blank lines are discarded by the
+playground's statement grouper, so they cannot separate a comment block from
+the code after it, and `;` is the shortest thing that can
+(`docs/upstream-asks.md` #18). MLPL also has no block-comment syntax, so the
+bars are built from line comments (#17).
 
 **Why they carry no provenance header.** The playground evaluates a file as
 balanced statement groups and shows one entry per group, and leading comment

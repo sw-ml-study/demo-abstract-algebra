@@ -7,6 +7,7 @@
 # * Rock-Paper-Scissors is a MAGMA: a set with one closed binary operation,
 # * and nothing else. No associativity, no identity, no inverses.
 # **************************************************************************
+;
 def u:beats(x, y) { eq(mod(x - y + 3, 3), 1) }  # beats the next one around
 def u:fight(x, y) { if u:beats(x, y) { x } else { y } }  # the winner
 def u:cat(a, b) { decode_bytes(concat(tokenize_bytes(a), tokenize_bytes(b))) }  # plumbing: no graph type

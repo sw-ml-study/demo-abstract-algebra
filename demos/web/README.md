@@ -20,9 +20,15 @@ Enforced by `scripts/check-narration`, `scripts/check-web-size` and
 - **Annotate code lines with terse trailing comments** — labels of a few words,
   not sentences. The prose belongs in the epilog; saying it twice makes the
   transcript repeat itself. Capped at 52 characters.
-- **No full-line comments**, because the playground splits an entry's whole
-  input at its first `#` and a full-line comment rides with the statement after
-  it, hiding that statement's code inside the comment span.
+- **Narrate with `#` comment blocks, never string literals.** A string
+  statement echoes twice in the transcript — as the input line and again as its
+  own output. A comment renders once, with no output.
+- **Close the opening block with a bare `;`** so it becomes its own entry.
+  Blank lines are discarded by the grouper and cannot separate a block from the
+  code after it; without the `;` the following statement renders inside the
+  comment span (`docs/upstream-asks.md` #16, #18).
+- Blocks placed immediately before an `svg(...)` are meant to ride with it —
+  prose and picture in one entry.
 - **No `include`, no `write_text`**, and the final value is prose, not a Result:
   the browser has no filesystem and rejects `include`, and a Result would print
   `Ok(...)` instead of drawing.

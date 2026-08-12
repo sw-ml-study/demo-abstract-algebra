@@ -8,6 +8,7 @@
 # * 3x3 operation tables; only one is a group, and you will be able to tell
 # * at a glance.
 # **************************************************************************
+;
 def u:frames(t, n) { reshape(transpose(one_hot(flatten(t), n)), [n, n, n]) }  # frame k = cells where a*b = k
 def u:fight(x, y) { if eq(mod(x - y + 3, 3), 1) { x } else { y } }  # Rock-Paper-Scissors
 def u:add3(x, y) { mod(x + y, 3) }  # Z3, addition mod 3

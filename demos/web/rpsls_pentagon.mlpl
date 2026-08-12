@@ -9,6 +9,7 @@
 # * around. Two pictures of that fact -- the arrows, and the operation as an
 # * animated table.
 # **************************************************************************
+;
 def u:beats(x, y) { lt(mod(x - y + 5, 5) - 1, 2) * (1 - eq(mod(x - y + 5, 5), 0)) }  # beats the next two around
 def u:fight(x, y) { if u:beats(x, y) { x } else { y } }  # spock 0 .. rock 4
 def u:cat(a, b) { decode_bytes(concat(tokenize_bytes(a), tokenize_bytes(b))) }  # plumbing: no graph type
