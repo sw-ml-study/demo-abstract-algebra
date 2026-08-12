@@ -9,6 +9,10 @@
 #   write_text   no sandboxed filesystem in the browser
 #   ok(...)      the output then starts with "Ok(", so there is nothing to render
 #
+# A fourth failure is not an error at all, just a bad demo: the editor puts ONE
+# REPL entry per balanced statement group, so a demo that splices a library
+# buries its own diagram under ~89 entries. scripts/check-web-size budgets that.
+#
 # That last one is the quiet trap: the script runs perfectly and the UI shows a
 # line of text. A lesson under demos/ ends in ok()/err() on purpose, so it can
 # gate the CLI suite -- which is exactly why it CANNOT be the file you paste.
@@ -44,36 +48,37 @@ def u:run_web(path) { unwrap(run_script(path, {source_dir: "."})) }
 
 @test {name: "web bundles render as SVG widgets", tags: ["web"]}
 def u:test_web_bundles_render() { "Every bundle must satisfy the UI's <svg test.";
-  cayley = u:run_web("web/rps_cayley_web.mlpl");
-  u:assert_eq(cayley.status, "ok", "rps cayley bundle did not run")?;
-  u:assert_true(u:starts_with_svg(cayley.value), "rps cayley is not an SVG")?;
+  cayley = u:run_web("web/magma_rps.mlpl");
+  u:assert_eq(cayley.status, "ok", "magma_rps did not run")?;
+  u:assert_true(u:starts_with_svg(cayley.value), "magma_rps is not an SVG")?;
 
-  walk = u:run_web("web/rps_associativity_web.mlpl");
-  u:assert_eq(walk.status, "ok", "animated bundle did not run")?;
-  u:assert_true(u:starts_with_svg(walk.value), "animated bundle is not an SVG")?;
+  latin = u:run_web("web/latin_square.mlpl");
+  u:assert_eq(latin.status, "ok", "latin_square did not run")?;
+  u:assert_true(u:starts_with_svg(latin.value), "latin_square is not an SVG")?;
 
-  graph = u:run_web("web/rpsls_dominance_web.mlpl");
-  u:assert_eq(graph.status, "ok", "rpsls bundle did not run")?;
-  u:assert_true(u:starts_with_svg(graph.value), "rpsls bundle is not an SVG")?;
+  pent = u:run_web("web/rpsls_pentagon.mlpl");
+  u:assert_eq(pent.status, "ok", "rpsls_pentagon did not run")?;
+  u:assert_true(u:starts_with_svg(pent.value), "rpsls_pentagon is not an SVG")?;
   ok({test: "web-bundles-render", cases: 6})
 }
 
-@test {name: "web bundles are standalone", tags: ["web"]}
-def u:test_web_bundles_standalone() { "No include, no filesystem, no Result.";
-  u:assert_eq(u:count_in_file("web/rps_cayley_web.mlpl", "\ninclude \""), 0,
-    "include survived the splice")?;
-  u:assert_eq(u:count_in_file("web/rps_associativity_web.mlpl", "\ninclude \""), 0,
-    "include survived the splice")?;
-  u:assert_eq(u:count_in_file("web/rpsls_dominance_web.mlpl", "\ninclude \""), 0,
-    "include survived the splice")?;
-  # The bundles carry the whole spliced library, which DEFINES filesystem
-  # helpers like u:write_cayley_svg. Definitions are inert -- builtins bind
-  # late, at call time -- so what matters is that no bundle CALLS one at top
-  # level. The final-value assertions above prove that: a write_text call
-  # would make the result a Result, and the UI would print "Ok(1)".
-  u:assert_eq(u:count_in_file("web/rps_cayley_web.mlpl", "\nwrite_text("), 0,
-    "bundle calls write_text at top level")?;
-  ok({test: "web-bundles-standalone", cases: 4})
+@test {name: "web demos are standalone and short", tags: ["web"]}
+def u:test_web_bundles_standalone() { "No include, no filesystem, no bulk.";
+  u:assert_eq(u:count_in_file("web/magma_rps.mlpl", "include \""), 0,
+    "include survived into a web demo")?;
+  u:assert_eq(u:count_in_file("web/latin_square.mlpl", "include \""), 0,
+    "include survived into a web demo")?;
+  u:assert_eq(u:count_in_file("web/rpsls_pentagon.mlpl", "include \""), 0,
+    "include survived into a web demo")?;
+  # No filesystem in the browser, and a write_text Result would become the
+  # final value -- the UI would print "Ok(1)" instead of drawing anything.
+  u:assert_eq(u:count_in_file("web/magma_rps.mlpl", "write_text("), 0,
+    "web demo touches the filesystem")?;
+  u:assert_eq(u:count_in_file("web/latin_square.mlpl", "write_text("), 0,
+    "web demo touches the filesystem")?;
+  u:assert_eq(u:count_in_file("web/rpsls_pentagon.mlpl", "write_text("), 0,
+    "web demo touches the filesystem")?;
+  ok({test: "web-demos-standalone", cases: 6})
 }
 
 # A lesson under demos/ deliberately fails this contract: it ends in a Result

@@ -77,8 +77,8 @@ The CLI does not display images, but it will save them. When a script's final
 value is an SVG string, `--svg-out` writes it to a directory:
 
 ```sh
-mlpl-repl --source-dir . --svg-out /tmp/svgs web/rps_associativity_web.mlpl
-# viz: /tmp/svgs/34e504471fe7.svg
+mlpl-repl --source-dir . --svg-out /tmp/svgs web/rpsls_pentagon.mlpl
+# viz: /tmp/svgs/e03081a2ae79.svg
 ```
 
 The filename is a content hash, so re-running an unchanged program overwrites
@@ -93,66 +93,80 @@ rather than accumulating.
 
 ## 4. The sw-MLPL Web UI — paste and go
 
-**Use the files in `web/`, not the ones in `demos/`.**
+**Use the files in `web/`.** They are short on purpose; see "Why short" below.
 
-The playground already renders SVG as a widget, not as raw text. From
-`components/web-render/crates/mlpl-web-render-aux/src/entry.rs`:
+| Paste this | Groups | What you get |
+|---|---|---|
+| `web/magma_rps.mlpl` | 4 | The Cayley table, printed and as a heatmap |
+| `web/latin_square.mlpl` | 5 | **Two animations**: a magma's frames vs a group's permutation matrices |
+| `web/rpsls_pentagon.mlpl` | 15 | RPSLS animated, then the pentagram digraph |
+
+Open the [sw-MLPL playground](https://sw-ml-study.github.io/sw-mlpl/), paste a
+whole file into the **script editor**, and press Run.
+
+### How the UI decides to draw
+
+The playground renders a result as an inline SVG widget when, and only when,
+the entry's output starts with `<svg`
+(`components/web-render/crates/mlpl-web-render-aux/src/entry.rs`):
 
 ```rust
 if !entry.is_error && out.starts_with("<svg") {
-    return render_svg_body(&entry.output);
+    return render_svg_body(&entry.output);   // .svg-output panel + download button
 }
 ```
 
-`render_svg_body` puts it in a `.svg-output` panel — bordered, padded,
-`max-width: 100%`, with a download button in the corner. Nothing needs to be
-written to a file; there is no filesystem in the browser and none is wanted.
-
-**The whole contract is: the entry's output must start with `<svg`.** Three
-things break it, and all three are natural to write:
+Nothing is written to a file; there is no browser filesystem and none is
+wanted. Three things break the contract, and all three are natural to write:
 
 | In the script | What the UI shows |
 |---|---|
-| `include "../../lib/x.mlpl"` | An error — the browser session rejects `include` outright |
-| `write_text("out/x.svg", doc)` | Nothing useful — there is no sandboxed filesystem |
-| `ok("...")` as the final value | The text `Ok(...)` — the output starts with `Ok(`, so there is no SVG to draw |
+| `include "../../lib/x.mlpl"` | An error — the browser session rejects `include` |
+| `write_text("out/x.svg", doc)` | Nothing useful — no sandboxed filesystem |
+| `ok("...")` as the final value | The text `Ok(...)` — no SVG to draw |
 
-That last one is the quiet trap, and it is why **pasting a lesson from
-`demos/` shows a line of text rather than a picture.** A lesson ends in
-`ok(...)` / `err(...)` on purpose so `just demos` can gate on it. The value it
-returns is a verdict, not a diagram.
+That third one is why **pasting a lesson from `demos/` shows text, not a
+picture.** A lesson ends in `ok(...)` / `err(...)` so `just demos` can gate on
+it. Its value is a verdict.
 
-A web entry inverts that: no `include`, no `write_text`, and the SVG *is* the
-final expression. `tests/test_web_entries.mlpl` runs each bundle and asserts
-exactly the predicate the playground checks, so a bundle cannot regress into a
-lesson. Three exist today:
+### Why short
 
-| Paste this | What you get |
-|---|---|
-| `web/rps_cayley_web.mlpl` | Rock-Paper-Scissors as a colored Cayley table |
-| `web/rps_associativity_web.mlpl` | The same table, animated, showing associativity fail |
-| `web/rpsls_dominance_web.mlpl` | Rock-Paper-Scissors-Lizard-Spock as a pentagram digraph |
+Run evaluates the file as balanced **statement groups**
+(`mlpl-web-render-core/src/statement_groups.rs`) and puts one REPL entry per
+group. The first version of these demos spliced the whole of `lib/` into each
+file: **89 groups**, 88 of them printing `0`, with the diagram at the very
+bottom. It ran correctly and read as "no graphics".
 
-Open the [sw-MLPL playground](https://sw-ml-study.github.io/sw-mlpl/), paste the
-whole file into the editor, and run. The browser REPL detects an SVG return
-value and renders it inline beneath the input.
+`scripts/check-web-size` now ports that grouper to awk and fails the gate above
+20 groups per demo. Its counts match the browser's exactly.
 
-Those files are **generated** — `scripts/build-web-demos` splices the `include`
-lines of `demos/web/*.mlpl` into standalone programs, so the paste-ready copies
-cannot drift from `lib/`. They carry the whole library, including the
-`u:write_*` file helpers; those are only ever *defined*, never called, and
-sw-MLPL binds builtins at call time, so they are inert in the browser.
+### Use the built-in renderers first
 
-Edit the source under `demos/web/`, then:
+This is a dogfooding repository, so a web demo reaches for sw-MLPL's own
+visualization before writing a byte of SVG. There are **twelve** `svg()` types,
+only six of which are in `docs/lang-reference.md` (upstream ask #11):
 
-```sh
-just web           # regenerate web/
+```
+scatter  scatter3d  plotly3d  line  bar  heatmap  heatmap_grid
+life  waffle  critical_dimensions  gallery  attention_overlay  decision_boundary
 ```
 
-`just check` fails if `web/` is stale, so the paste-ready copies cannot silently
-drift from `lib/`.
+`life` is the one that matters here. It takes a `[T, H, W]` array and emits a
+SMIL-animated grid — so an animated Cayley table is one call:
 
----
+```mlpl
+# Frame k marks every cell where a * b = k.
+def u:frames(t, n) { reshape(transpose(one_hot(flatten(t), n)), [n, n, n]) }
+svg(u:frames(table(:u:add3, range(3), range(3)), 3), "life")
+```
+
+For a **group**, every frame is a permutation matrix — exactly one lit cell per
+row and per column. The Latin square becomes something you watch. For a magma
+the cells clump. Two lines, no hand-written SVG.
+
+Where a builtin genuinely does not exist, the hand-rolling is the evidence:
+`rpsls_pentagon.mlpl` draws its own digraph because `svg()` has no graph type
+(upstream ask #14), and that hand-rolling is about half the demo.
 
 ## 5. The interactive viewer
 
@@ -165,12 +179,21 @@ semigroup into a monoid*. See `viewer/README.md`.
 
 ## What there is to look at, today
 
-| Diagram | Structure | Shows |
+| Diagram | Where | Shows |
 |---|---|---|
-| `assets/rps-cayley.svg` | Rock-Paper-Scissors | The 3x3 operation table, one color per element |
-| `assets/rps-associativity.svg` | Rock-Paper-Scissors | **Animated.** Two markers walk `(a*b)*c` and `a*(b*c)` to different results |
-| `assets/rpsls-cayley.svg` | RPS-Lizard-Spock | The 5x5 table |
-| `assets/rpsls-dominance.svg` | RPS-Lizard-Spock | The dominance digraph — the pentagram, out-degree 2 everywhere |
+| `assets/rps-cayley.svg` | README | The 3x3 table, labelled, one color per element |
+| `assets/rps-associativity.svg` | README | **Animated.** Two markers walk `(a*b)*c` and `a*(b*c)` to different results |
+| `assets/rpsls-cayley.svg` | README | The 5x5 table |
+| `assets/rpsls-dominance.svg` | README | The dominance digraph — the pentagram |
+| `web/latin_square.mlpl` | playground | **Animated.** A magma's frames vs a group's permutation matrices |
+| `web/magma_rps.mlpl` | playground | The table as a built-in heatmap |
+| `web/rpsls_pentagon.mlpl` | playground | RPSLS animated, then the pentagram |
+
+The `assets/` diagrams come from `lib/render.mlpl`, which emits labelled SVG by
+hand because `svg(_, "heatmap")` draws no headings or cell text (ask #5) and
+`svg(_, "life")` is binary (ask #12). The `web/` demos use the builtins. That
+split is deliberate: the hand-rolled path shows what the diagrams should look
+like, and the asks say what would let the builtins produce them.
 
 More arrive with the lessons in `docs/plan.md`: the identity's white cross at
 lesson 06, the Latin square at lesson 08, and the population chart of all

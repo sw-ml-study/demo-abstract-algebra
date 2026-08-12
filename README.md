@@ -76,77 +76,31 @@ of three adds no law: still a commutative magma.
   row and column. Color by result and a group is recognizable at a glance; a
   mere monoid is not. *(Lesson 08.)*
 
+### See it yourself in the browser, in four lines
+
+The playground renders any result that starts with `<svg` as a widget. Paste
+`web/magma_rps.mlpl`:
+
+```mlpl
+def u:fight(x, y) { if eq(mod(x - y + 3, 3), 1) { x } else { y } }
+t = table(:u:fight, range(3), range(3))
+t
+svg(t, "heatmap")
+```
+
+Or `web/latin_square.mlpl`, which animates the difference between a magma and
+a group using sw-MLPL's own `"life"` renderer — no hand-written SVG at all:
+
+```mlpl
+# Frame k marks every cell where a * b = k.
+def u:frames(t, n) { reshape(transpose(one_hot(flatten(t), n)), [n, n, n]) }
+svg(u:frames(table(:u:fight, range(3), range(3)), 3), "life")   # a magma: cells clump
+svg(u:frames(table(:u:add3, range(3), range(3)), 3), "life")   # a group: every frame
+                                                               # is a permutation matrix
+```
+
 **[docs/viewing.md](docs/viewing.md) covers every way to see these** — terminal
-ASCII, `out/*.svg`, `--svg-out`, and pasting `web/*.mlpl` straight into the
-sw-MLPL browser playground.
-
-## Status
-
-Verified baseline: `mlpl-repl 0.20.0` from the adjacent
-`../sw-mlpl/target/release` build, with mlplunit for conformance.
-
-Lessons 01 (magmas via Rock-Paper-Scissors) and 02 (RPSLS: function, table,
-and graph as three views of one object) are implemented and green, with 0
-explicit loops, ASCII + static SVG + animated SVG output, and three
-paste-ready Web UI entries. Lessons 03–12 are planned and queued — see
-[docs/plan.md](docs/plan.md).
-
-## Quick start
-
-```sh
-just demos     # run every lesson; artifacts land in out/
-just render    # rebuild out/ and list exactly what was written
-just tests     # mlplunit conformance suite
-just web       # regenerate the paste-ready Web UI entries in web/
-just assets    # regenerate the diagrams this README embeds
-just check     # the full local gate
-```
-
-The interpreter is found at `../sw-mlpl/target/release/mlpl-repl`, or wherever
-`$MLPL` points. Nothing is installed and no stable binary is overwritten.
-
-## Layout
-
-```
-lib/algebra.mlpl      laws, classification, counterexamples, homomorphisms
-lib/render.mlpl       ASCII / SVG / JSON renderers, static and animated
-demos/NN-topic/*.mlpl one self-checking lesson per file
-demos/web/*.mlpl      web entries: final value is the SVG
-web/*.mlpl            GENERATED standalone copies — paste these into the Web UI
-assets/*.svg          GENERATED diagrams this README embeds
-probes/*.mlpl         capability probes against the interpreter
-tests/test_*.mlpl     mlplunit conformance
-viewer/*.html         dependency-free interactive pages (planned)
-out/                  scratch artifacts, gitignored
-```
-
-`web/` and `assets/` are generated and committed; `just check` fails if either
-is stale, so they cannot drift from `lib/`.
-
-## The second job: dogfooding sw-MLPL
-
-When a law check, an enumeration, or a rendering turns out to be awkward or
-impossible in ordinary `.mlpl`, the gap is recorded precisely rather than
-worked around silently.
-
-**Six of the eight findings so far are blockers**, and they are all the same
-missing surface: sw-MLPL cannot concatenate two strings, cannot turn a number
-into one, cannot measure or search one, and cannot build a string list. Since
-every lesson here has to *generate* a diagram, that surface is load-bearing.
-These are specified for implementation — signatures, semantics, acceptance
-tests, and the bridge each one deletes — in
-**[docs/mlpl-blockers.md](docs/mlpl-blockers.md)**. They are to be fixed
-upstream and then used; the bridges in `lib/render.mlpl` are temporary.
-
-`probes/text_capabilities.mlpl` runs under `just demos` and reports open vs.
-closed, so the day any of this lands, one command says so. It reports; it does
-not gate. The other two findings have honest workarounds and live in
-[docs/upstream-asks.md](docs/upstream-asks.md).
-
-The wins are recorded too. `table(f, a, b)` gives the Cayley table in one line,
-and `gather_rows` + `transpose_axes` express the `n^3` associativity check with
-no loop and no comprehension syntax — which is precisely the question the
-source brief posed.
+ASCII, `out/*.svg`, `--svg-out`, and the playground.
 
 ## Scope
 

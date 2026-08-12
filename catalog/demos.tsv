@@ -12,6 +12,6 @@ symmetry	demos/09-commutativity/symmetry.mlpl	09-commutativity	abelian-vs-nonabe
 all-small-magmas	demos/10-enumeration/all_small_magmas.mlpl	10-enumeration	exhaustive-classification	0	0	ascii,svg	current	gated
 same-up-to-naming	demos/11-isomorphism/same_up_to_naming.mlpl	11-isomorphism	permutation-equivalence	0	0	ascii,svg	current	gated
 structure-preserving	demos/12-homomorphisms/structure_preserving.mlpl	12-homomorphisms	homomorphism-check	0	0	ascii,svg	current	gated
-rps-cayley-web	demos/web/rps_cayley_web.mlpl	web	cayley-table-web-entry	0	0	svg	current	runnable
-rps-associativity-web	demos/web/rps_associativity_web.mlpl	web	animated-associativity-web-entry	0	0	svg	current	runnable
-rpsls-dominance-web	demos/web/rpsls_dominance_web.mlpl	web	dominance-digraph-web-entry	0	0	svg	current	runnable
+magma-rps-web	demos/web/magma_rps.mlpl	web	cayley-table-builtin-heatmap	0	0	svg	current	runnable
+latin-square-web	demos/web/latin_square.mlpl	web	animated-latin-square-via-life	0	0	svg	current	runnable
+rpsls-pentagon-web	demos/web/rpsls_pentagon.mlpl	web	dominance-pentagram	0	0	svg	current	runnable

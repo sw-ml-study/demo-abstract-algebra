@@ -1,0 +1,15 @@
+# What a group looks like, and what a magma does not -- paste into the playground.
+# visual: svg
+# loops: 0
+# Frame k marks every cell where a * b = k. one_hot builds all n frames
+# at once; svg(_, "life") animates them. No hand-written SVG anywhere.
+def u:frames(t, n) { reshape(transpose(one_hot(flatten(t), n)), [n, n, n]) }
+def u:fight(x, y) { if eq(mod(x - y + 3, 3), 1) { x } else { y } }
+def u:add3(x, y) { mod(x + y, 3) }
+# Rock-Paper-Scissors: the lit cells clump. Two rocks in one row, none
+# in another. It is only a magma.
+svg(u:frames(table(:u:fight, range(3), range(3)), 3), "life")
+# Z3 under addition: every frame is a PERMUTATION MATRIX -- exactly one
+# lit cell per row and per column. That is the Latin square, and it is
+# what being a group looks like.
+svg(u:frames(table(:u:add3, range(3), range(3)), 3), "life")

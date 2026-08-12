@@ -1,0 +1,13 @@
+# Rock-Paper-Scissors is a magma -- paste into the sw-MLPL playground.
+# visual: svg
+# loops: 0
+# A magma is a set with a closed binary operation. Nothing else: no
+# associativity, no identity, no inverses. RPS is exactly that.
+# x beats y when (x - y) mod 3 == 1, so rock 0 beats scissors 2.
+def u:fight(x, y) { if eq(mod(x - y + 3, 3), 1) { x } else { y } }
+# table() is the outer product: the entire Cayley table in one call.
+t = table(:u:fight, range(3), range(3))
+# rock = 0, paper = 1, scissors = 2. Read it as "row beats column".
+t
+# The operation IS an array, so the language renders it directly.
+svg(t, "heatmap")

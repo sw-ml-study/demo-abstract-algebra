@@ -287,6 +287,98 @@ Result and record fields already round-trip fine, so strings are the outlier.
 
 ---
 
+## 11. `docs/lang-reference.md` documents 6 of the 12 `svg()` types
+
+The reference lists `scatter`, `line`, `bar`, `heatmap`, `gallery`, and
+`decision_boundary`. The dispatch in
+`components/viz/crates/mlpl-viz/src/svg.rs` has **twelve**:
+
+```
+scatter  scatter3d  plotly3d  line  bar  heatmap  heatmap_grid
+life  waffle  critical_dimensions  gallery  attention_overlay  decision_boundary
+```
+
+`life`, `heatmap_grid`, `waffle`, `scatter3d`, `plotly3d`, and
+`attention_overlay` are undocumented.
+
+**Why it cost real work:** `svg(frames, "life")` takes a `[T, H, W]` array and
+emits a **SMIL-animated** grid — exactly the capability this repository needed.
+Not finding it in the reference, this repo hand-wrote ~400 lines of SVG
+emission, including its own SMIL, and paid for it with blockers B1–B4 (no
+string concatenation, no number-to-string). A one-line builtin was there the
+whole time:
+
+```mlpl
+svg(reshape(transpose(one_hot(flatten(t), n)), [n, n, n]), "life")
+```
+
+That renders an animated Cayley table — one frame per element — with no
+hand-written SVG at all. It is now `demos/web/latin_square.mlpl`, five
+statements long.
+
+**Severity:** high, and it is a documentation fix rather than a code change.
+An undocumented capability is, from a downstream repo's point of view, an
+absent one. Listing all twelve in the reference (with shapes) would have saved
+this repository a day and made blockers B1–B4 far less urgent.
+
+---
+
+## 12. `svg(_, "life")` is binary, so it cannot carry element identity
+
+`render_life` marks a cell alive when its value is `> 0.5` and paints every
+live cell the same green. That is right for Game of Life and it is the only
+reason the animated Cayley table above needs the `one_hot` trick: identity has
+to be moved from the cell VALUE onto a frame AXIS.
+
+The trick is genuinely nice — a group's frames are each a permutation matrix,
+so the Latin square becomes something you watch rather than read — but it is a
+workaround. A categorical variant, where cell value selects a color from a
+palette, would render a Cayley table directly as one frame.
+
+**Related:** ask #5 wants headings and cell text on `heatmap`. The two together
+describe one missing renderer: a labelled, categorically-colored grid. That
+single addition would delete most of `lib/render.mlpl`.
+
+**Severity:** medium. The workaround works and teaches something.
+
+---
+
+## 13. `svg(_, "life")` renders small boards small
+
+Cell size is `clamp(600 / max(h, w), 8, 36)`, tuned so a 40x40 Life board fits
+in 600px. A 3x3 board therefore renders at 132px — the cap binds long before
+the target edge does.
+
+Algebra tables are always small: orders 2 through 8. Every diagram this
+repository would draw with `life` sits in the range where the clamp makes it
+tiny.
+
+**Severity:** low. A `MAX_CELL` of ~80, or an optional size argument, fixes it.
+Noted because the fix is one constant and the current default is wrong for
+every use in this repo.
+
+---
+
+## 14. `svg()` has no graph or network type
+
+The twelve types cover points, lines, bars, grids, images, and attention. None
+draws a node-link diagram.
+
+**Where it bit:** the dominance digraph — the pentagram that makes
+Rock-Paper-Scissors-Lizard-Spock memorable — is a directed graph on five nodes.
+`demos/web/rpsls_pentagon.mlpl` emits it by hand, and that hand-rolling is
+about half the demo's length.
+
+A `"digraph"` type taking an `[N, N]` adjacency matrix (plus optional node
+labels via `aux`) and laying nodes out on a circle would cover it, and would
+also serve `knn_graph`, which already returns an edge list and currently has no
+renderer.
+
+**Severity:** medium. Adjacency matrices are arrays, so this is squarely in the
+language's wheelhouse.
+
+---
+
 ## Not asks
 
 Recorded so a later session does not re-litigate them:

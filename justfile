@@ -26,6 +26,7 @@ audit:
     ./scripts/validate-catalog catalog/tests.tsv
     ./scripts/check-docstrings
     ./scripts/check-generated
+    ./scripts/check-web-size
 
 # Regenerate the standalone, paste-ready Web UI entries in web/.
 web:
