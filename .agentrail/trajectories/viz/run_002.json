@@ -1,0 +1,11 @@
+{
+  "task_type": "viz",
+  "state": {
+    "number": 4,
+    "step": "short-builtin-first-web-demos"
+  },
+  "action": "Copied the built playground to a scratch dir and served it, wrote a harness importing the real wasm WasmSession, and measured whole-file vs line-by-line vs statement-grouped evaluation to isolate the cause; read mlpl-viz/src/svg.rs for the true viz-type dispatch and life.rs for its contract; verified the one_hot frame trick and the pentagram by screenshot.",
+  "result": "success",
+  "reward": 1,
+  "timestamp": "2026-08-12T12:30:56"
+}

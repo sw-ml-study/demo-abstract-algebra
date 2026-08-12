@@ -1,9 +1,10 @@
 number = 4
 slug = "short-builtin-first-web-demos"
-status = "in-progress"
+status = "completed"
 description = "The web bundles do not show graphics in practice and are indefensibly long. T..."
 role = "production"
 context_files = []
 created_at = "2026-08-12T12:09:15"
+completed_at = "2026-08-12T12:30:56"
 task_type = "viz"
-commits = []
+commits = ["d9a31a192c0f6161c5c52290f89e026b1cd73001"]
