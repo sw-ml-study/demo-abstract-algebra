@@ -27,7 +27,11 @@ Everything follows from that.
 | Counterexample witnesses for a failed law | abstract-algebra | |
 | Exhaustive enumeration of small magmas | abstract-algebra | n=2 (16), n=3 (19683) |
 | Isomorphism, canonicalization, equivalence classes | abstract-algebra | Permutation relabeling of tables |
-| Rings, fields | abstract-algebra | Two interacting operations; later |
+| Rings, fields | abstract-algebra | Stage 5; two interacting operations |
+| Subgroups, cosets, Lagrange, quotients | abstract-algebra | Stage 2 |
+| Group actions, orbits, Burnside | abstract-algebra | Stage 3 |
+| Classification of small groups | abstract-algebra | Stage 4 |
+| Universal algebra: signatures, varieties, free algebras | abstract-algebra | Stage 6, and NOT a third repo — see below |
 | **Homomorphisms** | **shared, see below** | The bridge |
 | Objects and morphisms | category-theory | |
 | Identity morphism, composition, associativity of composition | category-theory | |
@@ -39,6 +43,15 @@ Everything follows from that.
 | Bifunctors, profunctors, lenses/optics, adjunctions | category-theory | |
 | `map(g . f) == map(g) . map(f)` over arrays | category-theory | The functor law |
 | Reduction/monoid-driven parallelism argument | **shared, see below** | |
+
+## Universal algebra is not a third repository
+
+It is tempting to put signatures, equational laws and varieties in a repo
+between this one and `demo-category-theory`. `docs/plan.md` argues against it
+and this contract follows that ruling: universal algebra is the continuation of
+*what laws does this operation obey*, which is this repository's question, so
+it is Stage 6 here. The handoff to category theory happens from there, still
+via homomorphisms.
 
 ## The two shared surfaces, and how to share them
 

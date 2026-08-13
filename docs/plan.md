@@ -75,8 +75,143 @@ than the subject — they are gone by lesson 03.
 | 11 | `11-isomorphism/same_up_to_naming` | Relabeling; canonical forms; equivalence classes | Two tables shown becoming identical under a permutation | planned |
 | 12 | `12-homomorphisms/structure_preserving` | `f(a*b) = f(a)*f(b)`; the bridge out of this repo | Two tables with arrows between them; violated cells flagged | planned |
 
-Lessons 13+ (rings, fields, two interacting operations) are a later saga, not
-part of this plan.
+That is **Stage 1 of six**. It covers structures with a single binary
+operation, and it stops at the moment a group has been recognized. The rest of
+the syllabus is below.
+
+## Scope: what belongs in this repository
+
+Abstract algebra does not end, so a finite plan has to be a decision. Here is
+the decision.
+
+> **A concept belongs here when it can be demonstrated on a FINITE structure,
+> expressed as array operations over its tables, and shown as a picture.**
+
+That criterion does real work in both directions.
+
+It **admits** essentially all finite group theory — subgroups, cosets,
+Lagrange, quotients, group actions, orbits, the classification of small
+groups — along with finite rings and fields, and universal algebra. All of it
+is tables, and most of it is more visual than the prose that usually carries
+it. Cosets *partition a Cayley table into congruent blocks*; Lagrange's theorem
+is then a divisibility fact you can see rather than a proof to accept.
+
+It **excludes** the infinite and the analytic: topological groups, Lie theory,
+Galois theory over infinite fields, anything whose objects have no finite
+table. Not because they are unimportant, but because this repository's entire
+argument is "the structure IS an array", and those have no array.
+
+### Why universal algebra lives here and not in a third repository
+
+Universal algebra — signatures, equational laws, varieties, free algebras — is
+the natural continuation of Stage 1's enumerate-and-classify work: take
+"hand it elements and an operation, let it tell you which laws hold" and let
+the SIGNATURE vary too. It is tempting to give it its own repo, sitting between
+this one and `demo-category-theory`. It should not have one.
+
+- It is the same object. The machinery is already pointed at it.
+- A third repository would split one argument across a boundary.
+  `docs/scope-boundary.md` earns its place because it separates two genuinely
+  different questions — *what laws does this operation obey* versus *what
+  survives a mapping*. Universal algebra is squarely the first.
+- The bridge to category theory is correctly placed at homomorphisms, and it
+  works precisely because the algebra side arrives there carrying enough
+  structure to make composition interesting.
+
+So it is Stage 6, and the handoff happens from there.
+
+## The six stages
+
+Each stage is independently shippable, so the repository is always in a
+coherent state rather than permanently half-finished. One AgentRail saga per
+stage; archive and open the next.
+
+### Stage 1 — one operation *(in progress: 8 of 12)*
+
+The ladder from magma to group, plus the two meta-lessons that make the rest
+possible. Detailed in the table above.
+
+### Stage 2 — inside a group
+
+The structure a single group contains. This is the most visual material in the
+subject and the stage with the highest teaching return.
+
+| Lesson | Concept | Visual |
+|---|---|---|
+| 13 | Subgroups: subsets closed under the operation | The sub-table highlighted inside the whole |
+| 14 | Order of an element; cyclic subgroups and generators | The orbit of one element traced through the table |
+| 15 | Cosets: `aH` partitions the group | The table permuted into congruent blocks |
+| 16 | Lagrange's theorem | Block count times block size equals the whole — visibly |
+| 17 | Normal subgroups; conjugation | The blocks that survive conjugation, side by side with ones that do not |
+| 18 | Quotient groups | The block structure collapsed into a smaller table |
+| 19 | Kernel and image; the first isomorphism theorem | A homomorphism's kernel as a subgroup, its image as a sub-table |
+
+### Stage 3 — groups acting
+
+A group stops being a table and starts being something that *does* things. The
+action table is a different shape — `G x X -> X` rather than `G x G -> G` —
+which stresses the array thesis productively.
+
+| Lesson | Concept | Visual |
+|---|---|---|
+| 20 | Permutations as a group; `S_3`, `S_4` | Permutation matrices, composed |
+| 21 | Cayley's theorem: every group IS a permutation group | Each row of the table read as a permutation |
+| 22 | Dihedral groups; the symmetries of a polygon | The polygon, with each symmetry animated |
+| 23 | Group actions `G x X -> X` | A rectangular action table beside the square group table |
+| 24 | Orbits and stabilizers | The set coloured by orbit; the orbit-stabilizer count |
+| 25 | Burnside's counting lemma | Necklace colourings counted by averaging fixed points |
+
+### Stage 4 — building new from old
+
+Where Stage 1's enumeration and isomorphism machinery pays off: the
+classification of small groups becomes something the repository DERIVES rather
+than states.
+
+| Lesson | Concept | Visual |
+|---|---|---|
+| 26 | Direct products `G x H` | The product table as a block pattern of the factors |
+| 27 | Every group of order 4, derived | Two tables, proven non-isomorphic by search |
+| 28 | Groups of order 6: `Z6` and `S_3` | The first non-abelian appearance |
+| 29 | Classification through order 8 | A gallery of all five, with the isomorphism classes computed |
+| 30 | Generators and relations, finitely presented | A presentation expanded into a table |
+
+### Stage 5 — two operations
+
+Distributivity is the first law that relates two operations, and it is an
+`n^3` cube check — the same shape as associativity, which Stage 1 already
+built the renderer for.
+
+| Lesson | Concept | Visual |
+|---|---|---|
+| 31 | Rings: two operations, one distributive law | Two tables side by side; the distributivity cube |
+| 32 | Zero divisors; integral domains | The multiplication table's zero pattern |
+| 33 | Fields; `Z_p` versus `Z_n` for composite `n` | Which tables have full inverse coverage |
+| 34 | `F_4`: a field that is not `Z_4` | Two order-4 tables that differ where it matters |
+| 35 | Characteristic | Repeated addition of 1, traced to zero |
+| 36 | Ideals and quotient rings | The ring analogue of Stage 2's blocks |
+
+### Stage 6 — universal algebra, and the handoff
+
+| Lesson | Concept | Visual |
+|---|---|---|
+| 37 | Signatures: an algebra is a set with operations | The same set under several signatures |
+| 38 | Equational laws as data, not code | A law table checked against a structure table |
+| 39 | Varieties: the class of all structures satisfying a law set | The enumeration of Stage 1, sliced by law |
+| 40 | Free algebras; terms as trees | Term trees evaluated into a table |
+| 41 | The bridge: homomorphisms compose, so algebras form a category | The handoff to `demo-category-theory` |
+
+About forty lessons, six stages, one criterion. Finite because the criterion is
+finite, not because a number was picked.
+
+## Deferred deliberately
+
+- **Infinite structures.** No finite table, so no picture, so out of scope by
+  the criterion — not by preference.
+- **Sylow theory and the deeper classification results.** They are finite, but
+  their content is the PROOF rather than the object, and a table does not show
+  a proof. Revisit only if a visual argument appears.
+- **Category theory.** `../demo-category-theory`, under the contract in
+  `docs/scope-boundary.md`.
 
 ### Lesson 05 shipped a substitute
 

@@ -201,8 +201,19 @@ Verified baseline: `mlpl-repl 0.20.0` from the adjacent
 
 Lessons 01–08 are implemented and green — the full ladder from magmas to
 groups — with **0 explicit loops**, ASCII + static SVG + animated SVG output,
-and three paste-ready Web UI demos. 12 demos and 14 tests pass. Lessons 09–12
-are planned and queued; see [docs/plan.md](docs/plan.md).
+and three paste-ready Web UI demos. 12 demos and 14 tests pass.
+
+Those eight are **Stage 1 of six**. [docs/plan.md](docs/plan.md) sets out a
+staged syllabus of about forty lessons — one operation, then inside a group
+(cosets, Lagrange, quotients), groups acting, building new groups from old,
+two operations (rings and fields), and universal algebra — bounded by a stated
+criterion rather than a number:
+
+> A concept belongs here when it can be demonstrated on a **finite** structure,
+> expressed as array operations over its tables, and shown as a picture.
+
+Each stage is independently shippable, so the repository is always coherent
+rather than permanently half-finished.
 
 ## Quick start
 
