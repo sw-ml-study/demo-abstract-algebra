@@ -1,0 +1,9 @@
+number = 13
+slug = "adopt-string-list-args-and-bare-filename"
+status = "in-progress"
+description = "B5 (string-list as a u: argument) and A1 (bare-filename invocation) are live ..."
+role = "production"
+context_files = []
+created_at = "2026-08-12T18:06:31"
+task_type = "adoption"
+commits = []
