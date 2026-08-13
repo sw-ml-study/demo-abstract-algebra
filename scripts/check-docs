@@ -48,6 +48,13 @@ for ref in $(grep -oh 'assets/[a-z0-9-]*\.svg' "$readme" "$repo_root"/docs/*.md 
   [ -f "$repo_root/$ref" ] || note "$ref is referenced but does not exist"
 done
 
+# (3b) the README keeps its structure. A section vanished in a bad string
+# replace and went unnoticed for eight commits, because every link still
+# resolved -- link checking cannot see a hole.
+for want in "Status" "Quick start" "Layout" "Scope" "Documents"; do
+  grep -qF "## $want" "$readme" || note "README.md has lost its '$want' section"
+done
+
 # (4) no orphan docs -- EVERY file under docs/, not only markdown. The source
 # brief docs/research.txt is a doc too, and it is what the whole plan derives
 # from; if nothing links it, a reader cannot find the argument behind any of

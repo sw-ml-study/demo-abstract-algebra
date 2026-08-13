@@ -194,6 +194,77 @@ svg(u:frames(table(:u:add3, range(3), range(3)), 3), "life")   # a group: every 
 **[docs/viewing.md](docs/viewing.md) covers every way to see these** — terminal
 ASCII, `out/*.svg`, `--svg-out`, and the playground.
 
+## Status
+
+Verified baseline: `mlpl-repl 0.20.0` from the adjacent
+`../sw-mlpl/target/release` build, with mlplunit for conformance.
+
+Lessons 01–08 are implemented and green — the full ladder from magmas to
+groups — with **0 explicit loops**, ASCII + static SVG + animated SVG output,
+and three paste-ready Web UI demos. 12 demos and 14 tests pass. Lessons 09–12
+are planned and queued; see [docs/plan.md](docs/plan.md).
+
+## Quick start
+
+```sh
+just demos     # run every lesson; artifacts land in out/
+just render    # rebuild out/ and list exactly what was written
+just tests     # mlplunit conformance suite
+just web       # regenerate the paste-ready Web UI demos in web/
+just assets    # regenerate the diagrams this README embeds
+just check     # the full local gate
+```
+
+The interpreter is found at `../sw-mlpl/target/release/mlpl-repl`, or wherever
+`$MLPL` points. Nothing is installed and no stable binary is overwritten.
+
+To see the diagrams in a browser instead, open
+<https://sw-ml-study.github.io/sw-mlpl/>, click **Editor**, **Load** a file
+from `web/`, press **Run**, then click **REPL** — see
+[web/README.md](web/README.md).
+
+## Layout
+
+```
+lib/algebra.mlpl      laws, classification, counterexamples, homomorphisms
+lib/render.mlpl       ASCII / SVG / JSON renderers, static and animated
+demos/NN-topic/*.mlpl one self-checking lesson per file
+demos/web/*.mlpl      web demo sources
+web/*.mlpl            GENERATED standalone copies — paste these into the Web UI
+assets/*.svg          GENERATED diagrams this README embeds
+probes/*.mlpl         capability probes against the interpreter
+tests/test_*.mlpl     mlplunit conformance
+out/                  scratch artifacts, gitignored
+```
+
+`web/` and `assets/` are generated and committed; `just check` fails if either
+is stale, so they cannot drift from `lib/`.
+
+## The second job: dogfooding sw-MLPL
+
+When a law check, an enumeration, or a rendering turns out to be awkward or
+impossible in ordinary `.mlpl`, the gap is recorded precisely rather than
+worked around silently. The findings are written up as a work order for the
+language team, with fix sites, proposed signatures and acceptance tests:
+**[docs/sw-mlpl-work-order.md](docs/sw-mlpl-work-order.md)**.
+
+**The loop closes.** Four findings have shipped upstream — `str_concat` /
+`str_join`, `to_string`, string lists as `u:` arguments, and the bare-filename
+CLI fix — and this repo adopted each the day it landed, **deleting the bridges
+they justified**. Text generation is ordinary code now rather than a byte
+round-trip; `str_join` taking a whole fragment list in one call turned the
+worst code here into something readable; and the record wrapper that once
+existed only to smuggle a string list past an argument check now stays only
+where it earns its place.
+
+`probes/text_capabilities.mlpl` runs under `just demos` and reports which
+findings are still open, naming the bridge each closure makes deletable.
+
+The wins are recorded too. `table(f, a, b)` gives the Cayley table in one line,
+and `gather_rows` + `transpose_axes` express the `n^3` associativity check with
+no loop and no comprehension syntax — which is precisely the question the
+source brief posed.
+
 ## Scope
 
 This repository is **abstract algebra only**. Category theory — functors,
