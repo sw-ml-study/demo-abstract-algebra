@@ -74,7 +74,7 @@ at least spelled once.
 
 ---
 
-## 3. No string concatenation — **BLOCKER B1**
+## 3. No string concatenation — **BLOCKER B1, CLOSED**
 
 Strings are a separate value kind and cannot be combined with any operator.
 `print` is variadic specifically to avoid needing concatenation.
@@ -96,7 +96,7 @@ call, and quadratic across a fold.
 
 ---
 
-## 4. No number-to-string conversion — **BLOCKER B2**
+## 4. No number-to-string conversion — **BLOCKER B2, CLOSED**
 
 `to_number` / `to_int` parse strings into numbers. There is no inverse.
 `repr(3)` returns `"array[] [3]"` — a diagnostic rendering, not a numeral.

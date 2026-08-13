@@ -20,8 +20,8 @@ Ranked by value per unit of effort, not by severity.
 | Order | Item | Kind | Effort | Why first |
 |---|---|---|---|---|
 | 1 | [A1](#a1) bare-filename CLI failure | bug | one line | The documented invocation fails; first thing a newcomer types |
-| 2 | [B1](#b1) `str_concat` / `str_join` | missing | small | Unblocks all text generation downstream |
-| 3 | [B2](#b2) `to_string` | missing | small | Removes a silent dependency on `to_json`'s formatting |
+| ~~2~~ | ~~[B1](#b1) `str_concat` / `str_join`~~ | **SHIPPED** | — | Adopted downstream; bridges deleted |
+| ~~3~~ | ~~[B2](#b2) `to_string`~~ | **SHIPPED** | — | Adopted downstream; bridge deleted |
 | 4 | [B5](#b5) string-list as a `u:` argument | bug-ish | ~one line | Looks like an oversight in one domain check |
 | 5 | [A4](#a4) document the 6 undocumented `svg()` types | bug | doc only | An undocumented capability is an absent one — this one cost a day |
 | 6 | [D1](#d1) blank line separates a comment block | feature | one condition | Removes a `;` wart and most of [A3](#a3)'s reach |
@@ -31,8 +31,14 @@ Ranked by value per unit of effort, not by severity.
 | 10 | [B3](#b3) `str_len` / `str_slice` / `str_find` / `str_split` | missing | medium | Unblocks a blocked lesson |
 | — | everything else | mixed | — | Has honest workarounds |
 
-**If you only do three things:** A1, B1, B2. They are all small, and together
-they turn a downstream repo's workaround pile into ordinary code.
+**B1 and B2 have shipped** and are adopted downstream — `lib/render.mlpl` now
+builds text with `str_join` and `to_string` like ordinary code, and both
+bridges are deleted. `str_join` taking the whole fragment list in one call
+turned the worst code in that repo into something readable, which was more
+than the ask expected.
+
+**If you only do three more things:** A1, B5, A4. All small, and A4 is
+documentation only.
 
 ---
 
@@ -234,7 +240,7 @@ sw-MLPL cannot join two strings or turn a number into one. Any program that
 messages. `equal` compares strings. `tokenize_bytes` / `decode_bytes`
 round-trip. The gap is one-directional.
 
-## B1. String concatenation {#b1}
+## B1. String concatenation {#b1} — **SHIPPED**
 
 **Symptom.** Both plausible spellings are rejected:
 
@@ -278,7 +284,7 @@ str_join(["only"], "-")           == "only"
 str_concat("é", "x")              == "éx"      # 3 bytes, not mangled
 ```
 
-## B2. Number to string {#b2}
+## B2. Number to string {#b2} — **SHIPPED**
 
 **Symptom.** There is no inverse of `to_number`. The nearest thing is a
 diagnostic renderer: `repr(3)` is `"array[] [3]"`.

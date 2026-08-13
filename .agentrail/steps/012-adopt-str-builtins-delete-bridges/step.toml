@@ -1,0 +1,9 @@
+number = 12
+slug = "adopt-str-builtins-delete-bridges"
+status = "in-progress"
+description = "Upstream landed B1 (str_concat/str_join) and B2 (to_string) and the adjacent ..."
+role = "production"
+context_files = []
+created_at = "2026-08-12T17:35:05"
+task_type = "adoption"
+commits = []

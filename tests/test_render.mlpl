@@ -9,19 +9,26 @@
 include "lib/algebra.mlpl";
 include "lib/render.mlpl";
 
-@test {name: "string primitives", tags: ["render"]}
-def u:test_string_primitives() { "cat and num are the SVG emitter's floor.";
-  u:assert_eq(u:join("ab", "cd"), "abcd", "cat failed")?;
-  u:assert_eq(u:join("", "x"), "x", "cat with empty left")?;
-  u:assert_eq(u:join("x", ""), "x", "cat with empty right")?;
-  u:assert_eq(u:join3("a", "b", "c"), "abc", "cat3 failed")?;
-  u:assert_eq(u:join5("a", "b", "c", "d", "e"), "abcde", "cat5 failed")?;
-  # The load-bearing assumption: to_json of a scalar IS its numeral.
-  u:assert_eq(u:number_text(0), "0", "num 0")?;
-  u:assert_eq(u:number_text(12), "12", "num 12")?;
-  u:assert_eq(u:number_text(1.5), "1.5", "num 1.5")?;
-  u:assert_eq(u:number_text(0 - 3), "-3", "num negative")?;
-  ok({test: "string-primitives", cases: 9})
+@test {name: "the adopted string builtins", tags: ["render"]}
+def u:test_string_primitives() { "str_join and to_string replaced this repo's two worst bridges.";
+  # Before work-order B1 and B2 landed, joining went through a byte round trip
+  # and numbers leaned on to_json. Both bridges are deleted; these pin what
+  # replaced them, because every diagram in the repo is built from them.
+  u:assert_eq(str_concat("ab", "cd"), "abcd", "str_concat")?;
+  u:assert_eq(str_concat("", "x"), "x", "empty left")?;
+  u:assert_eq(str_concat("x", ""), "x", "empty right")?;
+  u:assert_eq(str_join(["a", "b", "c"], ""), "abc", "join with no separator")?;
+  u:assert_eq(str_join(["a", "b", "c"], ", "), "a, b, c", "join with a separator")?;
+  u:assert_eq(str_join([], "-"), "", "join of nothing")?;
+  u:assert_eq(str_join(["only"], "-"), "only", "join of one")?;
+  # Numbers, including the case the old bridge got right only by accident.
+  u:assert_eq(to_string(0), "0", "zero")?;
+  u:assert_eq(to_string(12), "12", "integer")?;
+  u:assert_eq(to_string(1.5), "1.5", "float")?;
+  u:assert_eq(to_string(0 - 3), "-3", "negative")?;
+  u:assert_eq(to_string(8 / 2), "4", "an integral RESULT prints bare, not 4.0")?;
+  u:assert_true(equal(unwrap(to_number(to_string(sqrt(2)))), sqrt(2)), "round trip")?;
+  ok({test: "string-builtins", cases: 13})
 }
 
 @test {name: "cayley svg is well formed", tags: ["render"]}

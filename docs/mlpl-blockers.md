@@ -1,6 +1,8 @@
 # sw-MLPL blockers: the missing text surface
 
-**Status: blockers, not preferences.** This repository is dogfooding sw-MLPL.
+**Status: B1 and B2 are CLOSED** — shipped upstream and adopted here, with their bridges deleted. The rest stand.
+
+**Blockers, not preferences.** This repository is dogfooding sw-MLPL.
 Every lesson here has to turn an algebraic structure into something a learner
 can look at, and that means generating text — SVG, HTML, labels. sw-MLPL
 currently cannot concatenate two strings. The bridges in `lib/render.mlpl`
@@ -41,7 +43,7 @@ combined.**
 
 ---
 
-## B1 — String concatenation *(blocking, highest priority)*
+## B1 — String concatenation — **CLOSED, adopted**
 
 ### Symptom
 
@@ -106,7 +108,7 @@ case in `tests/test_render.mlpl`.
 
 ---
 
-## B2 — Number → string *(blocking)*
+## B2 — Number → string — **CLOSED, adopted**
 
 ### Symptom
 
