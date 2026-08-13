@@ -19,10 +19,10 @@ Ranked by value per unit of effort, not by severity.
 
 | Order | Item | Kind | Effort | Why first |
 |---|---|---|---|---|
-| 1 | [A1](#a1) bare-filename CLI failure | bug | one line | The documented invocation fails; first thing a newcomer types |
+| ~~1~~ | ~~[A1](#a1) bare-filename CLI failure~~ | **SHIPPED** | — | Verified fixed; the warning is out of docs/viewing.md |
 | ~~2~~ | ~~[B1](#b1) `str_concat` / `str_join`~~ | **SHIPPED** | — | Adopted downstream; bridges deleted |
 | ~~3~~ | ~~[B2](#b2) `to_string`~~ | **SHIPPED** | — | Adopted downstream; bridge deleted |
-| 4 | [B5](#b5) string-list as a `u:` argument | bug-ish | ~one line | Looks like an oversight in one domain check |
+| ~~4~~ | ~~[B5](#b5) string-list as a `u:` argument~~ | **SHIPPED** | — | Adopted; the web demos pass plain lists now |
 | 5 | [A4](#a4) document the 6 undocumented `svg()` types | bug | doc only | An undocumented capability is an absent one — this one cost a day |
 | 6 | [D1](#d1) blank line separates a comment block | feature | one condition | Removes a `;` wart and most of [A3](#a3)'s reach |
 | 7 | [A3](#a3) code renders inside the comment span | bug | small | Visibly wrong rendering |
@@ -37,8 +37,12 @@ bridges are deleted. `str_join` taking the whole fragment list in one call
 turned the worst code in that repo into something readable, which was more
 than the ask expected.
 
-**If you only do three more things:** A1, B5, A4. All small, and A4 is
-documentation only.
+**Four have now shipped and been adopted downstream:** A1, B1, B2, B5. What
+remains, cheapest first: **A4** (documentation only, and the costliest
+omission — six undocumented `svg()` types), then **D1** (one condition in the
+statement grouper), then **A3** (the comment-span render bug), then **C1**
+(the labelled categorical grid, which would delete most of a 500-line render
+library downstream).
 
 ---
 
@@ -46,7 +50,7 @@ documentation only.
 
 Visibly wrong behavior. No design intent supports any of these.
 
-## A1. `mlpl-repl <bare-filename.mlpl>` exits 1 {#a1}
+## A1. `mlpl-repl <bare-filename.mlpl>` exits 1 {#a1} — **SHIPPED**
 
 **Symptom.** The invocation `--help` advertises does not work:
 
@@ -402,7 +406,7 @@ list_len(list_append([], "a"))       == 1
 list_concat(["a"], ["b", "c"])       == ["a", "b", "c"]
 ```
 
-## B5. A `u:` function cannot take a string list {#b5}
+## B5. A `u:` function cannot take a string list {#b5} — **SHIPPED**
 
 **Symptom.**
 

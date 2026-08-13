@@ -84,10 +84,9 @@ mlpl-repl --source-dir . --svg-out /tmp/svgs web/rpsls_pentagon.mlpl
 The filename is a content hash, so re-running an unchanged program overwrites
 rather than accumulating.
 
-> **Watch out:** `mlpl-repl script.mlpl` with a *bare* filename currently fails
-> with `--source-dir : No such file or directory` and exit 1, even though
-> `--help` shows exactly that form. Write `./script.mlpl`, or pass
-> `--source-dir`, and it works. Reported as `docs/upstream-asks.md` #9.
+*(A bare filename — `mlpl-repl script.mlpl` — used to fail with
+`--source-dir : No such file or directory`. Fixed upstream as work-order A1;
+every spelling works now.)*
 
 ---
 

@@ -1,6 +1,6 @@
 # sw-MLPL blockers: the missing text surface
 
-**Status: B1 and B2 are CLOSED** — shipped upstream and adopted here, with their bridges deleted. The rest stand.
+**Status: B1, B2 and B5 are CLOSED** — shipped upstream and adopted here, with their bridges deleted. The rest stand.
 
 **Blockers, not preferences.** This repository is dogfooding sw-MLPL.
 Every lesson here has to turn an algebraic structure into something a learner

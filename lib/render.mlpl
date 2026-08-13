@@ -4,9 +4,12 @@
 #
 #   s = {title: "Rock-Paper-Scissors", names: ["rock", ...], table: t}
 #
-# That is not decoration.  sw-MLPL refuses a string-list as a `u:` function
-# argument, but accepts one inside a record, so bundling is the only way to
-# hand element names to a helper (docs/upstream-asks.md #6).
+# This started as a workaround: sw-MLPL used to refuse a string-list as a `u:`
+# argument, so bundling was the only way to hand a renderer its element names.
+# That restriction is gone (work-order B5), and the record STAYS -- by choice
+# now, not by force.  A finite structure IS a title, a set of names and a
+# table, and passing the three separately to fourteen renderers would be worse.
+# The web demos, where the wrapper carried nothing but names, pass plain lists.
 #
 # Text is built with str_join and to_string, which landed upstream as
 # work-order B1 and B2. Before they existed this file carried two bridges --

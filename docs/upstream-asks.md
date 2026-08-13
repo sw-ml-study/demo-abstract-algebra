@@ -141,7 +141,7 @@ The second is the better fix and is a small addition.
 
 ---
 
-## 6. A `u:` function cannot take a string list — **BLOCKER B5**
+## 6. A `u:` function cannot take a string list — **BLOCKER B5, CLOSED**
 
 Passing a `string-list` to a user-defined function is rejected:
 
@@ -220,7 +220,7 @@ here because sw-MLPL's answer to "how do I fold?" is currently "recurse".
 
 ---
 
-## 9. `mlpl-repl <bare-filename.mlpl>` fails with exit 1
+## 9. `mlpl-repl <bare-filename.mlpl>` fails with exit 1 — **FIXED**
 
 The most natural invocation a newcomer types does not work:
 
