@@ -260,6 +260,76 @@ def u:closure_counterexample(t) { "Answer the first cell whose result escapes th
 }
 
 # ---------------------------------------------------------------------------
+# Every operation at once: the batched classifier
+# ---------------------------------------------------------------------------
+#
+# There are n^(n^2) binary operations on n elements -- 16 at order 2, 19683 at
+# order 3. Every predicate above works on ONE table; these work on all of them
+# in one array, with no loop and no per-table step.
+#
+# The trick that makes it possible is the same gather as the single-table
+# cube, offset by the table index. Flatten the batch to [m*n, n] so its rows
+# are (table, row) pairs, add k*n to every index, and one gather_rows visits
+# every triple of every table.
+
+# All m = n^(n^2) operations on n elements, as one [m, n, n] array. An
+# operation IS a base-n numeral with n^2 digits, so generating them is digit
+# extraction rather than a loop.
+def u:all_tables(n, m) { "Answer every one of the m = n^(n^2) operations on n elements as a single [m, n, n] array.";
+  reshape(table(:u:base_digit, u:elements(m), u:elements(n * n)), [m, n, n])
+}
+
+def u:base_digit(k, j) { "Answer digit j of k, in the base fixed by u:set_base."; mod(floor(k / pow(u:the_base(), j)), u:the_base()) }
+
+# table() passes only two arguments, so the base rides in a global. Set it
+# before calling u:all_tables.
+def u:set_base(n) { "Fix the base that u:base_digit reads. Call before u:all_tables."; global_set("mlpl_algebra_base", n) }
+def u:the_base() { "Answer the base set by u:set_base."; mlpl_algebra_base }
+
+# [m] mask: 1 where table k is associative. Same two cubes as the single-table
+# check, batched.
+def u:batch_associative(b) { "Answer the [m] mask marking which tables in the batch are associative.";
+  m = tally(b)
+  n = tally(take(b, 0, 0))
+  idx = flatten(reshape(floor(u:elements(m * n * n) / (n * n)), [m, n, n]) * n + b)
+  left = reshape(gather_rows(reshape(b, [m * n, n]), idx), [m, n, n, n])
+  right = transpose_axes(
+    reshape(gather_rows(reshape(transpose_axes(b, [0, 2, 1]), [m * n, n]), idx), [m, n, n, n]),
+    [0, 3, 1, 2])
+  reduce(:and, reduce(:and, reduce(:and, eq(left, right), 3), 2), 1)
+}
+
+def u:batch_commutative(b) { "Answer the [m] mask marking which tables are commutative.";
+  reduce(:and, reduce(:and, eq(b, transpose_axes(b, [0, 2, 1])), 2), 1)
+}
+
+# [m, n] mask: bit (k, e) is 1 when e is a two-sided identity of table k.
+def u:batch_identity_mask(b) { "Answer the [m, n] mask marking each table's identity elements.";
+  m = tally(b)
+  n = tally(take(b, 0, 0))
+  headers = reshape(mod(u:elements(m * n * n), n), [m, n, n])
+  indices = reshape(mod(floor(u:elements(m * n * n) / n), n), [m, n, n])
+  reduce(:and, eq(b, headers), 2) * reduce(:and, eq(b, indices), 1)
+}
+
+def u:batch_has_identity(b) { "Answer the [m] mask marking which tables have an identity."; reduce(:or, u:batch_identity_mask(b), 1) }
+
+# [m] mask: every element exactly once per row and per column.
+def u:batch_latin(b) { "Answer the [m] mask marking which tables are Latin squares.";
+  m = tally(b)
+  n = tally(take(b, 0, 0))
+  hot = reshape(one_hot(flatten(b), n), [m, n, n, n])
+  ok_rows = reduce(:and, reduce(:and, eq(reduce_add(hot, 2), 1), 2), 1)
+  ok_cols = reduce(:and, reduce(:and, eq(reduce_add(hot, 1), 1), 2), 1)
+  ok_rows * ok_cols
+}
+
+# A finite associative Latin square IS a group -- solving a * x = b uniquely is
+# exactly what inverses give you -- so the group count needs no separate
+# inverse pass.
+def u:batch_group(b) { "Answer the [m] mask marking which tables are groups, using the theorem that a finite associative Latin square is one."; u:batch_associative(b) * u:batch_latin(b) }
+
+# ---------------------------------------------------------------------------
 # Structure-preserving maps
 # ---------------------------------------------------------------------------
 #

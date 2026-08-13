@@ -5,7 +5,7 @@ that brief. The category-theory half is deferred to `../demo-category-theory`
 under the contract in `docs/scope-boundary.md`.
 
 Verified baseline: `mlpl-repl 0.20.0` from `../sw-mlpl/target/release`.
-Lessons 01 to 08 are implemented and green; 09 onward are planned.
+Lessons 01 to 10 are implemented and green; 11 and 12 remain.
 
 ## The thesis
 
@@ -70,8 +70,8 @@ than the subject — they are gone by lesson 03.
 | 06 | `06-monoids/identity_cross` | Identity discovered, not asserted; uniqueness as an array fact | The white cross, and the `2n-1` cells it owns | **done** |
 | 07 | `07-inverses/undoing` | Inverses relative to the identity; why the question needs one | Cells equal to the identity, ringed | **done** |
 | 08 | `08-groups/latin_square` | Groups; the Latin square derived; `Z4` vs Klein | Three tables: two Latin squares and a failure | **done** |
-| 09 | `09-commutativity/symmetry` | Commutativity as a property, not a rung; `S_3` is not abelian | Reflection across the diagonal, animated in the viewer | planned |
-| 10 | `10-enumeration/all_small_magmas` | Enumerate all `n^(n^2)` operations; classify them | Population bar chart of the ladder rungs | planned |
+| 09 | `09-commutativity/symmetry` | Commutativity as a property, not a rung; `S_3`, the smallest non-abelian group | The fold across the diagonal, and the mirrored pairs that break it | **done** |
+| 10 | `10-enumeration/all_small_magmas` | Every operation on 2 and 3 elements, classified in one batched pass | Population bar chart of the ladder rungs | **done** |
 | 11 | `11-isomorphism/same_up_to_naming` | Relabeling; canonical forms; equivalence classes | Two tables shown becoming identical under a permutation | planned |
 | 12 | `12-homomorphisms/structure_preserving` | `f(a*b) = f(a)*f(b)`; the bridge out of this repo | Two tables with arrows between them; violated cells flagged | planned |
 
@@ -126,7 +126,7 @@ Each stage is independently shippable, so the repository is always in a
 coherent state rather than permanently half-finished. One AgentRail saga per
 stage; archive and open the next.
 
-### Stage 1 — one operation *(in progress: 8 of 12)*
+### Stage 1 — one operation *(in progress: 10 of 12)*
 
 The ladder from magma to group, plus the two meta-lessons that make the rest
 possible. Detailed in the table above.

@@ -1,0 +1,145 @@
+# Lesson 09 -- Commutativity: a property, not a rung.
+#
+# Meaning here: an operation is COMMUTATIVE when a * b = b * a for every pair.
+# Also called: abelian, when the structure is a group. Same condition, and the
+# name honours Abel rather than describing anything different.
+# Not to be confused with: associativity, which is about BRACKETS rather than
+# ORDER. Lesson 04 showed they are independent; this lesson shows why
+# commutativity sits beside the ladder instead of on it.
+#
+# Every rung so far added a law that the next rung depends on: inverses need an
+# identity, an identity is only interesting once you have associativity.
+# Commutativity depends on nothing and nothing depends on it. It can hold or
+# fail at any rung, so it is an adjective -- commutative monoid, abelian group
+# -- rather than a step.
+#
+# And it is the one law you can check by folding the paper: a table is
+# commutative exactly when it is symmetric about its main diagonal.
+#
+# NOT a Web UI file. This is a CLI lesson: it uses include and write_text,
+# neither of which the browser session has, and it ends in ok(...) so the
+# suite can gate on it. See docs/viewing.md.
+#
+# visual: ascii, svg
+# loops: 0
+# complexity: n^2 to check, one comparison against the transpose
+
+include "../../lib/algebra.mlpl"
+include "../../lib/render.mlpl"
+
+u:prolog({
+  title: "LESSON 09 -- COMMUTATIVITY: a property, not a rung",
+  intro: "Every law so far stacked: inverses needed an identity, an identity needed associativity to be worth having. Commutativity needs nothing and nothing needs it, so it decorates a rung rather than being one. This lesson shows it at four rungs at once, and builds the smallest group where it fails."
+})
+
+# --- The six permutations of three things -----------------------------------
+# S_3 is the smallest non-abelian group, and it is not an abstract curiosity:
+# it is the symmetries of a triangle, or the ways to reorder three items.
+# Element i is the permutation sending slot k to perms[i][k].
+perms = [[0, 1, 2], [0, 2, 1], [1, 0, 2], [1, 2, 0], [2, 0, 1], [2, 1, 0]]
+
+def u:after(a, b) { "Answer the permutation a-after-b: apply b, then a.";
+  flatten(gather_rows(reshape(a, [3, 1]), b))
+}
+
+def u:which_perm(p) { "Answer which of the six permutations p is, by matching it against all of them at once.";
+  argmax(reduce(:and, eq(perms, gather_rows(reshape(p, [1, 3]), fill([6], 0))), 1))
+}
+
+def u:compose(i, j) { "Answer the index of permutation i composed after permutation j.";
+  u:which_perm(u:after(take(perms, 0, i), take(perms, 0, j)))
+}
+
+s3 = {
+  title: "S3, the symmetries of a triangle: a group, not abelian",
+  names: ["e", "s", "t", "r", "r2", "u"],
+  table: table(:u:compose, u:elements(6), u:elements(6))
+}
+
+u:show_table(s3)
+print("")
+u:show_laws(s3)
+
+# --- Where it fails ---------------------------------------------------------
+print("")
+x = u:show_comm_counterexample(s3)
+print("  Reordering three things is order-dependent: swap the first two and")
+print("  then rotate, and you do not land where rotating first would take you.")
+
+# --- Commutativity is a fold across the diagonal ----------------------------
+# The check is one comparison against the transpose. That is not an
+# optimisation, it is the definition looked at sideways.
+mismatch = 1 - eq(s3.table, transpose(s3.table))
+print("")
+print("cells that disagree with their mirror:", reduce_add(flatten(mismatch)),
+      "of", size(s3.table))
+
+# --- The property is independent of the rung --------------------------------
+# Four structures, four different rungs, and commutativity varies freely.
+def u:add_mod_3(x, y) { "Answer the sum modulo 3."; mod(x + y, 3) }
+def u:larger_of(x, y) { "Answer whichever argument is larger."; if lt(x, y) { y } else { x } }
+def u:constant(x, y) { "Answer element 0 whatever the arguments."; 0 }
+
+rungs = [
+  u:structure_name(table(:u:constant, u:elements(3), u:elements(3))),
+  u:structure_name(table(:u:left_arg, u:elements(3), u:elements(3))),
+  u:structure_name(table(:u:larger_of, u:elements(3), u:elements(3))),
+  u:structure_name(s3.table)
+]
+comms = [
+  u:is_commutative(table(:u:constant, u:elements(3), u:elements(3))),
+  u:is_commutative(table(:u:left_arg, u:elements(3), u:elements(3))),
+  u:is_commutative(table(:u:larger_of, u:elements(3), u:elements(3))),
+  u:is_commutative(s3.table)
+]
+print("")
+print("constant / left projection / max / S3")
+print("  rung:        ", rungs)
+print("  commutative: ", comms)
+print("  Two semigroups, one commutative and one not. A group and a monoid,")
+print("  same. The property and the ladder do not constrain each other.")
+
+# --- The diagrams -----------------------------------------------------------
+a = u:write_cayley_svg("out/09-s3.svg", s3)
+b = u:write_marked_svg("out/09-s3-asymmetry.svg", s3, mismatch,
+  "ringed: a * b differs from b * a")
+
+u:epilog_open()
+
+u:explain("out/09-s3.svg",
+  "The 6x6 table for S3, coloured by result. Rows and columns are the six permutations.")
+u:note("It IS a Latin square -- six colours per row, six per column, none repeated -- so")
+u:note("this is a group, exactly as lesson 08 said the shape means.")
+u:note("The white cross marks the identity permutation, which changes nothing.")
+u:note("WHAT TO NOTICE: fold the picture along the top-left to bottom-right diagonal and")
+u:note("the halves DO NOT match. Every table in lessons 01 to 08 would have matched.")
+u:note("That asymmetry is the whole content of 'not abelian'.")
+
+u:explain("out/09-s3-asymmetry.svg",
+  "The same table with every cell that disagrees with its mirror image ringed.")
+u:note("Rings come in pairs, one on each side of the diagonal, because if a * b differs")
+u:note("from b * a then both cells are wrong about each other.")
+u:note("WHAT TO NOTICE: the diagonal itself is never ringed. a * a compares with itself")
+u:note("and always agrees, so the failure lives strictly off the diagonal -- and a")
+u:note("commutative table is precisely one where this picture is empty.")
+
+u:takeaway("Commutativity is the only law here that is not a rung. Every other law props up the next one, but this one holds or fails freely at any level, which is why the literature says 'commutative monoid' and 'abelian group' as adjectives rather than counting them as steps. It is also the cheapest law to check and the easiest to see: one comparison against the transpose, and a picture you can fold.")
+
+print("wrote out/09-s3.svg:", is_ok(a))
+print("wrote out/09-s3-asymmetry.svg:", is_ok(b))
+
+# --- Invariants -------------------------------------------------------------
+c = u:classify(s3.table)
+# S3 is a group of order 6 and is NOT abelian -- the smallest such.
+group_ok = c.group * (1 - c.abelian_group) * eq(u:order(s3.table), 6) * u:is_latin(s3.table)
+witness_ok = x.found * (1 - eq(x.left, x.right))
+# Failures are strictly off the diagonal and come in mirrored pairs.
+diag_clean = eq(reduce_add(eq(u:diagonal(s3.table) * 0, 1)), 0)
+paired = equal(mismatch, transpose(mismatch))
+# The property varies while the rung does not, and vice versa.
+independent = eq(reduce_add(comms), 2)
+if group_ok * witness_ok * paired * independent * diag_clean * is_ok(a) * is_ok(b) {
+  ok("S3 is the smallest non-abelian group; commutativity is a property, not a rung")
+} else {
+  err("commutativity invariants failed")
+}

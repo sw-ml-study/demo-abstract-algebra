@@ -1,0 +1,685 @@
+analyze the .mlpl files (and docs) in 
+https://github.com/sw-ml-study/demo-abstract-algebra/tree/main/web to see how they can be improved and what additional concepts should be covered
+
+You asked for a review of the browser-facing .mlpl demos and their documentation, with two goals: improve how well they teach abstract algebra, and identify concepts worth adding. I inspected the current web/ files and the broader repo plan rather than judging the three files in isolation. The repository already has a much larger six-stage syllabus; the browser demos currently expose only a very small slice of that plan.
+
+Overall assessment
+
+The central idea is excellent:
+
+finite binary operation → table → array predicates → visualization
+
+That is unusually well matched to sw-MLPL. The root README states this explicitly, and the planned curriculum sensibly builds from magmas through groups, group theory, rings/fields, and universal algebra.
+
+But I would change the web learning architecture fairly substantially.
+
+Right now the three web demos are:
+
+magma_rps.mlpl
+rpsls_pentagon.mlpl
+latin_square.mlpl
+
+They make attractive leaf-node demonstrations, but they don't yet form a reliable introductory progression. More importantly, there are a couple of mathematical statements that should be corrected before these are used as teaching material.
+
+The biggest opportunity is to make the browser demos into a small executable abstract-algebra course, with each file introducing exactly one new law or distinction.
+
+1. Most important correction: Latin square ≠ group
+
+This is the largest issue I found.
+
+latin_square.mlpl says:
+
+“That second pattern ... is called a LATIN SQUARE, and it is what being a GROUP looks like.”
+
+and then:
+
+“Each row is a shuffle ... That is the same thing as saying ... every element has an inverse.”
+
+The web README similarly says a Latin square “is what being a group looks like.”
+
+The root README is more careful: it says a group's table is a Latin square and that the pattern falls out of inverses.
+
+The distinction is important:
+
+Every finite group table is a Latin square, but not every Latin square is a group table.
+
+A Latin-square operation gives a quasigroup: equations
+
+a * x = b
+x * a = b
+
+have unique solutions.
+
+It does not by itself give:
+
+associativity,
+an identity,
+group inverses.
+
+This isn't merely a wording problem. It points directly to one of the best missing demos.
+
+Add quasigroup_latin_square.mlpl
+
+Compare three tables:
+
+RPS winner          not Latin
+subtraction mod 3   Latin, but not a group
+addition mod 3      Latin and a group
+
+For example,
+
+def u:subtract_mod_3(x, y) { mod(x - y + 3, 3) }
+
+gives a Latin square, while associativity can fail.
+
+That produces a beautiful progression:
+
+binary operation
+      │
+      ├── arbitrary closed table → magma
+      │
+      └── every row/column permutation → quasigroup
+                                          │
+                                + identity → loop
+                                          │
+                             + associativity → group
+
+This is especially valuable because it teaches students not to infer too much from a visual pattern.
+
+I would actually make this one of the flagship demos.
+
+2. The RPS associativity explanation should be changed
+
+magma_rps.mlpl says of the cycle:
+
+“it is the first hint that the operation cannot be associative, because a cycle gives you no consistent way to bracket three steps.”
+
+The root README uses the somewhat safer phrase “first hint that the operation cannot be associative.”
+
+But the cycle is a graph of the beats relation, while associativity is a property of the binary winner operation.
+
+The graph alone doesn't establish associativity or non-associativity.
+
+Your root-level material already has a much better demonstration: explicitly evaluate
+
+(a*b)*c
+a*(b*c)
+
+and show a counterexample, including an associativity cube and animation.
+
+So the web demo should say something like:
+
+The cycle shows the symmetry of the beats relation. It does not by itself tell us whether the winner operation is associative. We test associativity by comparing the two bracketings of triples.
+
+Then ideally make that the next web lesson.
+
+This reinforces one of the strongest ideas already present in the repo:
+
+pictures suggest; executable law checks establish.
+
+3. RPS has another property worth teaching: idempotence
+
+The current RPS explanation focuses on:
+
+closure,
+commutativity,
+lack of identity,
+non-associativity.
+
+But there is a visually obvious law that is being missed:
+
+x * x = x
+
+because a tie returns the shared choice.
+
+So RPS winner is an idempotent, commutative magma.
+
+On the table, idempotence is striking:
+
+the main diagonal contains the row/column element itself.
+
+That gives you another very nice "law as picture":
+
+commutativity → mirror symmetry
+idempotence   → diagonal reproduces headings
+identity      → one row + one column reproduce headings
+Latin property→ every row + column is a permutation
+
+This is precisely the kind of visual vocabulary the repo should build.
+
+And it avoids presenting the magma → semigroup → monoid → group ladder as though those were the only interesting properties.
+
+Your Stage 1 plan already recognizes this issue for commutativity, explicitly calling it “a property, not a rung.”
+
+I would treat idempotence the same way.
+
+4. Don't say “no inverses” before there is an identity
+
+The opening comment in magma_rps.mlpl says:
+
+“No associativity, no identity, no inverses.”
+
+Similarly RPSLS ends with:
+
+“Not associative, no identity, no inverses.”
+
+For beginner-facing material I'd avoid this.
+
+A group inverse is defined relative to an identity:
+
+a * a⁻¹ = e
+a⁻¹ * a = e
+
+If there is no e, “has no inverses” is at least pedagogically backwards.
+
+Better:
+
+It has no identity, so group-style inverses are not yet even a property we can ask for.
+
+That's a really useful teaching moment.
+
+It establishes dependency between concepts:
+
+identity
+   ↓
+inverse
+
+rather than presenting five independent Boolean flags.
+
+5. The biggest code-level problem: the algebra is buried under SVG plumbing
+
+This is much more noticeable in the web files than in the README.
+
+The intellectually important RPS operation is tiny:
+
+def u:beats_in_game(x, y) ...
+def u:winner_of(x, y) ...
+
+But before the first picture, the learner encounters:
+
+element_color
+node_x
+node_y
+along_x
+along_y
+arrow
+node
+all_arrows
+all_nodes
+beats_graph
+
+along with large nested str_concat expressions constructing SVG.
+
+RPSLS repeats almost exactly the same machinery.
+
+From a dogfooding sw-MLPL perspective, that's useful: it demonstrates string handling, recursion, trig, SVG construction, etc.
+
+From an abstract algebra tutorial perspective, it is noise.
+
+The beginner sees roughly:
+
+2 algebra functions
+10 rendering functions
+1 algebra table
+
+and may reasonably conclude that the subject requires a lot more machinery than it does.
+
+I would explicitly separate two pedagogical layers
+Concept code
+
+The learner should perceive something approximately this small:
+
+def u:beats(x, y) {
+    eq(mod(x - y + 3, 3), 1)
+}
+
+
+def u:winner(x, y) {
+    if u:beats(x, y) { x } else { y }
+}
+
+
+elements = range(3)
+operation = table(:u:winner, elements, elements)
+Rendering implementation
+
+SVG generation is infrastructure.
+
+Because browser include isn't available, I understand why the generated standalone files contain it. The web README explains that these files are generated and deliberately standalone.
+
+So I wouldn't necessarily remove it from the generated artifact.
+
+Instead, visually mark it:
+
+# ============================================================
+# RENDERING SUPPORT
+#
+# Nothing below this line is needed to define the algebra.
+# It only turns the operation into a picture.
+# ============================================================
+
+Even better, generate files in this conceptual ordering:
+
+WHAT WE ARE STUDYING
+
+
+the operation itself
+
+
+FIRST ALGEBRA RESULT
+
+
+render-support definitions
+
+
+visualization
+
+
+WHAT TO NOTICE
+
+The learner should encounter the mathematics before encountering the graphics implementation.
+
+6. Naming is mostly good at the conceptual level, weaker in rendering code
+
+The important names are quite good:
+
+beats_in_game
+winner_of
+element_color
+beats_graph
+cayley_grid
+add_mod_3
+
+Those communicate intent well.
+
+But the SVG plumbing rapidly falls into:
+
+a
+b
+k
+f
+i
+t
+sz
+str
+acc
+
+For ordinary implementation code I wouldn't object much.
+
+For executable teaching code, I'd spend more characters:
+
+from_element
+to_element
+element_count
+fraction
+cell_index
+operation_table
+font_size
+text
+svg_so_far
+
+Especially this:
+
+def u:along_x(a, b, k, f)
+
+requires reading its docstring to understand four parameters.
+
+Compare:
+
+def u:interpolated_x(from, to, node_count, fraction)
+
+The latter teaches itself.
+
+Since sw-MLPL is deliberately choosing words/readability over APL-like glyph terseness, this demo repo should showcase that philosophy.
+
+7. The docstrings are useful, but too uniformly “Answer ...”
+
+Examples include:
+
+“Answer one labelled coloured circle for element i.”
+
+“Answer every cell of the table, folded together by recursion.”
+
+“Answer the whole beats relation drawn as a directed graph.”
+
+This consistency is reasonable for API documentation, but pedagogically it starts sounding mechanical.
+
+I'd distinguish mathematical functions from renderer functions.
+
+For mathematical functions, document the law:
+
+def u:winner_of(x, y) {
+    "The RPS operation: return the winner, or the shared choice for a tie.";
+    ...
+}
+
+For visualization:
+
+def u:node(...) {
+    "SVG helper: draw one algebra element as a labelled circle.";
+}
+
+That tiny "SVG helper:" prefix gives novices permission not to understand it.
+
+8. The README and generated files have some drift/confusion
+
+The web README says there are “Three standalone .mlpl files,” which is correct.
+
+But its RPSLS description says one picture, while the file's opening comment says:
+
+“Two pictures of that fact -- the arrows, and the operation as an table -- and the table itself is in latin_square.mlpl.”
+
+There is in fact one emitted picture in that file.
+
+That opening paragraph should simply say:
+
+This demo shows the beats relation as a directed graph. A companion demo shows binary operations as tables.
+
+There is also a grammatical typo:
+
+"as an table"
+
+More broadly, I think each demo should declare exactly:
+
+CONCEPT
+QUESTION
+EXAMPLE
+VISUALIZATION
+LAW TEST
+CONCLUSION
+NEXT
+
+not necessarily using those literal headers, but that logical structure.
+
+9. Turn the current web demos into a progression
+
+The full repo's Stage 1 plan is already very good:
+
+magma
+closure
+associativity
+semigroup
+monoid
+inverse
+group
+commutativity
+enumeration
+isomorphism
+homomorphism
+
+and then subgroups/cosets/etc.
+
+I would expose considerably more of that as browser leaf nodes.
+
+A particularly strong sequence would be:
+
+Web lesson	Main question	Visual signature
+01_binary_operation.mlpl	What is an operation?	function → table
+02_closure.mlpl	Does every result stay in the set?	escaped cells
+03_magma_rps.mlpl	What do we get from closure alone?	RPS table
+04_commutativity.mlpl	Does order matter?	diagonal reflection
+05_idempotence.mlpl	What happens on x*x?	main diagonal
+06_associativity.mlpl	Do parentheses matter?	triple/cube + witness
+07_semigroup.mlpl	What does associativity buy us?	associative table
+08_identity.mlpl	Is there a “do nothing” element?	identity cross
+09_monoid.mlpl	Associativity + identity	combined laws
+10_quasigroup.mlpl	What does a Latin square really mean?	permutation rows/cols
+11_inverse.mlpl	Can elements be undone?	identity-colored cells
+12_group.mlpl	Which laws combine into a group?	Z₄
+13_same_size_different_group.mlpl	Is order enough?	Z₄ vs V₄
+14_isomorphism.mlpl	Does renaming matter?	relabel animation
+15_homomorphism.mlpl	What does structure-preserving mean?	arrows between tables
+
+That's a much stronger first "course."
+
+10. Add a structure map, but don't make it a misleading ladder
+
+One of the best overview graphics would be a property/structure lattice.
+
+The current terminology of “bottom rung” and “ladder” is intuitive, but it can accidentally suggest abstract algebra consists of one straight hierarchy.
+
+For the associative branch:
+
+magma
+  |
+  | associativity
+  v
+semigroup
+  |
+  | identity
+  v
+monoid
+  |
+  | inverses
+  v
+group
+
+But alongside it:
+
+            magma
+          /       \
+ idempotent       commutative
+       \             /
+        \           /
+          ...
+
+and separately:
+
+magma
+  |
+unique division
+  v
+quasigroup
+  |
+identity
+  v
+loop
+  |
+associativity
+  v
+group
+
+That last branch is especially important because it fixes the Latin-square misconception while introducing quasigroups and loops, concepts conspicuously absent from the current six-stage plan.
+
+I think they belong.
+
+They are finite, table-driven, highly visual, and therefore satisfy the repo's own scope criterion almost perfectly.
+
+11. Concepts I would add to the larger syllabus
+
+Your existing ~40-lesson plan is impressively broad, so I wouldn't inflate it indiscriminately.
+
+But a handful of concepts have unusually high payoff for this particular project:
+
+Idempotence — diagonal visualization; RPS already provides the example.
+Quasigroups — explains what Latin squares actually encode.
+Loops — bridges quasigroups to groups.
+Cancellation laws — row/column injectivity is directly visible and leads naturally toward quasigroups.
+Left vs right identity / left vs right inverse — excellent opportunity to show why algebraic definitions specify sides.
+Absorbing/zero elements — row/column of a constant result; extremely visual.
+Generators earlier than currently planned — cyclic behavior is already being described in the Z₄ visualization.
+Order of an element — another natural visual trajectory before going deep into subgroup theory.
+Opposite operation/table a ⋆ b = b * a — transpose of a Cayley table. This makes noncommutativity and duality almost embarrassingly visual.
+
+That last one is particularly sw-MLPL-ish:
+
+opposite table = transpose(table)
+
+and:
+
+commutative ⇔ table == transpose(table)
+
+That is exactly the sort of mathematical statement array programming makes unusually transparent.
+
+12. Lean harder into “law = array predicate”
+
+This is probably the repo's strongest differentiator, and I would expose more of it in the web files.
+
+Instead of merely narrating:
+
+“The grid is symmetric, therefore commutative.”
+
+show the executable equivalence:
+
+eq(table, transpose(table))
+
+Likewise conceptually:
+
+closure       = every cell ∈ S
+commutativity = table == transpose(table)
+identity      = matching row + column
+idempotence   = diagonal(table) == elements
+Latin         = each row/column is a permutation
+associativity = equality over an n×n×n cube
+
+This is where abstract algebra and APL-inspired array programming actually reinforce each other rather than one merely illustrating the other.
+
+A student isn't just learning algebra.
+
+They're learning:
+
+A law about many scalar cases can often be transformed into a relationship between whole arrays.
+
+That's a very valuable sw-MLPL lesson in its own right.
+
+13. Counterexamples should be first-class teaching objects
+
+The root README already does this very well for associativity: rather than false, it produces specific a,b,c witnesses and the two divergent calculations.
+
+I would make that a universal web-demo pattern.
+
+Every failed property should return why:
+
+NOT CLOSED
+2 + 2 = 4
+4 is not in {0,1,2}
+
+
+NOT COMMUTATIVE
+a*b = ...
+b*a = ...
+
+
+NOT ASSOCIATIVE
+(a*b)*c = ...
+a*(b*c) = ...
+
+
+NO LEFT CANCELLATION
+a*b = a*c
+but b != c
+
+
+NOT LATIN
+row 2 contains x twice
+and never contains y
+
+This aligns perfectly with your larger sw-MLPL goal of making the environment explain why, rather than merely rejecting something.
+
+14. Distinguish beginner explanation from enthusiast/expert detail
+
+The current comments try to serve everyone simultaneously.
+
+I'd use a three-level convention.
+
+Beginner: What am I looking at?
+
+Every cell asks “what is row * column?”
+
+Enthusiast: What law does the pattern correspond to?
+
+Reflection across the main diagonal means a*b = b*a.
+
+Expert / mathematical precision: What does this imply and what doesn't it imply?
+
+A Latin table is a quasigroup operation. Associativity and an identity require separate tests.
+
+The .mlpl transcript probably shouldn't contain huge amounts of the third level.
+
+Put the expert details in the companion README/docs and link the concepts.
+
+That keeps the executable demo short without making the documentation mathematically loose.
+
+15. RPSLS is visually nice but should not occupy 1/3 of the introductory web curriculum
+
+RPSLS is a good extension of RPS because it demonstrates that a rule set can be expressed compactly with modular arithmetic and that function/table/graph are different representations.
+
+But conceptually:
+
+RPS      → magma
+RPSLS    → a larger magma
+
+doesn't move the learner very far.
+
+So I'd keep RPSLS, but treat it as:
+
+exploration / generalization
+
+rather than the second major algebra lesson.
+
+For example:
+
+Core path:
+RPS → closure → associativity → identity → ...
+
+
+Explore:
+RPSLS: generalizing a fair cyclic dominance game
+
+Then it becomes a nice example of parameterization rather than a curriculum bottleneck.
+
+What I would change first
+
+If I were prioritizing work on the repo, I'd do these in roughly this order:
+
+Correct latin_square.mlpl and its README language so Latin square is presented as necessary for finite group tables, not sufficient.
+Remove the inference from cycle → non-associative and point to an actual bracketing counterexample.
+Add quasigroup / Latin square vs group as a browser demo.
+Add associativity with a concrete witness as a browser demo.
+Add identity cross and idempotent diagonal web demos.
+Explicitly mark SVG helper code as rendering infrastructure.
+Replace opaque helper parameters such as a,b,k,f,sz,str in educational rendering code.
+Introduce a concept map/property lattice, not merely a magma→group ladder.
+Gradually expose the excellent existing Stage-1 lessons as browser leaf nodes.
+Make every demo finish with both “what this proves” and “what this does not prove.”
+
+That last convention would substantially improve the mathematical discipline of the whole collection.
+
+The most interesting addition
+
+I think the surprising winner here is quasigroups.
+
+You originally came to RPS/magmas partly because these are interesting visual ways into abstract algebra. Quasigroups give you another exceptionally visual concept, fix the weakest current explanation, connect directly to Latin squares, introduce left/right division and cancellation, lead naturally to loops and groups, and fit the array-programming thesis perfectly.
+
+So I would evolve the conceptual story from:
+
+RPS magma
+   ↓
+Z₃ group
+
+to:
+
+            TABLES AS OPERATIONS
+                    │
+       ┌────────────┴────────────┐
+       │                         │
+  algebraic laws           visual patterns
+       │                         │
+ associativity             symmetry
+ identity                  identity cross
+ idempotence               fixed diagonal
+ inverses                  identity hits
+       │                   Latin rows/columns
+       │                         │
+       └────────────┬────────────┘
+                    │
+              CLASSIFICATION
+
+with a particularly illuminating middle comparison:
+
+RPS winner        → magma, not Latin
+subtraction mod 3 → quasigroup, Latin, not group
+addition mod 3    → group, therefore Latin
+
+That three-table comparison may teach more abstract algebra per screenful than any current demo in web/.
+

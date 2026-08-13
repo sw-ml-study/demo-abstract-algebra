@@ -1,0 +1,128 @@
+# Lesson 10 -- Every operation there is, classified.
+#
+# Meaning here: nothing new. This lesson introduces no concept -- it takes the
+# eight already built and applies them to EVERY operation on a small set at
+# once.
+#
+# There are n^(n^2) binary operations on n elements: 16 at order 2, 19,683 at
+# order 3. That is not a benchmark someone invented for the language; it is
+# what the mathematics asks for the moment you stop looking at one table. The
+# source brief called it the serious array-programming workload, and it is.
+#
+# The formulation that makes it work: an operation IS a base-n numeral with
+# n^2 digits, so generating all of them is digit extraction rather than a loop,
+# and the law checks are the same gathers as before with the table index folded
+# into the offsets. No loop anywhere -- not over tables, not over triples.
+#
+# NOT a Web UI file. This is a CLI lesson: it uses include and write_text,
+# neither of which the browser session has, and it ends in ok(...) so the
+# suite can gate on it. See docs/viewing.md.
+#
+# visual: ascii, svg
+# loops: 0
+# complexity: m*n^3 comparisons for m = n^(n^2) tables, in one array each
+
+include "../../lib/algebra.mlpl"
+include "../../lib/render.mlpl"
+
+u:prolog({
+  title: "LESSON 10 -- EVERY OPERATION THERE IS, CLASSIFIED",
+  intro: "Stop looking at one table and the count explodes: 16 operations on two elements, 19,683 on three. This lesson generates every one of them as a single array, runs the whole law ladder over the batch with no loop at anything, and reports how many of each structure exist. The rungs turn out to be very unequal in size."
+})
+
+# --- Order 2: all sixteen ---------------------------------------------------
+u:set_base(2)
+two = u:all_tables(2, 16)
+print("all 16 operations on {0, 1}, as one array of shape", shape(two))
+print(disp(take(two, 0, 6)))
+print("  (that is the seventh of them; every table is a slice of one array)")
+
+def u:census(b) { "Answer how many tables in the batch reach each rung.";
+  assoc = u:batch_associative(b)
+  ident = u:batch_has_identity(b)
+  comm = u:batch_commutative(b)
+  grp = u:batch_group(b)
+  {
+    magmas: tally(b),
+    semigroups: reduce_add(assoc),
+    monoids: reduce_add(assoc * ident),
+    groups: reduce_add(grp),
+    commutative: reduce_add(comm),
+    abelian_groups: reduce_add(grp * comm)
+  }
+}
+
+c2 = u:census(two)
+print("")
+print("order 2 -- magmas:", c2.magmas, " semigroups:", c2.semigroups,
+      " monoids:", c2.monoids, " groups:", c2.groups)
+print("           commutative:", c2.commutative, " abelian groups:", c2.abelian_groups)
+
+# --- The batched check must agree with the one-at-a-time check --------------
+# The whole lesson rests on the batched formulation being the same question.
+# Check it against the single-table library on all 16, element by element.
+def u:solo_group(k) { "Answer 1 when table k of the batch is a group, checked the single-table way."; u:classify(take(two, 0, k)).group }
+def u:solo_assoc(k) { "Answer 1 when table k of the batch is associative, checked the single-table way."; u:is_associative(take(two, 0, k)) }
+agree_group = equal(u:batch_group(two), each(:u:solo_group, u:elements(16)))
+agree_assoc = equal(u:batch_associative(two), each(:u:solo_assoc, u:elements(16)))
+print("")
+print("batched answers match the per-table library:",
+      u:yes_or_no(agree_group * agree_assoc))
+
+# --- Order 3: all 19,683 ----------------------------------------------------
+u:set_base(3)
+three = u:all_tables(3, 19683)
+c3 = u:census(three)
+print("")
+print("all", c3.magmas, "operations on {0, 1, 2}, shape", shape(three))
+print("order 3 -- magmas:", c3.magmas, " semigroups:", c3.semigroups,
+      " monoids:", c3.monoids, " groups:", c3.groups)
+print("           commutative:", c3.commutative, " abelian groups:", c3.abelian_groups)
+
+# --- What the numbers say ---------------------------------------------------
+# The ladder is not a gentle slope. Associativity is a brutal filter, and being
+# a group is almost impossible for a randomly chosen operation.
+print("")
+print("share of all order-3 operations that are:")
+print("  associative:", round(1000 * c3.semigroups / c3.magmas) / 10, "percent")
+print("  a group:    ", round(10000 * c3.groups / c3.magmas) / 100, "percent")
+print("  There are exactly", c3.groups, "group tables on three labelled elements,")
+print("  and lesson 11 will show they are all the SAME group renamed.")
+
+# --- The picture ------------------------------------------------------------
+census_bar = [c3.magmas, c3.semigroups, c3.monoids, c3.groups]
+a = write_text("out/10-census.svg", svg(census_bar, "bar"))
+
+u:epilog_open()
+
+u:explain("out/10-census.svg",
+  "A bar chart with four bars: magmas, semigroups, monoids, groups, at order 3.")
+u:note("The first bar is all 19,683 operations. Every one is a magma, because every one")
+u:note("is closed by construction -- a base-3 digit cannot escape {0, 1, 2}.")
+u:note("WHAT TO NOTICE: the drop from bar one to bar two. Associativity eliminates over")
+u:note("ninety percent of all operations in a single law, which is why semigroups are")
+u:note("interesting at all -- the condition is rare, not decorative.")
+u:note("The last two bars are almost invisible at this scale, and that is the point.")
+u:note("Groups are vanishingly rare among operations, so a structure being a group is")
+u:note("a strong statement rather than a mild one.")
+u:note("This chart is the built-in bar renderer -- no hand-written SVG in this lesson.")
+
+u:takeaway("Nothing new was defined here. The same eight predicates ran over every operation there is on two and three elements, and the census is the answer: associativity removes more than nine in ten, and groups are a rounding error. The array formulation is the whole trick -- an operation is a base-n numeral, so generating all of them is digit extraction, and folding the table index into the gather offsets checks every triple of every table in one pass, with no loop over anything. That was the question the source brief posed about M^3, asked once more at scale.")
+
+print("wrote out/10-census.svg:", is_ok(a))
+
+# --- Invariants -------------------------------------------------------------
+# Order 2: 16 operations, 8 associative, and exactly one group up to labelling
+# but two labelled group tables? No -- on two elements there is exactly one.
+counts_2 = eq(c2.magmas, 16) * eq(c2.semigroups, 8)
+# Order 3: 3^9 operations. The group count is a known quantity: the labelled
+# group tables on three elements number 3, one per choice of identity.
+counts_3 = eq(c3.magmas, 19683) * eq(c3.groups, 3)
+# Every rung must be a subset of the one below it.
+nested_a = (1 - lt(c3.magmas, c3.semigroups)) * (1 - lt(c3.semigroups, c3.monoids))
+nested = nested_a * (1 - lt(c3.monoids, c3.groups))
+if counts_2 * counts_3 * nested * agree_group * agree_assoc * is_ok(a) {
+  ok("every operation on 2 and 3 elements classified, with no loop")
+} else {
+  err("enumeration invariants failed")
+}
