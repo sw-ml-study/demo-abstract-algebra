@@ -1,0 +1,11 @@
+{
+  "task_type": "adoption",
+  "state": {
+    "number": 12,
+    "step": "adopt-str-builtins-delete-bridges"
+  },
+  "action": "Read the shipped Rust implementations to confirm the semantics matched the acceptance tests before adopting; used a balanced-paren argument parser rather than regex to rewrite nested call sites safely.",
+  "result": "success",
+  "reward": 1,
+  "timestamp": "2026-08-12T17:46:39"
+}
