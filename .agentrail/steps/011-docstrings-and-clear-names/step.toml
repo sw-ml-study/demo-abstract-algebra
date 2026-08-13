@@ -1,9 +1,10 @@
 number = 11
 slug = "docstrings-and-clear-names"
-status = "in-progress"
+status = "completed"
 description = "Every def u: must carry a docstring and a self-explanatory name. Audit says 1..."
 role = "production"
 context_files = []
 created_at = "2026-08-12T15:57:43"
+completed_at = "2026-08-12T17:29:07"
 task_type = "quality"
-commits = []
+commits = ["46041b324aa04ebcf8e92cc72cd97bcf2c0078ff"]

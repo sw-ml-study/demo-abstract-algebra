@@ -1,0 +1,11 @@
+{
+  "task_type": "quality",
+  "state": {
+    "number": 11,
+    "step": "docstrings-and-clear-names"
+  },
+  "action": "Audited with a regex count per file before starting so the scale was known; wrote docstrings by hand rather than generating them from names, since a generated 'Return the foo result for the supplied bar' is the failure being fixed.",
+  "result": "success",
+  "reward": 1,
+  "timestamp": "2026-08-12T17:29:07"
+}
