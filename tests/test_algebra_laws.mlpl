@@ -20,14 +20,14 @@ def u:test_known_structures() { "Every rung of the ladder, one witness each.";
   u:assert_eq(u:identity_of(z3), 0, "Z3 identity is not 0")?;
 
   # max on {0,1,2}: associative, commutative, identity 0, but no inverses.
-  mx = table(:u:max2, u:elements(3), u:elements(3));
+  mx = table(:u:larger_of, u:elements(3), u:elements(3));
   cmx = u:classify(mx);
   u:assert_eq(cmx.monoid, 1, "max is not a monoid")?;
   u:assert_eq(cmx.group, 0, "max should not be a group")?;
   u:assert_eq(u:identity_of(mx), 0, "max identity is not 0")?;
 
   # Left projection: associative, no identity above order 1.
-  lp = table(:u:first, u:elements(3), u:elements(3));
+  lp = table(:u:left_arg, u:elements(3), u:elements(3));
   clp = u:classify(lp);
   u:assert_eq(clp.semigroup, 1, "left projection is not a semigroup")?;
   u:assert_eq(clp.monoid, 0, "left projection should have no identity")?;
@@ -43,8 +43,8 @@ def u:test_known_structures() { "Every rung of the ladder, one witness each.";
   ok({test: "known-structures", cases: 14})
 }
 
-def u:z3_add(x, y) { mod(x + y, 3) }
-def u:max2(x, y) { if lt(x, y) { y } else { x } }
+def u:z3_add(x, y) { "Answer the sum modulo 3, an associative operation to contrast against."; mod(x + y, 3) }
+def u:larger_of(x, y) { "Answer whichever argument is larger."; if lt(x, y) { y } else { x } }
 
 @test {name: "counterexamples name a real witness", tags: ["laws"]}
 def u:test_counterexamples() { "A failed law must exhibit the failing triple.";
@@ -66,7 +66,7 @@ def u:test_counterexamples() { "A failed law must exhibit the failing triple.";
   u:assert_eq(y.found, 0, "Z3 should have no associativity witness")?;
 
   # Non-commutative left projection: 0 * 1 = 0 but 1 * 0 = 1.
-  lp = table(:u:first, u:elements(3), u:elements(3));
+  lp = table(:u:left_arg, u:elements(3), u:elements(3));
   cx = u:comm_counterexample(lp);
   u:assert_eq(cx.found, 1, "left projection commutativity failure missed")?;
   u:assert_true(1 - eq(cx.left, cx.right), "commutativity witness agrees")?;
@@ -110,8 +110,8 @@ def u:test_structure_preserving() { "Structure-preserving maps between tables.";
   ok({test: "structure-preserving", cases: 9})
 }
 
-def u:z4_add(x, y) { mod(x + y, 4) }
-def u:z2_add(x, y) { mod(x + y, 2) }
+def u:z4_add(x, y) { "Answer the sum modulo 4, the cyclic group of order four."; mod(x + y, 4) }
+def u:z2_add(x, y) { "Answer the sum modulo 2."; mod(x + y, 2) }
 
 @test {name: "trivial and edge-case orders", tags: ["laws", "edges"]}
 def u:test_edges() { "Order-1 structures and boundary shapes.";
@@ -146,9 +146,9 @@ def u:test_edges() { "Order-1 structures and boundary shapes.";
 def u:test_latin() { "n^2 counting must agree with the n^3 four-law classifier.";
   z4 = table(:u:z4_add, u:elements(4), u:elements(4));
   kl = table(:u:xor4, u:elements(4), u:elements(4));
-  mx = table(:u:max2, u:elements(4), u:elements(4));
+  mx = table(:u:larger_of, u:elements(4), u:elements(4));
   rps = [[0, 1, 0], [1, 1, 2], [0, 2, 2]];
-  lp = table(:u:first, u:elements(3), u:elements(3));
+  lp = table(:u:left_arg, u:elements(3), u:elements(3));
   u:assert_eq(u:is_latin(z4), u:classify(z4).group, "Z4")?;
   u:assert_eq(u:is_latin(kl), u:classify(kl).group, "Klein")?;
   u:assert_eq(u:is_latin(mx), u:classify(mx).group, "max is a monoid, not a group")?;
@@ -159,14 +159,14 @@ def u:test_latin() { "n^2 counting must agree with the n^3 four-law classifier."
   ok({test: "latin-square", cases: 6})
 }
 
-def u:xor4(x, y) { bxor(x, y) }
+def u:xor4(x, y) { "Answer the bitwise exclusive-or, which realizes the Klein four-group."; bxor(x, y) }
 
 @test {name: "identity cells and the diagonal", tags: ["laws"]}
 def u:test_identity_cells() { "The cross covers 2n-1 cells; the diagonal is a*a.";
-  mx = table(:u:max2, u:elements(3), u:elements(3));
+  mx = table(:u:larger_of, u:elements(3), u:elements(3));
   u:assert_eq(reduce_add(flatten(u:mask_of_identity(mx))), 2 * 3 - 1, "cross size")?;
   # No identity means no cells.
-  lp = table(:u:first, u:elements(3), u:elements(3));
+  lp = table(:u:left_arg, u:elements(3), u:elements(3));
   u:assert_eq(reduce_add(flatten(u:mask_of_identity(lp))), 0, "no identity, no cross")?;
   # The diagonal is a * a, read off in order.
   z4 = table(:u:z4_add, u:elements(4), u:elements(4));

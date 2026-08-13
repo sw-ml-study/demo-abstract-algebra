@@ -37,7 +37,7 @@ u:prolog({
 lp = {
   title: "Left projection on {a, b}: a semigroup",
   names: ["a", "b"],
-  table: table(:u:first, u:elements(2), u:elements(2))
+  table: table(:u:left_arg, u:elements(2), u:elements(2))
 }
 
 u:show_table(lp)
@@ -47,11 +47,11 @@ u:show_laws(lp)
 # --- A second one, to show it is not a quirk of projection ------------------
 # The constant operation: everything multiplies to z. Also associative, also
 # identity-free above one element.
-def u:always_zero(x, y) { 0 }
+def u:constant_first_element(x, y) { "Answer element 0 whatever the arguments, which is associative and has no identity above one element."; 0 }
 cz = {
   title: "The constant operation on {z, a}: also a semigroup",
   names: ["z", "a"],
-  table: table(:u:always_zero, u:elements(2), u:elements(2))
+  table: table(:u:constant_first_element, u:elements(2), u:elements(2))
 }
 print("")
 u:show_table(cz)
@@ -68,13 +68,13 @@ u:show_laws(cz)
 #   rows/cols 0,1 -> the old left-projection table
 #   row 2        -> the header (e * x = x)
 #   col 2        -> the index   (x * e = x)
-def u:adjoined(x, y) {
-  if eq(x, 2) { y } else { if eq(y, 2) { x } else { u:first(x, y) } }
+def u:with_identity_adjoined(x, y) { "Answer left projection extended by a new element that acts as an identity, the S^1 construction."; 
+  if eq(x, 2) { y } else { if eq(y, 2) { x } else { u:left_arg(x, y) } }
 }
 mon = {
   title: "Left projection with an identity adjoined: a monoid",
   names: ["a", "b", "e"],
-  table: table(:u:adjoined, u:elements(3), u:elements(3))
+  table: table(:u:with_identity_adjoined, u:elements(3), u:elements(3))
 }
 print("")
 u:show_table(mon)
@@ -82,10 +82,10 @@ print("")
 u:show_laws(mon)
 
 # The old structure is still in there, unchanged: the top-left 2x2 corner.
-corner = u:gather2(mon.table, u:elements(2))
+corner = u:reindex_axes(mon.table, u:elements(2))
 preserved = equal(corner, lp.table)
 print("")
-print("old table preserved in the corner:", u:tick(preserved))
+print("old table preserved in the corner:", u:yes_or_no(preserved))
 print("identity element index:", u:identity_of(mon.table))
 
 # --- The diagrams -----------------------------------------------------------

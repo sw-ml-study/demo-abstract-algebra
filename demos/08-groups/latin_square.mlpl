@@ -33,18 +33,18 @@ u:prolog({
 })
 
 # --- Two groups of order 4 --------------------------------------------------
-def u:plus4(x, y) { mod(x + y, 4) }
-def u:klein(x, y) { bxor(x, y) }
+def u:add_mod_4(x, y) { "Answer the sum modulo 4."; mod(x + y, 4) }
+def u:xor_of(x, y) { "Answer the bitwise exclusive-or, which realizes the Klein four-group on {0, 1, 2, 3}."; bxor(x, y) }
 
 z4 = {
   title: "Z4 under addition: a cyclic group",
   names: ["0", "1", "2", "3"],
-  table: table(:u:plus4, u:elements(4), u:elements(4))
+  table: table(:u:add_mod_4, u:elements(4), u:elements(4))
 }
 kl = {
   title: "The Klein four-group: not cyclic",
   names: ["e", "a", "b", "c"],
-  table: table(:u:klein, u:elements(4), u:elements(4))
+  table: table(:u:xor_of, u:elements(4), u:elements(4))
 }
 
 u:show_table(z4)
@@ -61,37 +61,37 @@ u:show_laws(kl)
 # every element appears exactly once. That is the whole derivation, and it is
 # checkable as a count.
 print("")
-print("Z4    -- is a Latin square:", u:tick(u:is_latin(z4.table)))
-print("Klein -- is a Latin square:", u:tick(u:is_latin(kl.table)))
+print("Z4    -- is a Latin square:", u:yes_or_no(u:is_latin(z4.table)))
+print("Klein -- is a Latin square:", u:yes_or_no(u:is_latin(kl.table)))
 
 # --- A monoid that fails it -------------------------------------------------
-def u:mx(x, y) { if lt(x, y) { y } else { x } }
+def u:larger_of(x, y) { "Answer whichever argument is larger. Associative and commutative, with the smallest element as its identity."; if lt(x, y) { y } else { x } }
 mx = {
   title: "max on {0, 1, 2, 3}: a monoid, not a Latin square",
   names: ["0", "1", "2", "3"],
-  table: table(:u:mx, u:elements(4), u:elements(4))
+  table: table(:u:larger_of, u:elements(4), u:elements(4))
 }
 cm = u:classify(mx.table)
 print("")
-print("max   -- monoid:", u:tick(cm.monoid), " group:", u:tick(cm.group),
-      " Latin square:", u:tick(u:is_latin(mx.table)))
+print("max   -- monoid:", u:yes_or_no(cm.monoid), " group:", u:yes_or_no(cm.group),
+      " Latin square:", u:yes_or_no(u:is_latin(mx.table)))
 print("  Row 3 is 3, 3, 3, 3 -- one element four times and the others missing.")
 print("  A missing element in a row is an equation a * b = v with no solution,")
 print("  which is exactly what having no inverse means.")
 
 # The property tracks group-ness across every structure in this repository.
-def u:fight(x, y) { if eq(mod(x - y + 3, 3), 1) { x } else { y } }
-def u:first2(x, y) { x }
+def u:winner_in_rps(x, y) { "Answer the winner of a Rock-Paper-Scissors matchup; a tie answers the shared choice."; if eq(mod(x - y + 3, 3), 1) { x } else { y } }
+def u:left_arg(x, y) { "Answer the first argument, ignoring the second. Left projection."; x }
 checked = [u:is_latin(z4.table), u:is_latin(kl.table), u:is_latin(mx.table),
-           u:is_latin(table(:u:fight, u:elements(3), u:elements(3))),
-           u:is_latin(table(:u:first2, u:elements(3), u:elements(3)))]
+           u:is_latin(table(:u:winner_in_rps, u:elements(3), u:elements(3))),
+           u:is_latin(table(:u:left_arg, u:elements(3), u:elements(3)))]
 grouped = [u:classify(z4.table).group, u:classify(kl.table).group,
            cm.group, 0, 0]
 print("")
 print("Latin square? Z4, Klein, max, rock-paper-scissors, left projection:")
 print("  latin: ", checked)
 print("  group: ", grouped)
-print("  agree everywhere:", u:tick(equal(checked, grouped)))
+print("  agree everywhere:", u:yes_or_no(equal(checked, grouped)))
 
 # --- Same shape, different groups -------------------------------------------
 # Both are Latin squares, both abelian, both order 4. They differ in how many

@@ -21,9 +21,9 @@ include "../lib/render.mlpl"
 
 # A capability is CLOSED when the builtin exists and returns the specified
 # answer.  Anything else -- missing, or present but wrong -- leaves it open.
-def u:probe(got, want) { try { equal(got, want) } catch e { 0 } }
+def u:probe(got, want) { "Answer 1 only when the wanted builtin exists AND returns the specified answer; missing or wrong both answer 0."; try { equal(got, want) } catch e { 0 } }
 
-def u:state(closed) { unwrap(list_get(["OPEN", "CLOSED -- delete the bridge"], closed)) }
+def u:state(closed) { "Answer the word to print for a blocker: OPEN while it stands, or a reminder to delete its bridge once it closes."; unwrap(list_get(["OPEN", "CLOSED -- delete the bridge"], closed)) }
 
 # B1 -- string concatenation and join.
 b1_concat = try { u:probe(str_concat("ab", "cd"), "abcd") } catch e { 0 }
@@ -48,7 +48,7 @@ b3 = b3_len * b3_slice * b3_find * b3_split
 b4 = try { u:probe(list_len(list_append(["a"], "b")), 2) } catch e { 0 }
 
 # B5 -- a u: function accepts a string list directly, without a record wrapper.
-def u:takes_list(xs) { list_len(xs) }
+def u:takes_list(xs) { "Take a string list directly, which is the whole of blocker B5."; list_len(xs) }
 b5 = try { u:probe(u:takes_list(["a", "b", "c"]), 3) } catch e { 0 }
 
 # B6 -- deep recursion raises a catchable error instead of aborting the process.
@@ -76,8 +76,8 @@ print("  open blockers:", open_count, "of 6")
 if gt(open_count, 0) {
   print("")
   print("  bridges still load-bearing:")
-  print("    B1 -> u:cat / u:cat3 / u:cat5        (lib/render.mlpl)")
-  print("    B2 -> u:num                          (lib/render.mlpl)")
+  print("    B1 -> u:join / u:join3 / u:join5        (lib/render.mlpl)")
+  print("    B2 -> u:number_text                          (lib/render.mlpl)")
   print("    B3 -> u:count_substr / u:match_mask  (tests/test_render.mlpl)")
   print("    B5 -> the {title, names, table} record wrapper")
 } else {

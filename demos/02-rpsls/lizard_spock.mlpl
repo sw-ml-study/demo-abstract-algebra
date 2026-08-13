@@ -42,15 +42,15 @@ u:prolog({
 # Spock smashes scissors and vaporizes rock; paper disproves Spock and covers
 # rock; lizard poisons Spock and eats paper; scissors decapitates lizard and
 # cuts paper; rock crushes lizard and crushes scissors. Ten rules, one formula.
-def u:gap5(x, y) { mod(x - y + 5, 5) }
-def u:beats5(x, y) { lt(u:gap5(x, y) - 1, 2) * (1 - eq(u:gap5(x, y), 0)) }
-def u:fight5(x, y) { if u:beats5(x, y) { x } else { y } }
+def u:steps_around_the_circle(x, y) { "Answer how many steps forward from y to x around the circle of five."; mod(x - y + 5, 5) }
+def u:beats_in_rpsls(x, y) { "Answer 1 when x beats y: true when x is one or two steps ahead, which is the whole of the ten rules."; lt(u:steps_around_the_circle(x, y) - 1, 2) * (1 - eq(u:steps_around_the_circle(x, y), 0)) }
+def u:winner_in_rpsls(x, y) { "Answer the winner of a Rock-Paper-Scissors-Lizard-Spock matchup; a tie answers the shared choice."; if u:beats_in_rpsls(x, y) { x } else { y } }
 
 # --- View 2: the same operation as a Cayley table ---------------------------
 s = {
   title: "Rock-Paper-Scissors-Lizard-Spock (magma)",
   names: ["spock", "paper", "lizard", "scissors", "rock"],
-  table: table(:u:fight5, u:elements(5), u:elements(5))
+  table: table(:u:winner_in_rpsls, u:elements(5), u:elements(5))
 }
 
 u:show_table(s)

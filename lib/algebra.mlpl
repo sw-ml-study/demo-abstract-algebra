@@ -15,24 +15,24 @@
 
 # The [n] header vector 0 .. n-1: the element indices, and the row/column
 # headings of every Cayley table.
-def u:elements(n) { range(n) }
+def u:elements(n) { "Answer the element indices 0 .. n-1, which are also the row and column headings of every table here."; range(n) }
 
 # Element index count for a table.
-def u:order(t) { tally(t) }
+def u:order(t) { "Answer how many elements the structure has."; tally(t) }
 
 # The [n, n] matrix whose every row is the header (H[a, b] = b).  sw-MLPL
 # broadcasts SCALARS only, so a rank-1 header cannot be compared against a
 # rank-2 table directly; this materializes it.  See docs/upstream-asks.md #2.
-def u:second(x, y) { y }
-def u:header_matrix(n) { table(:u:second, u:elements(n), u:elements(n)) }
+def u:right_arg(x, y) { "Answer the second argument, ignoring the first. Building block for a header matrix."; y }
+def u:header_matrix(n) { "Answer the [n, n] matrix whose every row is the heading 0 .. n-1, for comparing a table against its own headings."; table(:u:right_arg, u:elements(n), u:elements(n)) }
 
 # The [n, n] matrix whose every column is the header (K[a, b] = a).
-def u:first(x, y) { x }
-def u:index_matrix(n) { table(:u:first, u:elements(n), u:elements(n)) }
+def u:left_arg(x, y) { "Answer the first argument, ignoring the second. This is also left projection, a semigroup in its own right."; x }
+def u:index_matrix(n) { "Answer the [n, n] matrix whose every column is the heading 0 .. n-1, so cell (a, b) holds a."; table(:u:left_arg, u:elements(n), u:elements(n)) }
 
 # The [n] diagonal a * a. Self-inverse elements are where this equals the
 # identity; idempotents are where it equals a.
-def u:diagonal(t) {
+def u:diagonal(t) { "Answer the [n] vector of a * a for each element. Self-inverse elements are where this equals the identity.";
   n = u:order(t)
   compress(flatten(eq(u:index_matrix(n), u:header_matrix(n))), flatten(t))
 }
@@ -53,18 +53,18 @@ def u:diagonal(t) {
 #
 # All n^3 triples, no loop.
 
-def u:left_cube(t) {
+def u:left_cube(t) { "Answer the [n, n, n] cube of (a * b) * c for every triple, in one gather and no loop.";
   n = u:order(t)
   reshape(gather_rows(t, flatten(t)), [n, n, n])
 }
 
-def u:right_cube(t) {
+def u:right_cube(t) { "Answer the cube of a * (b * c) with axes in (b, c, a) order; callers permute it back.";
   n = u:order(t)
   reshape(gather_rows(transpose(t), flatten(t)), [n, n, n])
 }
 
 # The [n, n, n] 0/1 cube: 1 where the two bracketings agree.
-def u:assoc_cube(t) {
+def u:assoc_cube(t) { "Answer the [n, n, n] cube marking 1 where the two bracketings of a * b * c agree.";
   eq(u:left_cube(t), transpose_axes(u:right_cube(t), [2, 0, 1]))
 }
 
@@ -75,23 +75,23 @@ def u:assoc_cube(t) {
 # Closure: every entry names a real element.  No ge/le builtins exist, so
 # "not below zero" is spelled 1 - lt(...).  See docs/upstream-asks.md #1.
 # [n, n] mask: 1 where the entry names a real element of the set.
-def u:inside_mask(t) {
+def u:inside_mask(t) { "Answer the [n, n] mask marking 1 where the entry names a real element rather than escaping the set.";
   n = u:order(t)
   (1 - lt(t, 0)) * lt(t, n) * eq(t, floor(t))
 }
 
-def u:is_closed(t) { reduce(:and, flatten(u:inside_mask(t))) }
+def u:is_closed(t) { "Answer 1 when every result lands back in the set, which is the one law a magma requires."; reduce(:and, flatten(u:inside_mask(t))) }
 
 # Associativity is not merely false on a non-closed table -- it is UNDEFINED.
 # (a * b) * c cannot be evaluated when a * b is not an element, and the cube
 # gathers by table entries, so an escaping value would index out of range.
 # Answer 0 without touching the cube; u:is_closed is the question that matters
 # first, and u:structure_name reports "not-a-magma".
-def u:is_associative(t) {
+def u:is_associative(t) { "Answer 1 when brackets never change the answer. Answers 0 on a non-closed table, where the question is undefined.";
   if u:is_closed(t) { reduce(:and, flatten(u:assoc_cube(t))) } else { 0 }
 }
 
-def u:is_commutative(t) { equal(t, transpose(t)) }
+def u:is_commutative(t) { "Answer 1 when the order of the two arguments never matters, which shows as a table symmetric about its diagonal."; equal(t, transpose(t)) }
 
 # A LATIN SQUARE: every element appears exactly once in each row and in each
 # column. Counting is enough -- one_hot the whole table and sum along each
@@ -101,12 +101,12 @@ def u:is_commutative(t) { equal(t, transpose(t)) }
 # has a solution; in a group the solution exists and is unique, so every
 # element appears exactly once. It is n^2 counting where the four-law
 # classifier is n^3 checking, and the two agree.
-def u:is_latin(t) {
+def u:is_latin(t) { "Answer 1 when every element appears exactly once in each row and column. Equivalent to being a group, and cheaper to check.";
   n = u:order(t)
-  if u:is_closed(t) { u:latin_counts(t, n) } else { 0 }
+  if u:is_closed(t) { u:every_element_once(t, n) } else { 0 }
 }
 
-def u:latin_counts(t, n) {
+def u:every_element_once(t, n) { "Answer 1 when one_hot counts show each element exactly once per row and per column.";
   hot = reshape(one_hot(flatten(t), n), [n, n, n])
   per_row = reduce_add(hot, 1)
   per_col = reduce_add(hot, 0)
@@ -119,16 +119,16 @@ def u:latin_counts(t, n) {
 
 # [n] mask: 1 at each two-sided identity.  Element e is an identity when row e
 # reproduces the header AND column e does too.
-def u:identity_mask(t) {
+def u:identity_mask(t) { "Answer the [n] mask marking each two-sided identity, found by asking which row and column reproduce the headings.";
   h = u:header_matrix(u:order(t))
   reduce(:and, eq(t, h), 1) * reduce(:and, eq(transpose(t), h), 1)
 }
 
-def u:has_identity(t) { reduce(:or, u:identity_mask(t)) }
+def u:has_identity(t) { "Answer 1 when some element leaves every other unchanged from both sides."; reduce(:or, u:identity_mask(t)) }
 
 # [n, n] mask: every cell the identity touches -- its row, its column, and the
 # corner they share, so 2n - 1 cells. Empty when there is no identity.
-def u:mask_of_identity(t) {
+def u:mask_of_identity(t) { "Answer the [n, n] mask of every cell the identity touches: its row, its column, and their shared corner.";
   n = u:order(t)
   e = u:identity_of(t)
   rows = eq(u:index_matrix(n), e)
@@ -138,33 +138,33 @@ def u:mask_of_identity(t) {
 
 # The identity element index, or -1 when there is none.  A monoid's identity
 # is unique, so argmax over the mask is exact.
-def u:identity_of(t) {
+def u:identity_of(t) { "Answer the identity element index, or -1 when there is none. An identity is unique, so this is never ambiguous.";
   m = u:identity_mask(t)
   argmax(m) * reduce(:or, m) - (1 - reduce(:or, m))
 }
 
 # [n, n] mask: 1 where a * b equals the identity, i.e. b is a right inverse of
 # a.  Meaningless without an identity, so it is gated to the zero matrix.
-def u:inverse_mask(t) {
+def u:inverse_mask(t) { "Answer the [n, n] mask marking pairs whose product is the identity, so cell (a, b) says b undoes a.";
   e = u:identity_of(t)
   eq(t, e) * u:has_identity(t)
 }
 
 # [n] mask: 1 at each element with a two-sided inverse.
-def u:invertible_mask(t) {
+def u:invertible_mask(t) { "Answer the [n] mask marking elements that can be undone from both sides.";
   right = reduce(:or, u:inverse_mask(t), 1)
   left = reduce(:or, u:inverse_mask(t), 0)
   right * left
 }
 
-def u:has_inverses(t) { reduce(:and, u:invertible_mask(t)) }
+def u:has_inverses(t) { "Answer 1 when every element has something that undoes it, which is the last law a group needs."; reduce(:and, u:invertible_mask(t)) }
 
 # ---------------------------------------------------------------------------
 # Classification -- the ladder is DERIVED, never declared
 # ---------------------------------------------------------------------------
 
 # Rungs, as a record of 0/1 flags.  A structure is whatever its laws say it is.
-def u:classify(t) {
+def u:classify(t) { "Answer a record of law verdicts and ladder rungs, DERIVED from the table rather than declared about it.";
   closed = u:is_closed(t)
   assoc = u:is_associative(t)
   ident = u:has_identity(t)
@@ -185,7 +185,7 @@ def u:classify(t) {
 }
 
 # The highest rung reached, as a name.
-def u:structure_name(t) {
+def u:structure_name(t) { "Answer the highest rung the table reaches, named: magma, semigroup, monoid, group or abelian group.";
   c = u:classify(t)
   unwrap(list_get(
     ["not-a-magma", "magma", "semigroup", "monoid", "group", "abelian group"],
@@ -198,16 +198,16 @@ def u:structure_name(t) {
 
 # The first (a, b, c) triple where the two bracketings disagree, as the record
 # {found, a, b, c, left, right}.  Lexicographic first, so the witness is stable.
-def u:assoc_counterexample(t) {
-  if u:is_closed(t) { u:assoc_witness(t) } else { u:no_witness() }
+def u:assoc_counterexample(t) { "Answer the first triple where bracketing changes the answer, so a failed law names a witness instead of saying no.";
+  if u:is_closed(t) { u:first_assoc_disagreement(t) } else { u:empty_triple_witness() }
 }
 
 # No triple to exhibit: on a non-closed table the question does not arise.
-def u:no_witness() {
+def u:empty_triple_witness() { "Answer a witness record with found = 0, for tables where associativity cannot even be asked.";
   {found: 0, a: 0, b: 0, c: 0, ab: 0, bc: 0, left: 0, right: 0}
 }
 
-def u:assoc_witness(t) {
+def u:first_assoc_disagreement(t) { "Answer the lexicographically first disagreeing triple, located by a stable argsort rather than a search.";
   n = u:order(t)
   cube = u:assoc_cube(t)
   flat = flatten(cube)
@@ -231,7 +231,7 @@ def u:assoc_witness(t) {
 }
 
 # The first (a, b) pair where a * b differs from b * a.
-def u:comm_counterexample(t) {
+def u:comm_counterexample(t) { "Answer the first pair where a * b differs from b * a.";
   n = u:order(t)
   agree = eq(t, transpose(t))
   flat = flatten(agree)
@@ -249,7 +249,7 @@ def u:comm_counterexample(t) {
 }
 
 # The first entry that escapes the element set, as {found, a, b, value}.
-def u:closure_counterexample(t) {
+def u:closure_counterexample(t) { "Answer the first cell whose result escapes the element set, and what it escaped to.";
   n = u:order(t)
   flat = flatten(u:inside_mask(t))
   found = 1 - reduce(:and, flat)
@@ -268,7 +268,7 @@ def u:closure_counterexample(t) {
 # matrices, so the check is one comparison.
 
 # Rename every ENTRY of a table through the map p: out[a, b] = p[t[a, b]].
-def u:apply_names(t, p) {
+def u:rename_entries(t, p) { "Answer the table with every ENTRY renamed through p, leaving the row and column order alone.";
   reshape(gather_rows(reshape(p, [tally(p), 1]), flatten(t)), shape(t))
 }
 
@@ -276,20 +276,20 @@ def u:apply_names(t, p) {
 #   out[a, b] = t[idx[a], idx[b]]
 # With idx of length m this narrows or widens an [n, n] table to [m, m], which
 # is what a homomorphism's right-hand side needs.
-def u:gather2(t, idx) {
+def u:reindex_axes(t, idx) { "Answer the table re-indexed on BOTH axes through idx, so out[a, b] is t[idx[a], idx[b]]. Narrows or widens a table.";
   transpose(gather_rows(transpose(gather_rows(t, idx)), idx))
 }
 
 # f : M -> N is a homomorphism when f(a *M b) = f(a) *N f(b) everywhere.
 # Left side renames the entries of M's table; right side re-indexes N's table.
-def u:hom_lhs(f, s) { u:apply_names(s, f) }
-def u:hom_rhs(f, t) { u:gather2(t, f) }
-def u:is_homomorphism(f, s, t) { equal(u:hom_lhs(f, s), u:hom_rhs(f, t)) }
+def u:map_then_combine(f, s) { "Answer the [m, m] matrix of f(a * b): map the source table through f."; u:rename_entries(s, f) }
+def u:combine_then_map(f, t) { "Answer the [m, m] matrix of f(a) * f(b): re-index the target table through f."; u:reindex_axes(t, f) }
+def u:is_homomorphism(f, s, t) { "Answer 1 when f preserves the operation, that is when mapping then combining equals combining then mapping."; equal(u:map_then_combine(f, s), u:combine_then_map(f, t)) }
 
 # The first (a, b) pair where a candidate map fails to preserve the operation.
-def u:hom_counterexample(f, s, t) {
+def u:hom_counterexample(f, s, t) { "Answer the first pair where a candidate map fails to preserve the operation.";
   m = tally(f)
-  agree = eq(u:hom_lhs(f, s), u:hom_rhs(f, t))
+  agree = eq(u:map_then_combine(f, s), u:combine_then_map(f, t))
   flat = flatten(agree)
   found = 1 - reduce(:and, flat)
   i = take(grade_up(flat), 0, 0) * found
@@ -299,14 +299,14 @@ def u:hom_counterexample(f, s, t) {
     found: found,
     a: a,
     b: b,
-    left: take(take(u:hom_lhs(f, s), 0, a), 0, b),
-    right: take(take(u:hom_rhs(f, t), 0, a), 0, b)
+    left: take(take(u:map_then_combine(f, s), 0, a), 0, b),
+    right: take(take(u:combine_then_map(f, t), 0, a), 0, b)
   }
 }
 
 # Relabel a table under the permutation p (p[i] is the new name of element i).
 # For a permutation, grade_up(p) IS the inverse permutation.
 # Two tables are isomorphic exactly when some permutation makes them equal.
-def u:permute_table(t, p) { u:apply_names(u:gather2(t, grade_up(p)), p) }
+def u:permute_table(t, p) { "Answer the table relabelled under permutation p. Two tables are isomorphic exactly when some p makes them equal."; u:rename_entries(u:reindex_axes(t, grade_up(p)), p) }
 
-def u:is_isomorphic_under(s, t, p) { equal(u:permute_table(s, p), t) }
+def u:is_isomorphic_under(s, t, p) { "Answer 1 when relabelling s by p produces exactly t, so p witnesses that the two are the same structure renamed."; equal(u:permute_table(s, p), t) }

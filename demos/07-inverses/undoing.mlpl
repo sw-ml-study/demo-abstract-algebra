@@ -28,11 +28,11 @@ u:prolog({
 })
 
 # --- A monoid where nothing much can be undone ------------------------------
-def u:mx(x, y) { if lt(x, y) { y } else { x } }
+def u:larger_of(x, y) { "Answer whichever argument is larger. Associative and commutative, with the smallest element as its identity."; if lt(x, y) { y } else { x } }
 mx = {
   title: "max on {0, 1, 2}: only the identity is invertible",
   names: ["0", "1", "2"],
-  table: table(:u:mx, u:elements(3), u:elements(3))
+  table: table(:u:larger_of, u:elements(3), u:elements(3))
 }
 
 u:show_table(mx)
@@ -47,11 +47,11 @@ print("  has anything that undoes it. Raising a value is a one-way move.")
 # --- A monoid where everything can be undone --------------------------------
 # Z4: adding 1 is undone by adding 3, adding 2 by adding 2. Every element has
 # a partner, so this clears the last rung and becomes a group.
-def u:plus4(x, y) { mod(x + y, 4) }
+def u:add_mod_4(x, y) { "Answer the sum modulo 4."; mod(x + y, 4) }
 z4 = {
   title: "Z4 under addition: every element is invertible",
   names: ["0", "1", "2", "3"],
-  table: table(:u:plus4, u:elements(4), u:elements(4))
+  table: table(:u:add_mod_4, u:elements(4), u:elements(4))
 }
 print("")
 u:show_table(z4)
@@ -75,16 +75,16 @@ print("  so 1 and 3 undo each other, and 0 and 2 are their own inverses.")
 per_row = reduce_add(pairs, 1)
 per_col = reduce_add(pairs, 0)
 unique_inv = reduce(:and, eq(per_row, 1)) * reduce(:and, eq(per_col, 1))
-print("  inverses per element:", per_row, " -- exactly one each:", u:tick(unique_inv))
+print("  inverses per element:", per_row, " -- exactly one each:", u:yes_or_no(unique_inv))
 
 # --- Self-inverse elements --------------------------------------------------
 # a * a = e says a undoes itself. In Z4 that is 0 and 2; in the Klein group it
 # is every element, which is what makes that group feel so different.
-def u:klein(x, y) { bxor(x, y) }
+def u:xor_of(x, y) { "Answer the bitwise exclusive-or, which realizes the Klein four-group on {0, 1, 2, 3}."; bxor(x, y) }
 kl = {
   title: "The Klein four-group: every element is its own inverse",
   names: ["e", "a", "b", "c"],
-  table: table(:u:klein, u:elements(4), u:elements(4))
+  table: table(:u:xor_of, u:elements(4), u:elements(4))
 }
 z4_self = reduce_add(eq(u:diagonal(z4.table), u:identity_of(z4.table)))
 kl_self = reduce_add(eq(u:diagonal(kl.table), u:identity_of(kl.table)))

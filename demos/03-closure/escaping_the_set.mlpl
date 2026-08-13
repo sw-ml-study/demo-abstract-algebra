@@ -32,11 +32,11 @@ names = ["0", "1", "2"]
 # --- An operation that escapes ----------------------------------------------
 # Ordinary addition. Nothing is wrong with it as arithmetic; it is simply not
 # an operation ON this set, because it does not stay inside.
-def u:plus(x, y) { x + y }
+def u:ordinary_add(x, y) { "Answer the ordinary sum, which is exactly why this escapes a finite set."; x + y }
 open = {
   title: "Addition on {0, 1, 2}: NOT closed",
   names: names,
-  table: table(:u:plus, u:elements(3), u:elements(3))
+  table: table(:u:ordinary_add, u:elements(3), u:elements(3))
 }
 
 u:show_table(open)
@@ -58,11 +58,11 @@ print("  cells that escape:", reduce_add(flatten(1 - u:inside_mask(open.table)))
 # Keep the set, change the operation so it cannot leave. Addition modulo 3
 # folds every escape back to a legal element -- and the result is not merely
 # closed, it is a group.
-def u:plus3(x, y) { mod(x + y, 3) }
+def u:add_mod_3(x, y) { "Answer the sum modulo 3, which folds every escape back into the set."; mod(x + y, 3) }
 fixed = {
   title: "Addition modulo 3: closed",
   names: names,
-  table: table(:u:plus3, u:elements(3), u:elements(3))
+  table: table(:u:add_mod_3, u:elements(3), u:elements(3))
 }
 
 print("")
@@ -78,14 +78,14 @@ u:show_laws(fixed)
 wider = {
   title: "Addition on {0, 1, 2, 3, 4}: still not closed",
   names: ["0", "1", "2", "3", "4"],
-  table: table(:u:plus, u:elements(5), u:elements(5))
+  table: table(:u:ordinary_add, u:elements(5), u:elements(5))
 }
 still_open = 1 - u:is_closed(wider.table)
 print("")
 print("Growing the set from 3 to 5 elements:")
 print("  escaping cells at n=3:", reduce_add(flatten(1 - u:inside_mask(open.table))))
 print("  escaping cells at n=5:", reduce_add(flatten(1 - u:inside_mask(wider.table))))
-print("  still not closed:", u:tick(still_open))
+print("  still not closed:", u:yes_or_no(still_open))
 
 # --- The diagrams -----------------------------------------------------------
 a = u:write_cayley_svg("out/03-not-closed.svg", open)

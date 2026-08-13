@@ -1,0 +1,9 @@
+number = 11
+slug = "docstrings-and-clear-names"
+status = "in-progress"
+description = "Every def u: must carry a docstring and a self-explanatory name. Audit says 1..."
+role = "production"
+context_files = []
+created_at = "2026-08-12T15:57:43"
+task_type = "quality"
+commits = []

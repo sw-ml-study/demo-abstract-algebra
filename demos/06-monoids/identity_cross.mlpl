@@ -35,11 +35,11 @@ names = ["0", "1", "2"]
 # e is an identity when row e reproduces the header AND column e does too.
 # Both halves are one comparison against a materialized header matrix, so the
 # whole search is two reductions and a product -- see u:identity_mask.
-def u:mx(x, y) { if lt(x, y) { y } else { x } }
+def u:larger_of(x, y) { "Answer whichever argument is larger. Associative and commutative, with the smallest element as its identity."; if lt(x, y) { y } else { x } }
 mx = {
   title: "max on {0, 1, 2}: a monoid, identity 0",
   names: names,
-  table: table(:u:mx, u:elements(3), u:elements(3))
+  table: table(:u:larger_of, u:elements(3), u:elements(3))
 }
 
 u:show_table(mx)
@@ -57,12 +57,12 @@ print("  because max(0, x) is x for every x, and 0 is the smallest element.")
 #     = f       (e is an identity, acting on the left)
 # so e and f are the same element. Which means the mask can hold at most one
 # bit -- and that is something we can simply count, on every structure here.
-def u:plus3(x, y) { mod(x + y, 3) }
-def u:always_zero(x, y) { 0 }
+def u:add_mod_3(x, y) { "Answer the sum modulo 3, which folds every escape back into the set."; mod(x + y, 3) }
+def u:constant_first_element(x, y) { "Answer element 0 whatever the arguments, which is associative and has no identity above one element."; 0 }
 tables = {
-  a: table(:u:mx, u:elements(3), u:elements(3)),
-  b: table(:u:plus3, u:elements(3), u:elements(3)),
-  c: table(:u:always_zero, u:elements(3), u:elements(3)),
+  a: table(:u:larger_of, u:elements(3), u:elements(3)),
+  b: table(:u:add_mod_3, u:elements(3), u:elements(3)),
+  c: table(:u:constant_first_element, u:elements(3), u:elements(3)),
   d: [[0, 1, 0], [1, 1, 2], [0, 2, 2]]
 }
 counts = [reduce_add(u:identity_mask(tables.a)),
@@ -71,7 +71,7 @@ counts = [reduce_add(u:identity_mask(tables.a)),
           reduce_add(u:identity_mask(tables.d))]
 print("")
 print("identities found in max, Z3, constant, rock-paper-scissors:", counts)
-print("never more than one:", u:tick(reduce(:and, lt(counts, 2))))
+print("never more than one:", u:yes_or_no(reduce(:and, lt(counts, 2))))
 
 # --- A monoid is not a group ------------------------------------------------
 # max has an identity but almost nothing has an inverse: max(a, b) = 0 forces

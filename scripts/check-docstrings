@@ -26,5 +26,33 @@ for f in $(find "$repo_root/demos" "$repo_root/probes" "$repo_root/tests" "$repo
   esac
 done
 
-[ "$failures" -eq 0 ] || exit 1
-echo "docstrings: ok"
+# Every user function must open with a docstring.
+#
+# sw-MLPL's convention is a nonempty string expression as the first statement
+# of the body -- the built-in demo catalog uses it, and mlplunit reads it.
+# These files are read by learners, so a function that needs its body read to
+# be understood has failed.
+#
+#   def u:beats(x, y) { "Answer 1 when x beats y."; eq(mod(x - y + 3, 3), 1) }
+defs=0
+documented=0
+for f in $(find "$repo_root/demos" "$repo_root/probes" "$repo_root/tests" "$repo_root/lib" -name '*.mlpl' 2>/dev/null | sort); do
+  n=$(grep -cE '^[[:space:]]*def u:' "$f" || true)
+  d=$(grep -cE '^[[:space:]]*def u:[A-Za-z0-9_]+\([^)]*\)[[:space:]]*\{[[:space:]]*"[^"]+";' "$f" || true)
+  defs=$((defs + n))
+  documented=$((documented + d))
+  if [ "$n" -ne "$d" ]; then
+    echo "${f#$repo_root/}: $d of $n functions documented" >&2
+    grep -nE '^[[:space:]]*def u:' "$f" \
+      | grep -vE 'def u:[A-Za-z0-9_]+\([^)]*\)[[:space:]]*\{[[:space:]]*"[^"]+";' \
+      | head -4 | sed 's/^/    /' >&2
+    failures=$((failures + 1))
+  fi
+done
+
+[ "$failures" -eq 0 ] || {
+  echo "" >&2
+  echo "A docstring says what the function ANSWERS, not what its name already says." >&2
+  exit 1
+}
+echo "docstrings: ok ($documented of $defs functions documented)"

@@ -8,20 +8,20 @@
 # * and nothing else. No associativity, no identity, no inverses.
 # **************************************************************************
 ;
-def u:beats(x, y) { eq(mod(x - y + 3, 3), 1) }  # beats the next one around
-def u:fight(x, y) { if u:beats(x, y) { x } else { y } }  # the winner
-def u:cat(a, b) { decode_bytes(concat(tokenize_bytes(a), tokenize_bytes(b))) }  # plumbing: no graph type
-def u:nm(v) { unwrap(to_json(round(v))) }
-def u:col(i) { unwrap(list_get(["#7aa2f7", "#f7768e", "#9ece6a", "#e0af68", "#bb9af7"], mod(i, 5))) }  # same palette as the tables
-def u:px(i, k) { 190 + 130 * cos(2 * pi() * i / k - pi() / 2) }
-def u:py(i, k) { 190 + 130 * sin(2 * pi() * i / k - pi() / 2) }
-def u:ex(a, b, k, f) { u:px(a, k) + (u:px(b, k) - u:px(a, k)) * f }
-def u:ey(a, b, k, f) { u:py(a, k) + (u:py(b, k) - u:py(a, k)) * f }
-def u:seg(a, b, k) { u:cat(u:cat(u:cat("<line x1=\"", u:nm(u:ex(a, b, k, 0.24))), u:cat("\" y1=\"", u:nm(u:ey(a, b, k, 0.24)))), u:cat(u:cat(u:cat("\" x2=\"", u:nm(u:ex(a, b, k, 0.76))), u:cat("\" y2=\"", u:nm(u:ey(a, b, k, 0.76)))), "\" stroke=\"#7aa2f7\" stroke-width=\"3\" marker-end=\"url(#a)\"/>")) }
-def u:dot(i, k, nm) { u:cat(u:cat(u:cat("<circle cx=\"", u:nm(u:px(i, k))), u:cat("\" cy=\"", u:nm(u:py(i, k)))), u:cat(u:cat(u:cat("\" r=\"37\" fill=\"", u:col(i)), "\"/>"), u:cat(u:cat(u:cat("<text x=\"", u:nm(u:px(i, k))), u:cat("\" y=\"", u:nm(u:py(i, k)))), u:cat(u:cat("\" fill=\"#12131c\" text-anchor=\"middle\" dominant-baseline=\"central\" font-size=\"12\" font-family=\"monospace\">", unwrap(list_get(nm.names, i))), "</text>")))) }
-def u:arrows(i, k, acc) { if lt(i, k * k) { u:arrows(i + 1, k, if u:beats(floor(i / k), mod(i, k)) { u:cat(acc, u:seg(floor(i / k), mod(i, k), k)) } else { acc }) } else { acc } }
-def u:nodes(i, k, nm, acc) { if lt(i, k) { u:nodes(i + 1, k, nm, u:cat(acc, u:dot(i, k, nm))) } else { acc } }
-def u:cycle(k, nm) { u:cat(u:cat("<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 380 380\" width=\"380\" height=\"380\"><rect width=\"100%\" height=\"100%\" fill=\"#1a1b26\"/><defs><marker id=\"a\" viewBox=\"0 0 10 10\" refX=\"9\" refY=\"5\" markerWidth=\"5\" markerHeight=\"5\" orient=\"auto-start-reverse\"><path d=\"M 0 0 L 10 5 L 0 10 z\" fill=\"#7aa2f7\"/></marker></defs>", u:arrows(0, k, "")), u:cat(u:nodes(0, k, nm, ""), "</svg>")) }
+def u:beats_in_game(x, y) { "Answer 1 when x beats y, which is the whole rulebook in one modular test."; eq(mod(x - y + 3, 3), 1) }  # beats the next one around
+def u:winner_of(x, y) { "Answer the winner of a matchup; a tie answers the shared choice."; if u:beats_in_game(x, y) { x } else { y } }  # the winner
+def u:join(a, b) { "Answer two strings joined. sw-MLPL has no concatenation, so this goes through bytes."; decode_bytes(concat(tokenize_bytes(a), tokenize_bytes(b))) }  # plumbing: no graph type
+def u:number_text(v) { "Answer a number as its digits, rounded. sw-MLPL has no to_string."; unwrap(to_json(round(v))) }
+def u:element_color(i) { "Answer the colour that stands for element i, shared by the graph and the table."; unwrap(list_get(["#7aa2f7", "#f7768e", "#9ece6a", "#e0af68", "#bb9af7"], mod(i, 5))) }  # same palette as the tables
+def u:node_x(i, k) { "Answer the x position of node i on a circle of k nodes, element 0 at the top."; 190 + 130 * cos(2 * pi() * i / k - pi() / 2) }
+def u:node_y(i, k) { "Answer the y position of node i on a circle of k nodes."; 190 + 130 * sin(2 * pi() * i / k - pi() / 2) }
+def u:along_x(a, b, k, f) { "Answer the x coordinate a fraction f of the way from node a to node b."; u:node_x(a, k) + (u:node_x(b, k) - u:node_x(a, k)) * f }
+def u:along_y(a, b, k, f) { "Answer the y coordinate a fraction f of the way from node a to node b."; u:node_y(a, k) + (u:node_y(b, k) - u:node_y(a, k)) * f }
+def u:arrow(a, b, k) { "Answer one arrow from a to b, stopped short of both nodes so the head stays visible."; u:join(u:join(u:join("<line x1=\"", u:number_text(u:along_x(a, b, k, 0.24))), u:join("\" y1=\"", u:number_text(u:along_y(a, b, k, 0.24)))), u:join(u:join(u:join("\" x2=\"", u:number_text(u:along_x(a, b, k, 0.76))), u:join("\" y2=\"", u:number_text(u:along_y(a, b, k, 0.76)))), "\" stroke=\"#7aa2f7\" stroke-width=\"3\" marker-end=\"url(#a)\"/>")) }
+def u:node(i, k, nm) { "Answer one labelled coloured circle for element i."; u:join(u:join(u:join("<circle cx=\"", u:number_text(u:node_x(i, k))), u:join("\" cy=\"", u:number_text(u:node_y(i, k)))), u:join(u:join(u:join("\" r=\"37\" fill=\"", u:element_color(i)), "\"/>"), u:join(u:join(u:join("<text x=\"", u:number_text(u:node_x(i, k))), u:join("\" y=\"", u:number_text(u:node_y(i, k)))), u:join(u:join("\" fill=\"#12131c\" text-anchor=\"middle\" dominant-baseline=\"central\" font-size=\"12\" font-family=\"monospace\">", unwrap(list_get(nm.names, i))), "</text>")))) }
+def u:all_arrows(i, k, acc) { "Answer an arrow for every ordered pair where the first beats the second."; if lt(i, k * k) { u:all_arrows(i + 1, k, if u:beats_in_game(floor(i / k), mod(i, k)) { u:join(acc, u:arrow(floor(i / k), mod(i, k), k)) } else { acc }) } else { acc } }
+def u:all_nodes(i, k, nm, acc) { "Answer a circle for every element."; if lt(i, k) { u:all_nodes(i + 1, k, nm, u:join(acc, u:node(i, k, nm))) } else { acc } }
+def u:beats_graph(k, nm) { "Answer the whole beats relation drawn as a directed graph. sw-MLPL has no graph renderer."; u:join(u:join("<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 380 380\" width=\"380\" height=\"380\"><rect width=\"100%\" height=\"100%\" fill=\"#1a1b26\"/><defs><marker id=\"a\" viewBox=\"0 0 10 10\" refX=\"9\" refY=\"5\" markerWidth=\"5\" markerHeight=\"5\" orient=\"auto-start-reverse\"><path d=\"M 0 0 L 10 5 L 0 10 z\" fill=\"#7aa2f7\"/></marker></defs>", u:all_arrows(0, k, "")), u:join(u:all_nodes(0, k, nm, ""), "</svg>")) }
 # **************************************************************************
 # * PICTURE 1 -- THE BEATS CYCLE
 # *
@@ -33,8 +33,8 @@ def u:cycle(k, nm) { u:cat(u:cat("<svg xmlns=\"http://www.w3.org/2000/svg\" view
 # * the operation cannot be associative, because a cycle gives you no
 # * consistent way to bracket three steps.
 # **************************************************************************
-u:cycle(3, {names: ["rock", "paper", "scissors"]})
-t = table(:u:fight, range(3), range(3))  # every matchup at once
+u:beats_graph(3, {names: ["rock", "paper", "scissors"]})
+t = table(:u:winner_of, range(3), range(3))  # every matchup at once
 # **************************************************************************
 # * PICTURE 2 -- THE SAME OPERATION AS AN ARRAY
 # *

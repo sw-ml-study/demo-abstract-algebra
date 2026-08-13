@@ -35,8 +35,8 @@ u:prolog({
 # rock 0 beats scissors 2, paper 1 beats rock 0, scissors 2 beats paper 1,
 # so x beats y exactly when (x - y) mod 3 is 1.  The winner of x and y is
 # whichever of them the other does not beat.
-def u:beats(x, y) { eq(mod(x - y + 3, 3), 1) }
-def u:fight(x, y) { if u:beats(x, y) { x } else { y } }
+def u:beats_in_rps(x, y) { "Answer 1 when x beats y in Rock-Paper-Scissors: true exactly when x is one step ahead of y around the circle."; eq(mod(x - y + 3, 3), 1) }
+def u:winner_in_rps(x, y) { "Answer the winner of a Rock-Paper-Scissors matchup; a tie answers the shared choice."; if u:beats_in_rps(x, y) { x } else { y } }
 
 # --- View 2: the same operation as a Cayley table ---------------------------
 # table() is the outer product: every pair of choices, evaluated at once.
@@ -44,13 +44,13 @@ def u:fight(x, y) { if u:beats(x, y) { x } else { y } }
 s = {
   title: "Rock-Paper-Scissors (magma)",
   names: ["rock", "paper", "scissors"],
-  table: table(:u:fight, u:elements(3), u:elements(3))
+  table: table(:u:winner_in_rps, u:elements(3), u:elements(3))
 }
 
 u:show_table(s)
 
 # The function and the table are the same object; assert it rather than say it.
-spot = eq(u:fight(0, 2), take(take(s.table, 0, 0), 0, 2))
+spot = eq(u:winner_in_rps(0, 2), take(take(s.table, 0, 0), 0, 2))
 
 print("")
 print("Which laws hold?")

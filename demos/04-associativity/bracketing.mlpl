@@ -34,12 +34,12 @@ u:prolog({
 names = ["rock", "paper", "scissors"]
 
 # --- The operation that fails -----------------------------------------------
-def u:beats(x, y) { eq(mod(x - y + 3, 3), 1) }
-def u:fight(x, y) { if u:beats(x, y) { x } else { y } }
+def u:beats_in_rps(x, y) { "Answer 1 when x beats y in Rock-Paper-Scissors: true exactly when x is one step ahead of y around the circle."; eq(mod(x - y + 3, 3), 1) }
+def u:winner_in_rps(x, y) { "Answer the winner of a Rock-Paper-Scissors matchup; a tie answers the shared choice."; if u:beats_in_rps(x, y) { x } else { y } }
 rps = {
   title: "Rock-Paper-Scissors: bracketing matters",
   names: names,
-  table: table(:u:fight, u:elements(3), u:elements(3))
+  table: table(:u:winner_in_rps, u:elements(3), u:elements(3))
 }
 
 # --- The two cubes ----------------------------------------------------------
@@ -71,11 +71,11 @@ x = u:show_assoc_counterexample(rps)
 
 # --- An operation that passes -----------------------------------------------
 # Z3 under addition. Same shape, same check, twenty-seven agreements.
-def u:plus3(x, y) { mod(x + y, 3) }
+def u:add_mod_3(x, y) { "Answer the sum modulo 3, which folds every escape back into the set."; mod(x + y, 3) }
 z3 = {
   title: "Z3 under addition: brackets do not matter",
   names: ["0", "1", "2"],
-  table: table(:u:plus3, u:elements(3), u:elements(3))
+  table: table(:u:add_mod_3, u:elements(3), u:elements(3))
 }
 z3_agree = u:assoc_cube(z3.table)
 print("")
@@ -88,13 +88,13 @@ print("Z3 witness found:", u:assoc_counterexample(z3.table).found)
 lp = {
   title: "Left projection: associative, not commutative",
   names: names,
-  table: table(:u:first, u:elements(3), u:elements(3))
+  table: table(:u:left_arg, u:elements(3), u:elements(3))
 }
 clp = u:classify(lp.table)
 print("")
-print("Left projection -- associative:", u:tick(clp.associative),
-      " commutative:", u:tick(clp.commutative))
-print("Rock-Paper-Scissors -- associative:", u:tick(0), " commutative:", u:tick(1))
+print("Left projection -- associative:", u:yes_or_no(clp.associative),
+      " commutative:", u:yes_or_no(clp.commutative))
+print("Rock-Paper-Scissors -- associative:", u:yes_or_no(0), " commutative:", u:yes_or_no(1))
 
 # --- The diagrams -----------------------------------------------------------
 a = u:write_cube_svg("out/04-rps-cube.svg", rps)

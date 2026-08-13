@@ -11,16 +11,16 @@ include "lib/render.mlpl";
 
 @test {name: "string primitives", tags: ["render"]}
 def u:test_string_primitives() { "cat and num are the SVG emitter's floor.";
-  u:assert_eq(u:cat("ab", "cd"), "abcd", "cat failed")?;
-  u:assert_eq(u:cat("", "x"), "x", "cat with empty left")?;
-  u:assert_eq(u:cat("x", ""), "x", "cat with empty right")?;
-  u:assert_eq(u:cat3("a", "b", "c"), "abc", "cat3 failed")?;
-  u:assert_eq(u:cat5("a", "b", "c", "d", "e"), "abcde", "cat5 failed")?;
+  u:assert_eq(u:join("ab", "cd"), "abcd", "cat failed")?;
+  u:assert_eq(u:join("", "x"), "x", "cat with empty left")?;
+  u:assert_eq(u:join("x", ""), "x", "cat with empty right")?;
+  u:assert_eq(u:join3("a", "b", "c"), "abc", "cat3 failed")?;
+  u:assert_eq(u:join5("a", "b", "c", "d", "e"), "abcde", "cat5 failed")?;
   # The load-bearing assumption: to_json of a scalar IS its numeral.
-  u:assert_eq(u:num(0), "0", "num 0")?;
-  u:assert_eq(u:num(12), "12", "num 12")?;
-  u:assert_eq(u:num(1.5), "1.5", "num 1.5")?;
-  u:assert_eq(u:num(0 - 3), "-3", "num negative")?;
+  u:assert_eq(u:number_text(0), "0", "num 0")?;
+  u:assert_eq(u:number_text(12), "12", "num 12")?;
+  u:assert_eq(u:number_text(1.5), "1.5", "num 1.5")?;
+  u:assert_eq(u:number_text(0 - 3), "-3", "num negative")?;
   ok({test: "string-primitives", cases: 9})
 }
 
@@ -52,7 +52,7 @@ def u:test_cayley_svg() { "Structure and highlights land in the emitted SVG.";
   ok({test: "cayley-svg", cases: 7})
 }
 
-def u:z3_add(x, y) { mod(x + y, 3) }
+def u:z3_add(x, y) { "Answer the sum modulo 3, an associative operation to contrast against."; mod(x + y, 3) }
 
 # Count occurrences of a needle.  sw-MLPL has no substring search, so this is
 # the array formulation: rotate the haystack once per needle byte and AND the
@@ -60,7 +60,7 @@ def u:z3_add(x, y) { mod(x + y, 3) }
 # a handful of frames deep regardless of document size -- walking the haystack
 # byte by byte instead overflows the interpreter's stack outright
 # (docs/upstream-asks.md #8).
-def u:count_substr(hay, needle) {
+def u:count_substr(hay, needle) { "Answer how many times the needle occurs, or 0 when the haystack is shorter than it."; 
   h = tokenize_bytes(hay);
   ndl = tokenize_bytes(needle);
   # A haystack shorter than the needle has no matches, and the rotate-and-mask
@@ -70,7 +70,7 @@ def u:count_substr(hay, needle) {
   if lt(size(h), size(ndl)) { 0 } else { u:count_found(h, ndl) }
 }
 
-def u:count_found(h, ndl) {
+def u:count_found(h, ndl) { "Answer the occurrence count by rotating the haystack once per needle byte."; 
   n = size(h);
   k = size(ndl);
   hits = u:match_mask(h, ndl, 0, ones([n]));
@@ -78,7 +78,7 @@ def u:count_found(h, ndl) {
   reduce_add(hits * lt(range(n), n - k + 1))
 }
 
-def u:match_mask(h, ndl, j, acc) {
+def u:match_mask(h, ndl, j, acc) { "Answer the per-position mask of full needle matches, recursing over the NEEDLE so depth stays small."; 
   if lt(j, size(ndl)) {
     u:match_mask(h, ndl, j + 1, acc * eq(rotate(h, j, 0), take(ndl, 0, j)))
   } else { acc }
@@ -154,8 +154,8 @@ def u:test_dominance() { "The graph must agree with the algebra by construction.
   ok({test: "dominance", cases: 5})
 }
 
-def u:gap5(x, y) { mod(x - y + 5, 5) }
-def u:beats5(x, y) { lt(u:gap5(x, y) - 1, 2) * (1 - eq(u:gap5(x, y), 0)) }
-def u:fight5(x, y) { if u:beats5(x, y) { x } else { y } }
+def u:gap5(x, y) { "Answer how many steps forward from y to x around the circle of five."; mod(x - y + 5, 5) }
+def u:beats5(x, y) { "Answer 1 when x beats y in Rock-Paper-Scissors-Lizard-Spock."; lt(u:gap5(x, y) - 1, 2) * (1 - eq(u:gap5(x, y), 0)) }
+def u:fight5(x, y) { "Answer the winner of an RPSLS matchup."; if u:beats5(x, y) { x } else { y } }
 
 u:run_registered_tests()

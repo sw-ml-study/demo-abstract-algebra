@@ -6,18 +6,18 @@
 # * is visible before you read a single word.
 # **************************************************************************
 ;
-def u:fight(x, y) { if eq(mod(x - y + 3, 3), 1) { x } else { y } }  # Rock-Paper-Scissors
-def u:add3(x, y) { mod(x + y, 3) }  # Z3, addition mod 3
-def u:cat(a, b) { decode_bytes(concat(tokenize_bytes(a), tokenize_bytes(b))) }  # plumbing: no labelled grid renderer
-def u:nm(v) { unwrap(to_json(round(v))) }
-def u:col(i) { unwrap(list_get(["#7aa2f7", "#f7768e", "#9ece6a", "#e0af68", "#bb9af7"], mod(i, 5))) }
-def u:txt(x, y, fill, sz, str) { u:cat(u:cat(u:cat("<text x=\"", u:nm(x)), u:cat("\" y=\"", u:nm(y))), u:cat(u:cat(u:cat("\" fill=\"", fill), u:cat("\" font-size=\"", u:nm(sz))), u:cat(u:cat("\" text-anchor=\"middle\" dominant-baseline=\"central\" font-family=\"monospace\">", str), "</text>"))) }
-def u:box(a, b, v, nm) { u:cat(u:cat(u:cat(u:cat("<rect x=\"", u:nm(70 + b * 62)), u:cat("\" y=\"", u:nm(70 + a * 62))), u:cat(u:cat("\" width=\"58\" height=\"58\" rx=\"4\" fill=\"", u:col(v)), "\"/>")), u:txt(99 + b * 62, 99 + a * 62, "#12131c", 11, unwrap(list_get(nm.names, v)))) }
-def u:cells(t, i, nm, acc) { if lt(i, tally(t) * tally(t)) { u:cells(t, i + 1, nm, u:cat(acc, u:box(floor(i / tally(t)), mod(i, tally(t)), take(take(t, 0, floor(i / tally(t))), 0, mod(i, tally(t))), nm))) } else { acc } }
-def u:heads(k, i, nm, acc) { if lt(i, k) { u:heads(k, i + 1, nm, u:cat(acc, u:cat(u:txt(99 + i * 62, 56, "#c0caf5", 11, unwrap(list_get(nm.names, i))), u:txt(36, 99 + i * 62, "#c0caf5", 11, unwrap(list_get(nm.names, i)))))) } else { acc } }
-def u:sz(t) { 86 + tally(t) * 62 }  # square, so one number does for both
-def u:open(t) { u:cat(u:cat(u:cat("<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 ", u:nm(u:sz(t))), u:cat(" ", u:nm(u:sz(t)))), u:cat(u:cat(u:cat("\" width=\"", u:nm(u:sz(t))), u:cat("\" height=\"", u:nm(u:sz(t)))), "\"><rect width=\"100%\" height=\"100%\" fill=\"#1a1b26\"/>")) }  # width/height or it collapses inline
-def u:grid(t, nm) { u:cat(u:cat(u:open(t), u:heads(tally(t), 0, nm, "")), u:cat(u:cells(t, 0, nm, ""), "</svg>")) }
+def u:winner_of(x, y) { "Answer the winner of a matchup; a tie answers the shared choice."; if eq(mod(x - y + 3, 3), 1) { x } else { y } }  # Rock-Paper-Scissors
+def u:add_mod_3(x, y) { "Answer the sum modulo 3, the operation of the cyclic group Z3."; mod(x + y, 3) }  # Z3, addition mod 3
+def u:join(a, b) { "Answer two strings joined. sw-MLPL has no concatenation, so this goes through bytes."; decode_bytes(concat(tokenize_bytes(a), tokenize_bytes(b))) }  # plumbing: no labelled grid renderer
+def u:number_text(v) { "Answer a number as its digits, rounded. sw-MLPL has no to_string."; unwrap(to_json(round(v))) }
+def u:element_color(i) { "Answer the colour that stands for element i, shared by the graph and the table."; unwrap(list_get(["#7aa2f7", "#f7768e", "#9ece6a", "#e0af68", "#bb9af7"], mod(i, 5))) }
+def u:label(x, y, fill, sz, str) { "Answer a text element centred on the given point."; u:join(u:join(u:join("<text x=\"", u:number_text(x)), u:join("\" y=\"", u:number_text(y))), u:join(u:join(u:join("\" fill=\"", fill), u:join("\" font-size=\"", u:number_text(sz))), u:join(u:join("\" text-anchor=\"middle\" dominant-baseline=\"central\" font-family=\"monospace\">", str), "</text>"))) }
+def u:cell(a, b, v, nm) { "Answer one table cell: a coloured square carrying the name of its result."; u:join(u:join(u:join(u:join("<rect x=\"", u:number_text(70 + b * 62)), u:join("\" y=\"", u:number_text(70 + a * 62))), u:join(u:join("\" width=\"58\" height=\"58\" rx=\"4\" fill=\"", u:element_color(v)), "\"/>")), u:label(99 + b * 62, 99 + a * 62, "#12131c", 11, unwrap(list_get(nm.names, v)))) }
+def u:all_cells(t, i, nm, acc) { "Answer every cell of the table, folded together by recursion."; if lt(i, tally(t) * tally(t)) { u:all_cells(t, i + 1, nm, u:join(acc, u:cell(floor(i / tally(t)), mod(i, tally(t)), take(take(t, 0, floor(i / tally(t))), 0, mod(i, tally(t))), nm))) } else { acc } }
+def u:headings(k, i, nm, acc) { "Answer the row and column headings."; if lt(i, k) { u:headings(k, i + 1, nm, u:join(acc, u:join(u:label(99 + i * 62, 56, "#c0caf5", 11, unwrap(list_get(nm.names, i))), u:label(36, 99 + i * 62, "#c0caf5", 11, unwrap(list_get(nm.names, i)))))) } else { acc } }
+def u:canvas_size(t) { "Answer the square canvas edge for a table of this order."; 86 + tally(t) * 62 }  # square, so one number does for both
+def u:svg_header(t) { "Answer the opening svg tag and background. Width and height are required or it collapses inline."; u:join(u:join(u:join("<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 ", u:number_text(u:canvas_size(t))), u:join(" ", u:number_text(u:canvas_size(t)))), u:join(u:join(u:join("\" width=\"", u:number_text(u:canvas_size(t))), u:join("\" height=\"", u:number_text(u:canvas_size(t)))), "\"><rect width=\"100%\" height=\"100%\" fill=\"#1a1b26\"/>")) }  # width/height or it collapses inline
+def u:cayley_grid(t, nm) { "Answer the labelled, colour-coded Cayley table as an SVG document."; u:join(u:join(u:svg_header(t), u:headings(tally(t), 0, nm, "")), u:join(u:all_cells(t, 0, nm, ""), "</svg>")) }
 rps = {names: ["rock", "paper", "scis"]}  # short names so cells stay legible
 z3 = {names: ["0", "1", "2"]}
 # **************************************************************************
@@ -29,7 +29,7 @@ z3 = {names: ["0", "1", "2"]}
 # * Look along any row: blue appears twice in the first row, and the third
 # * row has blue, green, green. Colours repeat and others go missing.
 # **************************************************************************
-u:grid(table(:u:fight, range(3), range(3)), rps)
+u:cayley_grid(table(:u:winner_of, range(3), range(3)), rps)
 # **************************************************************************
 # * TABLE 2 -- Z3 UNDER ADDITION, a group
 # *
@@ -39,7 +39,7 @@ u:grid(table(:u:fight, range(3), range(3)), rps)
 # * Now look along any row, or any column: each of the three colours appears
 # * EXACTLY ONCE. No repeats, nothing missing.
 # **************************************************************************
-u:grid(table(:u:add3, range(3), range(3)), z3)
+u:cayley_grid(table(:u:add_mod_3, range(3), range(3)), z3)
 # **************************************************************************
 # * WHAT TO NOTICE
 # *
