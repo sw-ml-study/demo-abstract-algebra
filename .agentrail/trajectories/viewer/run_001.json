@@ -1,0 +1,11 @@
+{
+  "task_type": "viewer",
+  "state": {
+    "number": 16,
+    "step": "interactive-viewer"
+  },
+  "action": "Wrote the conformance fixtures BEFORE the page so the page had something to be measured against; verified the rendering and the self-check by screenshotting and dumping the DOM rather than assuming.",
+  "result": "success",
+  "reward": 1,
+  "timestamp": "2026-08-13T11:22:06"
+}
