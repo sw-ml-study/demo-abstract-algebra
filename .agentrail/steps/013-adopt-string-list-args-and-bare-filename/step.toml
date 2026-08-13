@@ -1,9 +1,10 @@
 number = 13
 slug = "adopt-string-list-args-and-bare-filename"
-status = "in-progress"
+status = "completed"
 description = "B5 (string-list as a u: argument) and A1 (bare-filename invocation) are live ..."
 role = "production"
 context_files = []
 created_at = "2026-08-12T18:06:31"
+completed_at = "2026-08-12T18:55:07"
 task_type = "adoption"
-commits = []
+commits = ["82d503fbace93e31057c88825b3253a93bcb05d2"]
