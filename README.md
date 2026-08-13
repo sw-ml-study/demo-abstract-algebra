@@ -229,7 +229,9 @@ just check     # the full local gate
 The interpreter is found at `../sw-mlpl/target/release/mlpl-repl`, or wherever
 `$MLPL` points. Nothing is installed and no stable binary is overwritten.
 
-To see the diagrams in a browser instead, open
+To **edit** a structure and watch the laws change, open
+[`viewer/cayley.html`](viewer/cayley.html) in any browser — no server, no
+build. To see the diagrams in a browser instead, open
 <https://sw-ml-study.github.io/sw-mlpl/>, click **Editor**, **Load** a file
 from `web/`, press **Run**, then click **REPL** — see
 [web/README.md](web/README.md).

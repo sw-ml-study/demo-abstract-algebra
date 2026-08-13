@@ -1,0 +1,294 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>Cayley table explorer — demo-abstract-algebra</title>
+<style>
+  :root {
+    --bg: #1a1b26; --panel: #1f2130; --line: #414868; --ink: #c0caf5;
+    --dim: #565f89; --good: #9ece6a; --bad: #f7768e; --warn: #e0af68;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; padding: 24px; background: var(--bg); color: var(--ink);
+    font: 15px/1.55 ui-monospace, Menlo, monospace;
+  }
+  h1 { font-size: 19px; margin: 0 0 4px; }
+  p.sub { color: var(--dim); margin: 0 0 20px; max-width: 62ch; }
+  .row { display: flex; gap: 24px; flex-wrap: wrap; align-items: flex-start; }
+  .panel {
+    background: var(--panel); border: 1px solid var(--line);
+    border-radius: 8px; padding: 16px;
+  }
+  table { border-collapse: collapse; }
+  th { color: var(--dim); font-weight: normal; padding: 4px 8px; font-size: 13px; }
+  td.cell {
+    width: 68px; height: 46px; text-align: center; cursor: pointer;
+    border-radius: 4px; border: 3px solid transparent; color: #12131c;
+    font-size: 13px; user-select: none;
+  }
+  td.cell:hover { border-color: #ffffff; }
+  td.cell.identity { border-color: #ffffff; }
+  td.cell.escaped { background: #3b3b4d !important; color: var(--bad); }
+  .laws { list-style: none; margin: 0; padding: 0; min-width: 260px; }
+  .laws li { display: flex; justify-content: space-between; padding: 3px 0; }
+  .yes { color: var(--good); } .no { color: var(--bad); }
+  .rung { margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--line); font-size: 17px; }
+  .witness { margin-top: 12px; color: var(--warn); font-size: 13px; white-space: pre-wrap; }
+  button {
+    background: #2a2e42; color: var(--ink); border: 1px solid var(--line);
+    border-radius: 5px; padding: 6px 11px; font: inherit; cursor: pointer; margin: 2px;
+  }
+  button:hover { border-color: var(--ink); }
+  button.win { border-color: var(--good); color: var(--good); }
+  .puzzle { margin-top: 16px; font-size: 13px; color: var(--dim); max-width: 46ch; }
+  #conformance { margin-top: 22px; font-size: 13px; }
+  code { color: var(--warn); }
+</style>
+
+<h1>Cayley table explorer</h1>
+<p class="sub">
+  Click any cell to change what that pairing produces. Every law is rechecked
+  as you edit, so you can build a structure by hand and watch the classifier
+  decide what it is. Nothing here is declared — it is all read off the table.
+</p>
+
+<div class="row">
+  <div class="panel">
+    <div id="picker"></div>
+    <div id="grid" style="margin-top:12px"></div>
+  </div>
+
+  <div class="panel">
+    <ul class="laws" id="laws"></ul>
+    <div class="rung" id="rung"></div>
+    <div class="witness" id="witness"></div>
+    <div class="puzzle" id="puzzle"></div>
+  </div>
+</div>
+
+<div class="panel" id="conformance"></div>
+
+<script>
+// ---------------------------------------------------------------------------
+// The law checks, ported from lib/algebra.mlpl.
+//
+// This duplication is deliberate: a browser cannot call the interpreter, and
+// live editing is worth a second implementation. It is kept honest by
+// tests/test_viewer_conformance.mlpl, which writes the verdicts MLPL produces
+// for the structures below; this page recomputes them on load and reports any
+// disagreement at the bottom. MLPL IS AUTHORITATIVE -- if they differ, this
+// file is wrong.
+// ---------------------------------------------------------------------------
+
+const order = t => t.length;
+
+/** Every entry names a real element: the one law a magma requires. */
+const isClosed = t =>
+  t.every(row => row.every(v => Number.isInteger(v) && v >= 0 && v < order(t)));
+
+/** Brackets never change the answer. Undefined on a non-closed table, so 0. */
+function isAssociative(t) {
+  if (!isClosed(t)) return false;
+  const n = order(t);
+  for (let a = 0; a < n; a++)
+    for (let b = 0; b < n; b++)
+      for (let c = 0; c < n; c++)
+        if (t[t[a][b]][c] !== t[a][t[b][c]]) return false;
+  return true;
+}
+
+/** The first triple where the two bracketings disagree, or null. */
+function assocWitness(t) {
+  if (!isClosed(t)) return null;
+  const n = order(t);
+  for (let a = 0; a < n; a++)
+    for (let b = 0; b < n; b++)
+      for (let c = 0; c < n; c++)
+        if (t[t[a][b]][c] !== t[a][t[b][c]])
+          return { a, b, c, left: t[t[a][b]][c], right: t[a][t[b][c]] };
+  return null;
+}
+
+const isCommutative = t =>
+  t.every((row, a) => row.every((v, b) => v === t[b][a]));
+
+/** The identity element index, or -1. Row e and column e echo the headings. */
+function identityOf(t) {
+  const n = order(t);
+  for (let e = 0; e < n; e++) {
+    let ok = true;
+    for (let x = 0; x < n; x++) if (t[e][x] !== x || t[x][e] !== x) { ok = false; break; }
+    if (ok) return e;
+  }
+  return -1;
+}
+
+/** Every element can be undone from both sides. */
+function hasInverses(t) {
+  const n = order(t), e = identityOf(t);
+  if (e < 0) return false;
+  for (let a = 0; a < n; a++) {
+    let right = false, left = false;
+    for (let b = 0; b < n; b++) {
+      if (t[a][b] === e) right = true;
+      if (t[b][a] === e) left = true;
+    }
+    if (!right || !left) return false;
+  }
+  return true;
+}
+
+/** Every element exactly once per row and per column: the group shape. */
+function isLatin(t) {
+  if (!isClosed(t)) return false;
+  const n = order(t);
+  for (let i = 0; i < n; i++) {
+    const rows = new Set(), cols = new Set();
+    for (let j = 0; j < n; j++) { rows.add(t[i][j]); cols.add(t[j][i]); }
+    if (rows.size !== n || cols.size !== n) return false;
+  }
+  return true;
+}
+
+/** The ladder rung, derived from the laws rather than declared. */
+function classify(t) {
+  const closed = isClosed(t);
+  const assoc = closed && isAssociative(t);
+  const ident = closed && identityOf(t) >= 0;
+  const inv = closed && hasInverses(t);
+  const comm = isCommutative(t);
+  const names = ["not-a-magma", "magma", "semigroup", "monoid", "group", "abelian group"];
+  const rung = (closed ? 1 : 0) + (closed && assoc ? 1 : 0) + (closed && assoc && ident ? 1 : 0)
+    + (closed && assoc && ident && inv ? 1 : 0) + (closed && assoc && ident && inv && comm ? 1 : 0);
+  return { closed, associative: assoc, commutative: comm, identity: ident,
+           inverses: inv, latin: isLatin(t), rung: names[rung] };
+}
+
+// ---------------------------------------------------------------------------
+// Structures to start from. Each is a starting point, not a fixed exhibit --
+// every one is editable.
+// ---------------------------------------------------------------------------
+const PALETTE = ["#7aa2f7", "#f7768e", "#9ece6a", "#e0af68", "#bb9af7", "#7dcfff"];
+const mod = (f, n) => Array.from({ length: n }, (_, a) =>
+  Array.from({ length: n }, (_, b) => f(a, b, n)));
+
+const STRUCTURES = {
+  "rock-paper-scissors": { names: ["rock", "paper", "scis"], table: [[0,1,0],[1,1,2],[0,2,2]],
+    puzzle: "A commutative magma. PUZZLE: edit cells until it becomes associative — the classifier will say <code>semigroup</code>." },
+  "Z3": { names: ["0","1","2"], table: mod((a,b,n) => (a+b)%n, 3),
+    puzzle: "An abelian group, and a Latin square. Break one cell and watch which laws fall first." },
+  "Z4": { names: ["0","1","2","3"], table: mod((a,b,n) => (a+b)%n, 4), puzzle: "" },
+  "Klein four-group": { names: ["e","a","b","c"], table: mod((a,b) => a^b, 4),
+    puzzle: "Also a group of order 4, and not Z4 — every element undoes itself." },
+  "max": { names: ["0","1","2"], table: mod((a,b) => Math.max(a,b), 3),
+    puzzle: "A monoid. PUZZLE: it has an identity but almost no inverses. Can you edit it into a group without breaking associativity?" },
+  "left projection": { names: ["a","b","c"], table: mod(a => a, 3),
+    puzzle: "A semigroup with no identity. PUZZLE: turn it into a monoid — you need one row and one column to echo the headings." },
+  "addition, not closed": { names: ["0","1","2"], table: [[0,1,2],[1,2,3],[2,3,4]],
+    puzzle: "Not closed: cells marked in red escape the set. Nothing above closure can even be asked." },
+};
+
+let current = "rock-paper-scissors";
+let table = STRUCTURES[current].table.map(r => r.slice());
+
+function draw() {
+  const s = STRUCTURES[current], n = order(table), e = identityOf(table);
+  const cellName = v => (v >= 0 && v < n) ? s.names[v] : "!" + v;
+
+  let h = "<table><tr><th></th>";
+  for (let b = 0; b < n; b++) h += `<th>${s.names[b]}</th>`;
+  h += "</tr>";
+  for (let a = 0; a < n; a++) {
+    h += `<tr><th>${s.names[a]}</th>`;
+    for (let b = 0; b < n; b++) {
+      const v = table[a][b];
+      const bad = !(Number.isInteger(v) && v >= 0 && v < n);
+      const cls = "cell" + (bad ? " escaped" : "") + ((e >= 0 && (a === e || b === e)) ? " identity" : "");
+      const bg = bad ? "" : `background:${PALETTE[v % PALETTE.length]}`;
+      h += `<td class="${cls}" style="${bg}" data-a="${a}" data-b="${b}">${cellName(v)}</td>`;
+    }
+    h += "</tr>";
+  }
+  document.getElementById("grid").innerHTML = h + "</table>";
+
+  const c = classify(table);
+  const li = (k, v) => `<li><span>${k}</span><span class="${v ? "yes" : "no"}">${v ? "yes" : "no"}</span></li>`;
+  document.getElementById("laws").innerHTML =
+    li("closed", c.closed) + li("associative", c.associative) + li("commutative", c.commutative) +
+    li("identity", c.identity) + li("inverses", c.inverses) + li("Latin square", c.latin);
+  document.getElementById("rung").textContent = "=> " + c.rung;
+
+  const w = assocWitness(table);
+  document.getElementById("witness").textContent = w
+    ? `associativity fails at (${s.names[w.a]}, ${s.names[w.b]}, ${s.names[w.c]}):\n`
+      + `  (a*b)*c = ${cellName(w.left)}\n  a*(b*c) = ${cellName(w.right)}`
+    : (c.closed ? "" : "closure fails, so associativity cannot be asked");
+  document.getElementById("puzzle").innerHTML = s.puzzle || "";
+}
+
+document.getElementById("picker").innerHTML = Object.keys(STRUCTURES)
+  .map(k => `<button data-pick="${k}">${k}</button>`).join("");
+
+document.addEventListener("click", ev => {
+  const pick = ev.target.closest("[data-pick]");
+  if (pick) {
+    current = pick.dataset.pick;
+    table = STRUCTURES[current].table.map(r => r.slice());
+    draw(); return;
+  }
+  const cell = ev.target.closest("td.cell");
+  if (cell) {
+    const a = +cell.dataset.a, b = +cell.dataset.b, n = order(table);
+    table[a][b] = (table[a][b] + 1) % n;   // cycle through the elements
+    draw();
+  }
+});
+
+// ---------------------------------------------------------------------------
+// Conformance: recompute what MLPL computed, and say so plainly.
+// The expected values are copied from out/viewer-fixtures.json, produced by
+// tests/test_viewer_conformance.mlpl. They are hand-embedded because this page
+// must be standalone, so scripts/check-viewer-conformance diffs them against
+// the generated fixtures and fails the gate on any drift.
+//
+// Note the last row: a table that is NOT closed can still have an identity.
+// The identity question only asks whether some row and column echo the
+// headings, which does not require closure -- so it answers 0, not -1. That
+// caught a wrong hand-transcription here the first time this ran.
+// ---------------------------------------------------------------------------
+const EXPECTED = {
+  "rock-paper-scissors": { rung: "magma", latin: false, identity: -1, witness: [0,1,2] },
+  "Z3": { rung: "abelian group", latin: true, identity: 0, witness: null },
+  "Z4": { rung: "abelian group", latin: true, identity: 0, witness: null },
+  "Klein four-group": { rung: "abelian group", latin: true, identity: 0, witness: null },
+  "max": { rung: "monoid", latin: false, identity: 0, witness: null },
+  "left projection": { rung: "semigroup", latin: false, identity: -1, witness: null },
+  "addition, not closed": { rung: "not-a-magma", latin: false, identity: 0, witness: null },
+};
+
+(function conformance() {
+  const rows = [];
+  let bad = 0;
+  for (const [name, want] of Object.entries(EXPECTED)) {
+    const t = STRUCTURES[name].table;
+    const got = classify(t);
+    const w = assocWitness(t);
+    const gotW = w ? [w.a, w.b, w.c] : null;
+    const ok = got.rung === want.rung
+      && got.latin === want.latin
+      && identityOf(t) === want.identity
+      && JSON.stringify(gotW) === JSON.stringify(want.witness);
+    if (!ok) bad++;
+    rows.push(`${ok ? "ok  " : "FAIL"}  ${name.padEnd(24)} ${got.rung}`);
+  }
+  document.getElementById("conformance").innerHTML =
+    `<strong class="${bad ? "no" : "yes"}">Conformance against lib/algebra.mlpl: `
+    + `${Object.keys(EXPECTED).length - bad} of ${Object.keys(EXPECTED).length} agree`
+    + `${bad ? " — THIS PAGE IS WRONG" : ""}</strong>`
+    + `<pre style="color:var(--dim);margin:8px 0 0">${rows.join("\n")}</pre>`
+    + `<p style="color:var(--dim);margin:8px 0 0">The interpreter is authoritative. `
+    + `These verdicts come from <code>tests/test_viewer_conformance.mlpl</code>; `
+    + `this page recomputes them in JavaScript because a browser cannot call it.</p>`;
+})();
+
+draw();
+</script>

@@ -24,12 +24,13 @@ list-tests:
 audit:
     ./scripts/validate-catalog catalog/demos.tsv
     ./scripts/validate-catalog catalog/tests.tsv
+    ./scripts/check-docs
     ./scripts/check-docstrings
     ./scripts/check-generated
     ./scripts/check-web-size
     ./scripts/check-narration
     ./scripts/check-web-renders
-    ./scripts/check-docs
+    ./scripts/check-viewer-conformance
 
 # Regenerate the standalone, paste-ready Web UI entries in web/.
 web:

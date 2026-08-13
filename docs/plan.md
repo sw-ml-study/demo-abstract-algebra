@@ -261,10 +261,10 @@ the count.
    `svg(t, "heatmap")` colors cells but draws no headings, values, or
    highlights, which is most of the teaching (upstream ask #5). Both bridges
    this depends on are blockers: `docs/mlpl-blockers.md`, B1 and B2.
-3. **The interactive page last.** `viewer/cayley.html`: load a structure's
-   JSON, edit a cell, watch the law verdicts recompute. This is where the
-   brief's best idea lives — *"Make this magma associative"*, *"Turn this
-   semigroup into a monoid"* as puzzles.
+3. **The interactive page last** *(done)*. `viewer/cayley.html`: seven
+   editable structures, every law rechecked as you click, and the brief's
+   puzzles — *"Make this magma associative"*, *"Turn this semigroup into a
+   monoid"*. Dependency-free, no server.
 
 The viewer re-implements the law checks in JavaScript, because a page cannot
 call the interpreter. That duplication is deliberate and is kept honest:

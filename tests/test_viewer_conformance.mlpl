@@ -1,0 +1,82 @@
+# Conformance fixtures for viewer/cayley.html.
+#
+# The page recomputes every law in JavaScript as the learner edits a cell,
+# because a browser cannot call the interpreter. That duplication is deliberate
+# -- live editing is worth it -- and this file is what keeps it honest.
+#
+# MLPL IS AUTHORITATIVE. These fixtures pin the verdicts lib/algebra.mlpl
+# produces for a spread of structures; the page embeds the same table and must
+# reproduce every one. If the two ever disagree, the page is wrong.
+#
+# loops: 0
+
+include "lib/algebra.mlpl";
+
+# One fixture: a table and every verdict the page must match.
+def u:fixture(name, t) { "Answer the verdicts a viewer must reproduce for one table.";
+  c = u:classify(t);
+  x = u:assoc_counterexample(t);
+  {
+    name: name,
+    order: u:order(t),
+    closed: c.closed,
+    associative: c.associative,
+    commutative: c.commutative,
+    identity: c.identity,
+    inverses: c.inverses,
+    latin: u:is_latin(t),
+    rung: u:structure_name(t),
+    identity_index: u:identity_of(t),
+    witness_found: x.found,
+    witness_a: x.a,
+    witness_b: x.b,
+    witness_c: x.c
+  }
+}
+
+def u:add_mod_3(x, y) { "Answer the sum modulo 3."; mod(x + y, 3) }
+def u:add_mod_4(x, y) { "Answer the sum modulo 4."; mod(x + y, 4) }
+def u:xor_of(x, y) { "Answer the bitwise exclusive-or, which is the Klein four-group here."; bxor(x, y) }
+def u:larger_of(x, y) { "Answer whichever argument is larger."; if lt(x, y) { y } else { x } }
+
+@test {name: "viewer fixtures match the library", tags: ["viewer"]}
+def u:test_viewer_fixtures() { "Write the fixtures the page is checked against, and assert the ones that carry the lesson.";
+  rps = [[0, 1, 0], [1, 1, 2], [0, 2, 2]];
+  z3 = table(:u:add_mod_3, u:elements(3), u:elements(3));
+  z4 = table(:u:add_mod_4, u:elements(4), u:elements(4));
+  klein = table(:u:xor_of, u:elements(4), u:elements(4));
+  mx = table(:u:larger_of, u:elements(3), u:elements(3));
+  lp = table(:u:left_arg, u:elements(3), u:elements(3));
+  # An escaping table: the page must not crash on one either.
+  open = [[0, 1, 2], [1, 2, 3], [2, 3, 4]];
+
+  fixtures = {
+    rps: u:fixture("rock-paper-scissors", rps),
+    z3: u:fixture("Z3", z3),
+    z4: u:fixture("Z4", z4),
+    klein: u:fixture("Klein four-group", klein),
+    max: u:fixture("max", mx),
+    left: u:fixture("left projection", lp),
+    open: u:fixture("addition, not closed", open)
+  };
+
+  # Spot-check the verdicts that carry the teaching, so a silent library
+  # regression cannot quietly rewrite what the page is measured against.
+  u:assert_eq(fixtures.rps.rung, "magma", "rps rung")?;
+  u:assert_eq(fixtures.rps.witness_found, 1, "rps has an associativity witness")?;
+  u:assert_eq(fixtures.z3.rung, "abelian group", "Z3 rung")?;
+  u:assert_eq(fixtures.z3.latin, 1, "Z3 is a Latin square")?;
+  u:assert_eq(fixtures.klein.latin, 1, "Klein is a Latin square")?;
+  u:assert_eq(fixtures.max.rung, "monoid", "max rung")?;
+  u:assert_eq(fixtures.max.latin, 0, "a monoid is not a Latin square")?;
+  u:assert_eq(fixtures.left.rung, "semigroup", "left projection rung")?;
+  u:assert_eq(fixtures.left.identity_index, 0 - 1, "no identity reports -1")?;
+  u:assert_eq(fixtures.open.rung, "not-a-magma", "escaping table rung")?;
+  u:assert_eq(fixtures.open.associative, 0, "associativity is undefined, so 0")?;
+
+  written = write_text("out/viewer-fixtures.json", unwrap(to_json(fixtures, {tagged: 1})));
+  u:assert_true(is_ok(written), "fixtures written for the page")?;
+  ok({test: "viewer-fixtures", cases: 12})
+}
+
+u:run_registered_tests()

@@ -1,0 +1,58 @@
+#!/bin/sh
+# The viewer's embedded expectations must match what MLPL actually computes.
+#
+# viewer/cayley.html reimplements the law checks in JavaScript, because a
+# browser cannot call the interpreter. That duplication is deliberate -- live
+# editing is worth it -- and it is kept honest two ways:
+#
+#   1. the page recomputes its EXPECTED table on load and says so on screen;
+#   2. this check diffs that EXPECTED against out/viewer-fixtures.json, which
+#      tests/test_viewer_conformance.mlpl generates from lib/algebra.mlpl.
+#
+# MLPL is authoritative. A mismatch means the page is wrong.
+set -eu
+
+repo_root=$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)
+page="$repo_root/viewer/cayley.html"
+fixtures="$repo_root/out/viewer-fixtures.json"
+
+[ -f "$fixtures" ] || {
+  echo "viewer fixtures missing -- run \`just tests\` to generate them" >&2
+  exit 1
+}
+
+python3 - "$page" "$fixtures" <<'PY'
+import json, re, sys
+page, fixtures = sys.argv[1], sys.argv[2]
+want = {}
+for v in json.load(open(fixtures)).values():
+    want[v["name"]] = (v["rung"], bool(v["latin"]), int(v["identity_index"]),
+                       [v["witness_a"], v["witness_b"], v["witness_c"]] if v["witness_found"] else None)
+
+src = open(page).read()
+block = re.search(r"const EXPECTED = \{(.*?)\n\};", src, re.S)
+if not block:
+    sys.exit("viewer: EXPECTED block not found")
+
+got = {}
+for m in re.finditer(r'"([^"]+)":\s*\{ rung: "([^"]+)", latin: (true|false), '
+                     r'identity: (-?\d+), witness: (null|\[[^\]]*\]) \}', block.group(1)):
+    name, rung, latin, ident, wit = m.groups()
+    got[name] = (rung, latin == "true", int(ident),
+                 None if wit == "null" else [int(x) for x in re.findall(r"-?\d+", wit)])
+
+bad = 0
+for name, exp in want.items():
+    if name not in got:
+        print(f"  viewer has no expectation for {name!r}", file=sys.stderr); bad += 1
+    elif got[name] != exp:
+        print(f"  {name}: page says {got[name]}, MLPL says {exp}", file=sys.stderr); bad += 1
+for name in got:
+    if name not in want:
+        print(f"  viewer expects {name!r}, which has no fixture", file=sys.stderr); bad += 1
+
+if bad:
+    print("viewer conformance FAILED -- MLPL is authoritative, the page is wrong", file=sys.stderr)
+    sys.exit(1)
+print(f"viewer conformance: ok ({len(want)} structures agree with lib/algebra.mlpl)")
+PY

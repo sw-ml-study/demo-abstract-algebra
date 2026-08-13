@@ -1,6 +1,6 @@
 number = 16
 slug = "interactive-viewer"
-status = "pending"
+status = "in-progress"
 description = "Build viewer/cayley.html: a dependency-free single-file page that loads a str..."
 role = "production"
 context_files = []
