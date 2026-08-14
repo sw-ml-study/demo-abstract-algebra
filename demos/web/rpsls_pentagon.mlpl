@@ -42,5 +42,6 @@ u:beats_graph(5, ["spock", "paper", "lizard", "scissors", "rock"])
 # *
 # * THE POINT -- the arrows and the table are one object, not two. Growing
 # * from three choices to five added rules but no LAWS: this is still a
-# * magma. Not associative, no identity, no inverses.
+# * magma, not associative and with no identity -- and with no identity,
+# * inverses are not yet a question that can be asked.
 # **************************************************************************

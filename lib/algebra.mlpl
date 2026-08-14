@@ -97,11 +97,18 @@ def u:is_commutative(t) { "Answer 1 when the order of the two arguments never ma
 # column. Counting is enough -- one_hot the whole table and sum along each
 # axis, then demand every count is 1.
 #
-# This is the group test in disguise. Row a contains v exactly when a * b = v
-# has a solution; in a group the solution exists and is unique, so every
-# element appears exactly once. It is n^2 counting where the four-law
-# classifier is n^3 checking, and the two agree.
-def u:is_latin(t) { "Answer 1 when every element appears exactly once in each row and column. Equivalent to being a group, and cheaper to check.";
+# WHAT THIS DOES AND DOES NOT MEAN. Every finite GROUP table is a Latin square:
+# a * x = b has exactly one solution when inverses exist, so no row can repeat
+# or omit an element. The converse is FALSE. A Latin square is exactly a
+# QUASIGROUP -- unique solutions to a * x = b and x * a = b -- and that alone
+# gives neither associativity nor an identity.
+#
+#   subtraction modulo 3   Latin square, no identity, not associative
+#   addition modulo 3      Latin square, and a group
+#
+# Add an identity to a quasigroup and it is a LOOP; add associativity and it is
+# a group. See demos/11-quasigroups.
+def u:is_latin(t) { "Answer 1 when every element appears exactly once in each row and column, which makes the operation a quasigroup. NOT the same as being a group -- see the note above.";
   n = u:order(t)
   if u:is_closed(t) { u:every_element_once(t, n) } else { 0 }
 }
@@ -324,9 +331,10 @@ def u:batch_latin(b) { "Answer the [m] mask marking which tables are Latin squar
   ok_rows * ok_cols
 }
 
-# A finite associative Latin square IS a group -- solving a * x = b uniquely is
-# exactly what inverses give you -- so the group count needs no separate
-# inverse pass.
+# A finite associative Latin square IS a group. That direction is a theorem:
+# unique solutions plus associativity force an identity and inverses. The
+# CONVERSE of "Latin square implies group" is false -- Latin alone is only a
+# quasigroup -- which is why associativity appears in this product.
 def u:batch_group(b) { "Answer the [m] mask marking which tables are groups, using the theorem that a finite associative Latin square is one."; u:batch_associative(b) * u:batch_latin(b) }
 
 # ---------------------------------------------------------------------------

@@ -1,0 +1,9 @@
+number = 17
+slug = "errata-latin-square-and-quasigroups"
+status = "pending"
+description = "docs/research2.txt found a real mathematical error: this repo claims a Latin ..."
+role = "production"
+context_files = []
+created_at = "2026-08-13T15:53:14"
+task_type = "correction"
+commits = []

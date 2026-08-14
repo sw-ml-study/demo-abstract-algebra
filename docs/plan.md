@@ -5,7 +5,7 @@ that brief. The category-theory half is deferred to `../demo-category-theory`
 under the contract in `docs/scope-boundary.md`.
 
 Verified baseline: `mlpl-repl 0.20.0` from `../sw-mlpl/target/release`.
-Lessons 01 to 10 are implemented and green; 11 and 12 remain.
+Lessons 01 to 10 are implemented and green; 11 to 13 remain.
 
 ## The thesis
 
@@ -72,8 +72,9 @@ than the subject — they are gone by lesson 03.
 | 08 | `08-groups/latin_square` | Groups; the Latin square derived; `Z4` vs Klein | Three tables: two Latin squares and a failure | **done** |
 | 09 | `09-commutativity/symmetry` | Commutativity as a property, not a rung; `S_3`, the smallest non-abelian group | The fold across the diagonal, and the mirrored pairs that break it | **done** |
 | 10 | `10-enumeration/all_small_magmas` | Every operation on 2 and 3 elements, classified in one batched pass | Population bar chart of the ladder rungs | **done** |
-| 11 | `11-isomorphism/same_up_to_naming` | Relabeling; canonical forms; equivalence classes | Two tables shown becoming identical under a permutation | planned |
-| 12 | `12-homomorphisms/structure_preserving` | `f(a*b) = f(a)*f(b)`; the bridge out of this repo | Two tables with arrows between them; violated cells flagged | planned |
+| 11 | `11-quasigroups/latin_is_not_enough` | Quasigroups and loops; a Latin square that is not a group | Three tables: not Latin, Latin but not a group, and a group | planned |
+| 12 | `12-isomorphism/same_up_to_naming` | Relabeling; canonical forms; equivalence classes | Two tables shown becoming identical under a permutation | planned |
+| 13 | `13-homomorphisms/structure_preserving` | `f(a*b) = f(a)*f(b)`; the bridge out of this repo | Two tables with arrows between them; violated cells flagged | planned |
 
 That is **Stage 1 of six**. It covers structures with a single binary
 operation, and it stops at the moment a group has been recognized. The rest of
@@ -126,7 +127,7 @@ Each stage is independently shippable, so the repository is always in a
 coherent state rather than permanently half-finished. One AgentRail saga per
 stage; archive and open the next.
 
-### Stage 1 — one operation *(in progress: 10 of 12)*
+### Stage 1 — one operation *(in progress: 10 of 13)*
 
 The ladder from magma to group, plus the two meta-lessons that make the rest
 possible. Detailed in the table above.
@@ -202,6 +203,80 @@ built the renderer for.
 
 About forty lessons, six stages, one criterion. Finite because the criterion is
 finite, not because a number was picked.
+
+## Errata, and what the review changed
+
+`docs/research2.txt` is an external review of the browser demos. It found a
+**mathematical error** that had spread through the library, a lesson, the
+tests, a web demo and two READMEs:
+
+> A Latin square is what being a group looks like.
+
+False. Every finite group table is a Latin square; the converse fails.
+Subtraction modulo 3 is a Latin square with no identity and no associativity —
+a 3×3 counterexample, now pinned in `tests/test_algebra_laws.mlpl`. A Latin
+square is exactly a **quasigroup**; add an identity for a **loop**; add
+associativity for a group.
+
+It also caught an unjustified inference: `magma_rps.mlpl` claimed the cycle in
+the beats graph "hints that the operation cannot be associative". The graph is
+the *beats relation*; associativity is a property of the *winner operation*.
+Both are corrected, and the correction became the lesson — **a picture
+suggests, a law test establishes.**
+
+### Adopted into the syllabus
+
+The review's strongest structural point is that the ladder is not the only
+axis. Some laws are **rungs**, each depending on the last; others are
+**properties** that hold or fail freely at any rung. Stage 1 already treats
+commutativity that way; these join it.
+
+| Added | Where | Why |
+|---|---|---|
+| Quasigroups and loops | Stage 1, lesson 11 | Fixes the Latin-square misconception and is highly visual |
+| Idempotence | Stage 1, folded into 01 and 09 | `x * x = x`; the diagonal reproduces the headings. RPS already has it |
+| Cancellation laws | Stage 2 | Row/column injectivity, and the natural route into quasigroups |
+| Left versus right identity and inverse | Stage 2 | Shows why definitions specify sides |
+| Absorbing (zero) elements | Stage 2 | A constant row and column; very visual |
+| The opposite operation `a ⋆ b = b * a` | Stage 1, lesson 09 | Literally `transpose(table)`, so duality becomes an array fact |
+
+### The visual vocabulary this builds
+
+The review's framing, worth keeping explicit because it is what the repository
+is actually for:
+
+```
+commutativity  ->  mirror symmetry about the diagonal
+idempotence    ->  the diagonal reproduces the headings
+identity       ->  one row and one column reproduce the headings
+Latin property ->  every row and column is a permutation
+associativity  ->  agreement over an n x n x n cube
+```
+
+Each is a law restated as a whole-array relationship, which is the point where
+abstract algebra and array programming reinforce each other rather than one
+merely illustrating the other.
+
+### Still to do from the review
+
+Queued rather than done, in the review's own priority order:
+
+1. **Mark rendering plumbing as infrastructure** in the generated web demos —
+   a banner saying *nothing below this line is needed to define the algebra*,
+   and emit the mathematics before the graphics.
+2. **Rename opaque renderer parameters** (`a`, `b`, `k`, `f`, `t`, `acc`) to
+   `from_element`, `to_element`, `element_count`, `fraction`, `svg_so_far`.
+   The concept-level names are already good; the plumbing is not.
+3. **Distinguish docstring registers** — `"SVG helper: ..."` for renderers, so
+   a novice has permission to skip them.
+4. **Every demo ends with what it proves AND what it does not prove.** The
+   Latin-square error is exactly what that convention would have caught.
+5. **Expose more of Stage 1 as browser demos**, roughly one law per file, so
+   the web set is a course rather than three leaf nodes.
+6. **A structure map** — a property lattice rather than a single ladder, with
+   the quasigroup/loop branch beside the semigroup/monoid one.
+7. **Demote RPSLS** from a third of the introductory web curriculum to an
+   "explore" node: it is a larger magma, not a further concept.
 
 ## Deferred deliberately
 

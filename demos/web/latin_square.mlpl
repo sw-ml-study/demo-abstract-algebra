@@ -4,13 +4,14 @@
 # **************************************************************************
 # * WHAT THIS SHOWS
 # *
-# * The difference between a MAGMA and a GROUP, as two labelled tables.
-# * Every cell carries the name AND the colour of its result, so the pattern
-# * is visible before you read a single word.
+# * THREE labelled tables, and the difference between what a pattern shows
+# * and what it proves. Every cell carries the name AND the colour of its
+# * result, so the pattern is visible before you read a single word.
 # **************************************************************************
 ;
 def u:winner_of(x, y) { "Answer the winner of a matchup; a tie answers the shared choice."; if eq(mod(x - y + 3, 3), 1) { x } else { y } }  # Rock-Paper-Scissors
 def u:add_mod_3(x, y) { "Answer the sum modulo 3, the operation of the cyclic group Z3."; mod(x + y, 3) }  # Z3, addition mod 3
+def u:sub_mod_3(x, y) { "Answer x minus y modulo 3: a Latin square that is not a group."; mod(x - y + 3, 3) }  # subtraction mod 3
 def u:element_color(i) { "Answer the colour that stands for element i, shared by the graph and the table."; unwrap(list_get(["#7aa2f7", "#f7768e", "#9ece6a", "#e0af68", "#bb9af7"], mod(i, 5))) }
 def u:label(x, y, fill, sz, str) { "Answer a text element centred on the given point."; str_concat(str_concat(str_concat("<text x=\"", to_string(x)), str_concat("\" y=\"", to_string(y))), str_concat(str_concat(str_concat("\" fill=\"", fill), str_concat("\" font-size=\"", to_string(sz))), str_concat(str_concat("\" text-anchor=\"middle\" dominant-baseline=\"central\" font-family=\"monospace\">", str), "</text>"))) }
 def u:cell(a, b, v, names) { "Answer one table cell: a coloured square carrying the name of its result."; str_concat(str_concat(str_concat(str_concat("<rect x=\"", to_string(70 + b * 62)), str_concat("\" y=\"", to_string(70 + a * 62))), str_concat(str_concat("\" width=\"58\" height=\"58\" rx=\"4\" fill=\"", u:element_color(v)), "\"/>")), u:label(99 + b * 62, 99 + a * 62, "#12131c", 11, unwrap(list_get(names, v)))) }
@@ -21,37 +22,55 @@ def u:svg_header(t) { "Answer the opening svg tag and background. Width and heig
 def u:cayley_grid(t, names) { "Answer the labelled, colour-coded Cayley table as an SVG document."; str_concat(str_concat(u:svg_header(t), u:headings(tally(t), 0, names, "")), str_concat(u:all_cells(t, 0, names, ""), "</svg>")) }
 rps = ["rock", "paper", "scis"]  # short names so cells stay legible
 z3 = ["0", "1", "2"]
+digits = ["0", "1", "2"]
 # **************************************************************************
-# * TABLE 1 -- ROCK-PAPER-SCISSORS, a magma
+# * TABLE 1 -- ROCK-PAPER-SCISSORS, a magma and nothing more
 # *
 # * Rows and columns both run rock, paper, scissors. A cell is the winner of
 # * row-vs-column, coloured by which element that is.
 # *
 # * Look along any row: blue appears twice in the first row, and the third
-# * row has blue, green, green. Colours repeat and others go missing.
+# * row has blue, green, green. Colours repeat and others go missing, so this
+# * is NOT a Latin square. Hold that comparison for the next two.
 # **************************************************************************
 u:cayley_grid(table(:u:winner_of, range(3), range(3)), rps)
 # **************************************************************************
-# * TABLE 2 -- Z3 UNDER ADDITION, a group
+# * TABLE 2 -- SUBTRACTION MODULO 3
 # *
-# * Same layout: rows and columns are 0, 1, 2, and a cell is their sum
-# * modulo 3.
+# * Rows and columns are 0, 1, 2; a cell is row minus column, modulo 3.
 # *
-# * Now look along any row, or any column: each of the three colours appears
-# * EXACTLY ONCE. No repeats, nothing missing.
+# * Look along any row, or any column: each of the three colours appears
+# * EXACTLY ONCE. No repeats, nothing missing. That pattern has a name -- a
+# * LATIN SQUARE -- and it is the pattern people point at when they say a
+# * table "looks like a group".
+# **************************************************************************
+u:cayley_grid(table(:u:sub_mod_3, range(3), range(3)), digits)
+# **************************************************************************
+# * TABLE 3 -- ADDITION MODULO 3
+# *
+# * Same layout, and also a Latin square.
 # **************************************************************************
 u:cayley_grid(table(:u:add_mod_3, range(3), range(3)), z3)
 # **************************************************************************
 # * WHAT TO NOTICE
 # *
-# * That second pattern -- every element once per row and once per column --
-# * is called a LATIN SQUARE, and it is what being a GROUP looks like.
+# * Tables 2 and 3 wear the SAME pattern. Table 3 is a group. Table 2 is not:
+# * subtraction modulo 3 has no identity element and is not associative --
+# * (0 - 0) - 1 is 2, while 0 - (0 - 1) is 1.
 # *
-# * Each row is a shuffle of the elements rather than a random assortment.
-# * That is the same thing as saying nothing is ever lost: whatever a row
-# * starts from, every possible answer is reachable exactly one way, so every
-# * element has an inverse.
+# * So the Latin pattern does not prove what it appears to. What it does prove
+# * is that a * x = b and x * a = b always have exactly one solution, which
+# * makes the operation a QUASIGROUP. Table 1 is not even that: rock appears
+# * twice in one row, so "what beats paper to give rock" has two answers.
 # *
-# * THE POINT -- you can tell a group from a magma across the room, without
-# * reading a single number. Table 1 has repeats; table 2 does not.
+# * The ladder that pattern belongs to is a different one:
+# *
+# *     magma  --unique division-->  quasigroup
+# *            --identity-------->   loop
+# *            --associativity--->   group
+# *
+# * THE POINT -- a picture SUGGESTS, a law test ESTABLISHES. Every group is a
+# * Latin square, so the shape is worth recognising; but two tables can be
+# * indistinguishable at a glance and sit on different rungs. That is not a
+# * failure of the visual method, it is the reason the checks are executable.
 # **************************************************************************

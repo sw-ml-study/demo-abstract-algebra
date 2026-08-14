@@ -305,4 +305,5 @@ not boilerplate.
 - [docs/upstream-asks.md](docs/upstream-asks.md) — the full friction record
 - [docs/terminology.md](docs/terminology.md) — the word-collision register
 - [docs/research.txt](docs/research.txt) — the source brief
+- [docs/research2.txt](docs/research2.txt) — an external review of the web demos, which caught a real error; acted on in `docs/plan.md`
 - [AGENTS.md](AGENTS.md) — agent instructions and the AgentRail protocol

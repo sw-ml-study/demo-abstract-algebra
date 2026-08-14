@@ -142,8 +142,8 @@ def u:test_edges() { "Order-1 structures and boundary shapes.";
   ok({test: "edges", cases: 12})
 }
 
-@test {name: "the Latin-square test tracks group-ness", tags: ["laws"]}
-def u:test_latin() { "n^2 counting must agree with the n^3 four-law classifier.";
+@test {name: "Latin square is necessary for a group, not sufficient", tags: ["laws"]}
+def u:test_latin() { "Every group is a Latin square; the converse is false, and this pins the counterexample.";
   z4 = table(:u:z4_add, u:elements(4), u:elements(4));
   kl = table(:u:xor4, u:elements(4), u:elements(4));
   mx = table(:u:larger_of, u:elements(4), u:elements(4));
@@ -156,10 +156,23 @@ def u:test_latin() { "n^2 counting must agree with the n^3 four-law classifier."
   u:assert_eq(u:is_latin(lp), u:classify(lp).group, "left projection")?;
   # A non-closed table must answer 0 rather than crash, as with associativity.
   u:assert_eq(u:is_latin([[0, 1, 2], [1, 2, 3], [2, 3, 4]]), 0, "non-closed")?;
-  ok({test: "latin-square", cases: 6})
+
+  # THE COUNTEREXAMPLE. Subtraction modulo 3 is a Latin square and is NOT a
+  # group -- no identity, not associative. This repo claimed the two were
+  # equivalent until docs/research2.txt caught it; the claim dies here.
+  sub = table(:u:sub_mod_3, u:elements(3), u:elements(3));
+  u:assert_eq(u:is_latin(sub), 1, "subtraction mod 3 is a Latin square")?;
+  u:assert_eq(u:classify(sub).group, 0, "...and is not a group")?;
+  u:assert_eq(u:classify(sub).associative, 0, "...not associative")?;
+  u:assert_eq(u:has_identity(sub), 0, "...and has no identity")?;
+  u:assert_eq(u:structure_name(sub), "magma", "so the ladder puts it at magma")?;
+  # A group, however, is ALWAYS a Latin square. That direction holds.
+  u:assert_eq(u:is_latin(z4) * u:classify(z4).group, u:classify(z4).group, "group implies Latin")?;
+  ok({test: "latin-square", cases: 12})
 }
 
 def u:xor4(x, y) { "Answer the bitwise exclusive-or, which realizes the Klein four-group."; bxor(x, y) }
+def u:sub_mod_3(x, y) { "Answer x minus y modulo 3: a Latin square that is not a group."; mod(x - y + 3, 3) }
 
 @test {name: "identity cells and the diagonal", tags: ["laws"]}
 def u:test_identity_cells() { "The cross covers 2n-1 cells; the diagonal is a*a.";

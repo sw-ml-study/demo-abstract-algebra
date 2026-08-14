@@ -47,29 +47,40 @@ bottom rung.
 
 ---
 
-### `latin_square.mlpl` — what a group looks like
+### `latin_square.mlpl` — what a pattern shows, and what it proves
 
-**Two labelled tables.** Both 3×3, rows and columns labelled with the element
-names, every cell carrying the **name and the colour** of its result.
+**Three labelled tables**, 3×3, rows and columns labelled, every cell carrying
+the **name and colour** of its result.
 
-- Rock-Paper-Scissors. Look along a row: blue appears twice in the first row,
-  and the third row is blue, green, green. Colours repeat and others go missing.
-- `Z₃`, addition modulo 3. Along any row *or* column, each of the three colours
-  appears **exactly once**.
+- Rock-Paper-Scissors. Colours repeat along rows and others go missing — not a
+  Latin square.
+- Subtraction modulo 3. Each of the three colours appears **exactly once** per
+  row and per column: a **Latin square**.
+- Addition modulo 3. Also a Latin square.
 
-**What it teaches.** That second pattern is a **Latin square**, and it is what
-being a *group* looks like. Each row is a shuffle of the elements rather than a
-random assortment — the same thing as saying nothing is ever lost, so every
-element has an inverse. You can tell a group from a magma across the room
-without reading a number.
+**What it teaches.** Tables 2 and 3 wear the same pattern, and only table 3 is
+a group — subtraction mod 3 has no identity and is not associative. So the
+Latin pattern is **necessary for a group but not sufficient**. What it does
+prove is that `a * x = b` always has exactly one solution, which makes the
+operation a **quasigroup**:
 
-*16 steps, 2 pictures.*
+```
+magma  --unique division-->  quasigroup  --identity-->  loop  --associativity-->  group
+```
+
+A picture suggests; a law test establishes. Every group is a Latin square, so
+the shape is worth recognising — but two tables can be indistinguishable at a
+glance and sit on different rungs.
+
+*19 steps, 3 pictures.*
 
 ---
 
 ### `rpsls_pentagon.mlpl` — Rock-Paper-Scissors-Lizard-Spock, and why it's a star
 
 **One picture:** the **beats graph** — five circles on a ring, ten arrows.
+Note it draws the *beats relation*, which is a different object from the
+winner operation whose laws the other demos check.
 
 **What it teaches.** Ten rules, one idea — arrange the five choices in a circle
 and each beats the *next two* going around. Because each beats the two *after*

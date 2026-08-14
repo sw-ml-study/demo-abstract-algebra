@@ -9,8 +9,13 @@
 # The payoff of the whole sequence is one picture. A group's Cayley table is a
 # LATIN SQUARE: every element appears exactly once in each row and once in each
 # column. Nothing about the definition mentions rows or columns -- it falls out
-# of having inverses -- and once you can see it, you can classify a table
-# across the room.
+# of having inverses.
+#
+# READ THAT DIRECTION CAREFULLY. Every group table is a Latin square; a Latin
+# square need NOT be a group. Lesson 11 exhibits subtraction modulo 3, which is
+# a Latin square with no identity and no associativity. The shape is NECESSARY,
+# not sufficient -- which is exactly the kind of thing a pretty picture will
+# talk you out of noticing if nobody says it.
 #
 # This lesson also shows that the shape does not determine the group. Z4 and
 # the Klein four-group are both order 4, both abelian, both Latin squares, and
@@ -79,7 +84,9 @@ print("  Row 3 is 3, 3, 3, 3 -- one element four times and the others missing.")
 print("  A missing element in a row is an equation a * b = v with no solution,")
 print("  which is exactly what having no inverse means.")
 
-# The property tracks group-ness across every structure in this repository.
+# The property tracks group-ness across the structures BUILT SO FAR -- and that
+# is a fact about these five tables, not a theorem. Lesson 11 breaks it with a
+# sixth.
 def u:winner_in_rps(x, y) { "Answer the winner of a Rock-Paper-Scissors matchup; a tie answers the shared choice."; if eq(mod(x - y + 3, 3), 1) { x } else { y } }
 def u:left_arg(x, y) { "Answer the first argument, ignoring the second. Left projection."; x }
 checked = [u:is_latin(z4.table), u:is_latin(kl.table), u:is_latin(mx.table),
@@ -92,6 +99,8 @@ print("Latin square? Z4, Klein, max, rock-paper-scissors, left projection:")
 print("  latin: ", checked)
 print("  group: ", grouped)
 print("  agree everywhere:", u:yes_or_no(equal(checked, grouped)))
+print("  -- on THESE five. The agreement is not a theorem: a Latin square need")
+print("     not be a group, and lesson 11 exhibits one that is not.")
 
 # --- Same shape, different groups -------------------------------------------
 # Both are Latin squares, both abelian, both order 4. They differ in how many
@@ -137,9 +146,11 @@ u:note("missing from it entirely.")
 u:note("WHAT TO NOTICE: a repeated colour in a row means two different inputs give the")
 u:note("same answer; a missing colour means some answer is unreachable. Both are the")
 u:note("same failure seen from opposite sides, and both say the same thing: some")
-u:note("element has no inverse. The Latin-square test is the inverse test in disguise.")
+u:note("element has no inverse -- in a table that is ALREADY associative, the Latin test")
+u:note("and the inverse test agree. Without associativity they do not: lesson 11 shows a")
+u:note("Latin square with no identity at all.")
 
-u:takeaway("A group is four laws, but you can see it as one shape. Every row and every column is a permutation of the elements -- a Latin square -- because a * b = v always has exactly one solution when inverses exist. The test is n^2 counting rather than n^3 checking, and it agrees with the four-law classifier on every structure in this repository. What the shape does NOT tell you is which group: Z4 and the Klein four-group are both Latin squares of order 4, and they differ in something a picture shows at a glance -- Klein's diagonal is all identity, Z4's is not.")
+u:takeaway("A group is four laws, and one of them shows up as a shape: every row and column is a permutation of the elements, because a * b = v has exactly one solution when inverses exist. But read the implication in the right direction. Every group is a Latin square; a Latin square is only a QUASIGROUP, and lesson 11 exhibits one with no identity and no associativity. The shape is necessary, not sufficient -- and it does not even tell you WHICH group: Z4 and the Klein four-group are both Latin squares of order 4, distinguished by something else a picture shows at a glance.")
 
 print("wrote out/08-group-z4.svg:", is_ok(a))
 print("wrote out/08-group-klein.svg:", is_ok(b))

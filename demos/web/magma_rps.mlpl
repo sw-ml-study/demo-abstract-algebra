@@ -8,7 +8,7 @@
 # * thing as an algebra table.
 # *
 # * Rock-Paper-Scissors is a MAGMA: a set with one closed binary operation,
-# * and nothing else. No associativity, no identity, no inverses.
+# * and nothing else -- no associativity and no identity.
 # **************************************************************************
 ;
 def u:beats_in_game(x, y) { "Answer 1 when x beats y, which is the whole rulebook in one modular test."; eq(mod(x - y + 3, 3), 1) }  # beats the next one around
@@ -30,9 +30,12 @@ def u:beats_graph(k, names) { "Answer the whole beats relation drawn as a direct
 # * smashes scissors, scissors cuts paper, paper covers rock.
 # *
 # * The arrows form ONE closed loop, with no start and no end. That is why the
-# * game is fair -- no choice sits at the top -- and it is the first hint that
-# * the operation cannot be associative, because a cycle gives you no
-# * consistent way to bracket three steps.
+# * game is fair: no choice sits at the top.
+# *
+# * It says nothing about associativity. The arrows are the BEATS RELATION;
+# * associativity is a property of the WINNER OPERATION, and a picture of one
+# * does not settle a question about the other. Testing it means comparing
+# * (a*b)*c against a*(b*c) on every triple, which the CLI lesson 04 does.
 # **************************************************************************
 u:beats_graph(3, ["rock", "paper", "scissors"])
 t = table(:u:winner_of, range(3), range(3))  # every matchup at once
