@@ -1,0 +1,11 @@
+{
+  "task_type": "correction",
+  "state": {
+    "number": 17,
+    "step": "errata-latin-square-and-quasigroups"
+  },
+  "action": "Verified the counterexample against the library before editing any prose; grepped every file for the claim rather than fixing the one place it was reported.",
+  "result": "success",
+  "reward": 1,
+  "timestamp": "2026-08-14T08:57:42"
+}
