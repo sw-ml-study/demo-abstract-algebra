@@ -1,0 +1,182 @@
+# Lesson 11 -- Quasigroups and loops: when a pattern is not a proof.
+#
+# Meaning here: a QUASIGROUP is an operation where a * x = b and x * a = b
+# always have exactly one solution -- you can always divide, on either side.
+# A LOOP is a quasigroup with an identity. A group is a loop that is also
+# associative.
+# Also called: a Latin square, when you are looking at the table rather than
+# the operation. Same condition, different vocabulary for the same thing.
+# Not to be confused with: a loop in programming, or a loop in a graph. And
+# emphatically not to be confused with a group, which is the mistake this
+# lesson exists to correct.
+#
+# THIS LESSON IS AN ERRATUM. Lesson 08 showed that a group's table is a Latin
+# square and said the shape was what being a group looks like. The first half
+# is true; the second is false, and an external review caught it
+# (docs/research2.txt). Every finite group table is a Latin square. The
+# converse fails, and it fails at order 3 -- so this is not a curiosity about
+# large structures, it is a mistake available immediately.
+#
+# The repository's own habit is what should have caught it: a picture
+# SUGGESTS, a law test ESTABLISHES. Lesson 08 had a green invariant asserting
+# the Latin test agreed with the four-law classifier on every structure here.
+# It passed because none of the five structures was a quasigroup.
+#
+# NOT a Web UI file. This is a CLI lesson: it uses include and write_text,
+# neither of which the browser session has, and it ends in ok(...) so the
+# suite can gate on it. See docs/viewing.md.
+#
+# visual: ascii, svg
+# loops: 0
+# complexity: n^2 to test division, n^3 for the associativity beside it
+
+include "../../lib/algebra.mlpl"
+include "../../lib/render.mlpl"
+
+u:prolog({
+  title: "LESSON 11 -- QUASIGROUPS AND LOOPS: when a pattern is not a proof",
+  intro: "Four tables that look progressively more like a group, and are not one until the last. This lesson walks the OTHER branch up from magma -- unique division gives a quasigroup, an identity gives a loop, associativity gives a group -- and it exists because this repository once claimed the first of those was already the last."
+})
+
+# --- 1. Not even a quasigroup -----------------------------------------------
+# Rock-Paper-Scissors again. Ask "what beats rock to give rock?" and there are
+# two answers, so the equation rock * x = rock has no unique solution.
+rps = {
+  title: "Rock-Paper-Scissors: division fails",
+  names: ["rock", "paper", "scis"],
+  table: [[0, 1, 0], [1, 1, 2], [0, 2, 2]]
+}
+
+u:show_table(rps)
+w = u:repeat_witness(rps.table)
+print("")
+print("  left cancellation fails: row", unwrap(list_get(rps.names, w.row)),
+      "contains", unwrap(list_get(rps.names, w.value)), "twice.")
+print("  So", unwrap(list_get(rps.names, w.row)), "* x =",
+      unwrap(list_get(rps.names, w.value)), "has two solutions, not one,")
+print("  and some other element is missing from that row entirely.")
+print("  quasigroup:", u:yes_or_no(u:is_quasigroup(rps.table)))
+
+# --- 2. A quasigroup with no identity ---------------------------------------
+# Subtraction modulo 3. Every row and every column is a permutation, so
+# division always works -- and there is still no identity and no
+# associativity. This is the counterexample that kills "Latin means group".
+def u:sub_mod_3(x, y) { "Answer x minus y modulo 3."; mod(x - y + 3, 3) }
+quasi = {
+  title: "Subtraction mod 3: a quasigroup, and no more",
+  names: ["0", "1", "2"],
+  table: table(:u:sub_mod_3, u:elements(3), u:elements(3))
+}
+print("")
+u:show_table(quasi)
+print("")
+print("  quasigroup:", u:yes_or_no(u:is_quasigroup(quasi.table)),
+      "  identity:", u:yes_or_no(u:has_identity(quasi.table)),
+      "  loop:", u:yes_or_no(u:is_loop(quasi.table)),
+      "  group:", u:yes_or_no(u:classify(quasi.table).group))
+qx = u:show_assoc_counterexample(quasi)
+
+# --- 3. A loop that is not a group ------------------------------------------
+# Adding an identity is not enough either. Below is a quasigroup WITH an
+# identity -- a loop -- that still fails associativity. No such thing exists
+# below order 5, which is why the example is a 5x5 rather than something
+# smaller: every loop of order 4 or less happens to be a group.
+loop5 = {
+  title: "A loop of order 5: identity, division, and still not a group",
+  names: ["e", "a", "b", "c", "d"],
+  table: [[0, 1, 2, 3, 4],
+          [1, 0, 3, 4, 2],
+          [2, 3, 4, 0, 1],
+          [3, 4, 1, 2, 0],
+          [4, 2, 0, 1, 3]]
+}
+print("")
+u:show_table(loop5)
+print("")
+print("  quasigroup:", u:yes_or_no(u:is_quasigroup(loop5.table)),
+      "  identity:", u:yes_or_no(u:has_identity(loop5.table)),
+      "  loop:", u:yes_or_no(u:is_loop(loop5.table)),
+      "  group:", u:yes_or_no(u:classify(loop5.table).group))
+lx = u:show_assoc_counterexample(loop5)
+
+# --- 4. A group -------------------------------------------------------------
+def u:add_mod_3(x, y) { "Answer the sum modulo 3."; mod(x + y, 3) }
+grp = {
+  title: "Addition mod 3: quasigroup, loop, and group",
+  names: ["0", "1", "2"],
+  table: table(:u:add_mod_3, u:elements(3), u:elements(3))
+}
+print("")
+u:show_table(grp)
+print("")
+u:show_laws(grp)
+
+# --- The ladder, side by side -----------------------------------------------
+tables = [rps.table, quasi.table, grp.table]
+print("")
+print("                       rps   sub3   add3")
+print("  quasigroup:        ", u:is_quasigroup(rps.table), "    ",
+      u:is_quasigroup(quasi.table), "    ", u:is_quasigroup(grp.table))
+print("  identity:          ", u:has_identity(rps.table), "    ",
+      u:has_identity(quasi.table), "    ", u:has_identity(grp.table))
+print("  associative:       ", u:is_associative(rps.table), "    ",
+      u:is_associative(quasi.table), "    ", u:is_associative(grp.table))
+print("  (order 5 loop: quasigroup 1, identity 1, associative",
+      u:is_associative(loop5.table), ")")
+
+# --- The diagrams -----------------------------------------------------------
+a = u:write_cayley_svg("out/11-not-a-quasigroup.svg", rps)
+b = u:write_cayley_svg("out/11-quasigroup.svg", quasi)
+c = u:write_cayley_svg("out/11-loop.svg", loop5)
+
+u:epilog_open()
+
+u:explain("out/11-not-a-quasigroup.svg",
+  "Rock-Paper-Scissors, 3x3, coloured by result.")
+u:note("Read the first row: blue, red, blue. One colour twice, one colour missing.")
+u:note("WHAT TO NOTICE: a repeated colour in a row means two different partners give")
+u:note("the same answer, so division is ambiguous. A missing colour means some answer")
+u:note("is unreachable, so division is impossible. Both failures at once, in one row.")
+
+u:explain("out/11-quasigroup.svg",
+  "Subtraction modulo 3, same size, same layout.")
+u:note("Every row and every column now has all three colours exactly once, so this IS")
+u:note("a Latin square and division always works.")
+u:note("WHAT TO NOTICE: there is no white cross. No row reproduces the headings, so")
+u:note("there is no identity -- and the operation is not associative either.")
+u:note("Compare this picture with the Z3 table from lesson 08 and you will struggle to")
+u:note("say which is the group. THAT is the point of the lesson.")
+
+u:explain("out/11-loop.svg",
+  "A 5x5 loop: quasigroup plus identity, still not a group.")
+u:note("A Latin square, and now WITH the white cross -- the first row and column echo")
+u:note("the headings, so e is a genuine two-sided identity.")
+u:note("WHAT TO NOTICE: everything the eye checks passes. Rows are permutations,")
+u:note("columns are permutations, the identity is there. Associativity is the one law")
+u:note("with no picture, and it is the one that fails.")
+u:note("No loop smaller than order 5 does this: every loop of order 4 or less is a")
+u:note("group by accident of size, which is why the example had to grow.")
+
+u:limits("One loop of order 5 shows loops need not be groups; it does not show that order 5 is the smallest such, which is asserted here and not checked. Nor does any picture here establish associativity -- that law has no visual signature, which is the whole reason it is the one that fails.")
+
+u:takeaway("A picture suggests; a law test establishes. Every group table is a Latin square, so the shape is worth recognising -- but the shape is NECESSARY, not sufficient. It buys unique division and nothing else: a quasigroup. Add an identity for a loop, add associativity for a group, and note that the last law is precisely the one the eye cannot check. This lesson exists because this repository claimed otherwise, shipped a green test that encoded the false claim, and needed an outside reader to catch it.")
+
+print("wrote out/11-not-a-quasigroup.svg:", is_ok(a))
+print("wrote out/11-quasigroup.svg:", is_ok(b))
+print("wrote out/11-loop.svg:", is_ok(c))
+
+# --- Invariants -------------------------------------------------------------
+# The four tables must occupy four different positions on the branch.
+rps_ok = (1 - u:is_quasigroup(rps.table)) * (1 - u:left_cancels(rps.table)) * w.found
+# The counterexample that matters: Latin, and not a group.
+quasi_latin = u:is_quasigroup(quasi.table) * (1 - u:has_identity(quasi.table))
+quasi_ok = quasi_latin * (1 - u:classify(quasi.table).group) * qx.found
+loop_ok = u:is_loop(loop5.table) * (1 - u:classify(loop5.table).group) * lx.found
+grp_ok = u:is_quasigroup(grp.table) * u:is_loop(grp.table) * u:classify(grp.table).group
+# And the implication that IS true must still hold.
+implication = u:is_quasigroup(grp.table)
+if rps_ok * quasi_ok * loop_ok * grp_ok * implication * is_ok(a) * is_ok(b) * is_ok(c) {
+  ok("Latin square means quasigroup; identity makes a loop; associativity makes a group")
+} else {
+  err("quasigroup invariants failed")
+}

@@ -15,4 +15,4 @@ structure-preserving	demos/13-homomorphisms/structure_preserving.mlpl	13-homomor
 magma-rps-web	demos/web/magma_rps.mlpl	web	cayley-table-builtin-heatmap	0	0	svg	current	runnable
 latin-square-web	demos/web/latin_square.mlpl	web	animated-latin-square-via-life	0	0	svg	current	runnable
 rpsls-pentagon-web	demos/web/rpsls_pentagon.mlpl	web	dominance-pentagram	0	0	svg	current	runnable
-latin-is-not-enough	demos/11-quasigroups/latin_is_not_enough.mlpl	11-quasigroups	quasigroups-loops-and-groups	0	0	ascii,svg	current	gated
+latin-is-not-enough	demos/11-quasigroups/latin_is_not_enough.mlpl	11-quasigroups	quasigroups-loops-and-groups	0	0	ascii,svg	current	runnable

@@ -107,6 +107,8 @@ u:note("Groups are vanishingly rare among operations, so a structure being a gro
 u:note("a strong statement rather than a mild one.")
 u:note("This chart is the built-in bar renderer -- no hand-written SVG in this lesson.")
 
+u:limits("These counts are of LABELLED tables, not of structures up to renaming. The three group tables at order 3 are the same group written three ways, and separating those two notions is lesson 12.")
+
 u:takeaway("Nothing new was defined here. The same eight predicates ran over every operation there is on two and three elements, and the census is the answer: associativity removes more than nine in ten, and groups are a rounding error. The array formulation is the whole trick -- an operation is a base-n numeral, so generating all of them is digit extraction, and folding the table index into the gather offsets checks every triple of every table in one pass, with no loop over anything. That was the question the source brief posed about M^3, asked once more at scale.")
 
 print("wrote out/10-census.svg:", is_ok(a))

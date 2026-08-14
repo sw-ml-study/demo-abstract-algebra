@@ -114,6 +114,8 @@ u:note("WHAT TO NOTICE: the two swatches in the legend end up DIFFERENT COLORS. 
 u:note("elements, same order, only the brackets moved -- and the answer changed. That is what")
 u:note("non-associativity looks like, and it is why the checker returns a witness, not a 'no'.")
 
+u:limits("Nothing here says the operation is unusual. Most operations are magmas and no more -- lesson 10 counts them, and over 99% of order-3 operations sit exactly here. Being a magma is the absence of structure, not the presence of any.")
+
 u:takeaway("Rock-Paper-Scissors is closed and commutative, and that is all. It is a magma: the bottom rung of the ladder, with no associativity, no identity, and no inverses above it.")
 
 print("wrote out/01-rock-paper-scissors-cycle.svg:", is_ok(cycle))

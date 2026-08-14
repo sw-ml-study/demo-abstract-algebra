@@ -113,6 +113,8 @@ u:note("identity. e * x = x reading along the row, x * e = x reading down the co
 u:note("WHAT TO NOTICE: the classifier was never told a new law held. It re-derived")
 u:note("'monoid' from the table, because an identity is now there to be found.")
 
+u:limits("Adjoining an identity always produces a monoid, but it does not make the structure any better behaved. The old operation is untouched in the corner, and nothing new became invertible.")
+
 u:takeaway("A semigroup is a magma that gained associativity and nothing else. When there is no identity you do not have to abandon the structure -- you adjoin one, the old operation survives untouched in the corner, and the rung goes up by construction. The natural example of all this is string concatenation, which is unwritable here until sw-MLPL can join two strings; docs/sw-mlpl-work-order.md B1 tracks it.")
 
 print("wrote out/05-semigroup.svg:", is_ok(a))

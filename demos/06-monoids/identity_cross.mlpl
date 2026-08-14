@@ -108,6 +108,8 @@ u:note("WHAT TO NOTICE: an identity is cheap to have and enormously constraining
 u:note("one element's behaviour fixes 2n - 1 of the n^2 cells, which is why the jump")
 u:note("from semigroup to monoid does so much work.")
 
+u:limits("An identity is cheap. Having one says nothing about inverses -- max has an identity and only the identity is invertible -- so a monoid can be very far from a group.")
+
 u:takeaway("An identity is not a decoration on a structure, it is a shape in the table: one row and one column that reproduce the headings. Search for that shape and you find the identity or you find nothing, and you can never find two -- e = e * f = f is a two-line proof, and here it is the observation that the identity mask never holds more than one bit. Having an identity is also not much on its own: max has one, and only the identity itself has an inverse.")
 
 print("wrote out/06-identity-cross.svg:", is_ok(a))

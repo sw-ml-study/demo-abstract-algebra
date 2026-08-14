@@ -108,8 +108,9 @@ u:epilog_open()
 
 u:explain("out/09-s3.svg",
   "The 6x6 table for S3, coloured by result. Rows and columns are the six permutations.")
-u:note("It IS a Latin square -- six colours per row, six per column, none repeated -- so")
-u:note("this is a group, exactly as lesson 08 said the shape means.")
+u:note("It IS a Latin square -- six colours per row, six per column, none repeated. That")
+u:note("is consistent with being a group and does not by itself establish it; the law")
+u:note("checks above do, and lesson 11 shows a Latin square that is not a group.")
 u:note("The white cross marks the identity permutation, which changes nothing.")
 u:note("WHAT TO NOTICE: fold the picture along the top-left to bottom-right diagonal and")
 u:note("the halves DO NOT match. Every table in lessons 01 to 08 would have matched.")
@@ -122,6 +123,8 @@ u:note("from b * a then both cells are wrong about each other.")
 u:note("WHAT TO NOTICE: the diagonal itself is never ringed. a * a compares with itself")
 u:note("and always agrees, so the failure lives strictly off the diagonal -- and a")
 u:note("commutative table is precisely one where this picture is empty.")
+
+u:limits("S3 being the smallest non-abelian group is asserted here, not proved. This lesson checks S3; it does not enumerate the smaller orders to show none of them works.")
 
 u:takeaway("Commutativity is the only law here that is not a rung. Every other law props up the next one, but this one holds or fails freely at any level, which is why the literature says 'commutative monoid' and 'abelian group' as adjectives rather than counting them as steps. It is also the cheapest law to check and the easiest to see: one comparison against the transpose, and a picture you can fold.")
 

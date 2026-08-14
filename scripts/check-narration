@@ -58,6 +58,10 @@ for f in $(find "$repo_root/demos" -name '*.mlpl' | sort); do
       require "$rel" 'u:prolog(' 'a u:prolog(...) call'
       require "$rel" 'u:epilog_open()' 'a u:epilog_open() call'
       require "$rel" 'u:takeaway(' 'a u:takeaway(...) call'
+      # What a lesson does NOT prove is part of the lesson. The Latin-square
+      # error in lesson 08 survived because nothing required it to say where
+      # its evidence stopped.
+      require "$rel" 'u:limits(' 'a u:limits(...) call saying what is NOT proved'
       require "$rel" 'u:explain(' 'at least one u:explain(path, ...) call'
       ;;
   esac

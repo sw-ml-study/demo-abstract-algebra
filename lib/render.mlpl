@@ -524,6 +524,14 @@ def u:explain(path, what) { "Print one artifact path and the first line of how t
 
 def u:note(what) { "Print one more line of reading guidance under the current artifact."; print("     ", what) }
 
+# What a demo does NOT prove is as much a part of the lesson as what it does.
+# The Latin-square error survived because no lesson was required to say where
+# its evidence stopped. scripts/check-narration now requires this call.
+def u:limits(s) { "Print what the lesson did NOT establish, so a reader knows where the evidence stops.";
+  print("")
+  print("* WHAT THIS DOES NOT PROVE:", s)
+}
+
 def u:takeaway(s) { "Print the single sentence a reader should leave with.";
   print("")
   print("* THE POINT:", s)

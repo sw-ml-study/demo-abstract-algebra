@@ -150,6 +150,8 @@ u:note("element has no inverse -- in a table that is ALREADY associative, the La
 u:note("and the inverse test agree. Without associativity they do not: lesson 11 shows a")
 u:note("Latin square with no identity at all.")
 
+u:limits("The Latin shape does NOT prove a table is a group. It is necessary and not sufficient: lesson 11 exhibits a Latin square with no identity and no associativity. It also does not identify WHICH group -- Z4 and Klein wear it identically.")
+
 u:takeaway("A group is four laws, and one of them shows up as a shape: every row and column is a permutation of the elements, because a * b = v has exactly one solution when inverses exist. But read the implication in the right direction. Every group is a Latin square; a Latin square is only a QUASIGROUP, and lesson 11 exhibits one with no identity and no associativity. The shape is necessary, not sufficient -- and it does not even tell you WHICH group: Z4 and the Klein four-group are both Latin squares of order 4, distinguished by something else a picture shows at a glance.")
 
 print("wrote out/08-group-z4.svg:", is_ok(a))

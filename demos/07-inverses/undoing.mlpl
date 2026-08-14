@@ -116,6 +116,8 @@ u:note("WHAT TO NOTICE: rows 1 and 2 have no ring at all, so those elements cann
 u:note("undone by anything. max is a perfectly good monoid that fails the last rung,")
 u:note("and the failure is visible as empty rows.")
 
+u:limits("Counting self-inverse elements distinguishes Z4 from Klein, but a count alone never proves two groups are the SAME. That needs a permutation, which is lesson 12.")
+
 u:takeaway("Inverses are the last thing a group needs and the first thing that cannot be asked about in isolation -- 'a undoes b' is meaningless until an identity says what undoing means. In a group the inverse mask is a permutation matrix: one ring per row, one per column, no exceptions. In a mere monoid it is sparse, and every empty row names an element you can never take back.")
 
 print("wrote out/07-inverses-z4.svg:", is_ok(a))

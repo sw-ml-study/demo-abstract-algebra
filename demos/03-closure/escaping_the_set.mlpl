@@ -110,6 +110,8 @@ u:note("WHAT TO NOTICE: it is also a Latin square -- each colour appears exactly
 u:note("every row and every column. Repairing closure here happened to produce a group,")
 u:note("which is a bonus, not a rule: closure alone guarantees only a magma.")
 
+u:limits("That modulo 3 repaired closure and produced a group is luck, not a rule. Closure alone buys a magma; this particular repair happened to land four rungs higher.")
+
 u:takeaway("Closure is a claim about a SET and an OPERATION together, never about either alone. Addition is not 'unclosed'; it is simply not an operation on a finite set. You fix an escape by shrinking the operation until it stays home, or by growing the set until it can hold every result -- and for ordinary addition the second road runs forever, which is why the naturals are infinite.")
 
 print("wrote out/03-not-closed.svg:", is_ok(a))

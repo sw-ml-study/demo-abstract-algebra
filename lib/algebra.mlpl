@@ -167,6 +167,51 @@ def u:invertible_mask(t) { "Answer the [n] mask marking elements that can be und
 def u:has_inverses(t) { "Answer 1 when every element has something that undoes it, which is the last law a group needs."; reduce(:and, u:invertible_mask(t)) }
 
 # ---------------------------------------------------------------------------
+# The other branch: quasigroups and loops
+# ---------------------------------------------------------------------------
+#
+# magma -> semigroup -> monoid -> group is not the only route up. Beside it:
+#
+#   magma  --unique division-->  quasigroup  --identity-->  loop
+#          --associativity-->  group
+#
+# A QUASIGROUP is an operation where a * x = b and x * a = b always have
+# exactly one solution -- equivalently, a Latin square. A LOOP is a quasigroup
+# with an identity. A group is a loop that is also associative.
+#
+# The branch matters because the Latin pattern is easy to mistake for a group,
+# and it is not one: subtraction modulo 3 is a quasigroup with no identity, and
+# there are loops of order 5 that are not associative. See demos/11-quasigroups.
+
+def u:is_quasigroup(t) { "Answer 1 when a * x = b and x * a = b always have exactly one solution. The same condition as being a Latin square, named for what it means rather than what it looks like."; u:is_latin(t) }
+
+def u:is_loop(t) { "Answer 1 when the operation is a quasigroup with an identity. One law short of a group, and that law is associativity."; u:is_quasigroup(t) * u:has_identity(t) }
+
+# CANCELLATION. Left cancellation says a * b = a * c forces b = c, which is
+# exactly "no element repeats within a row". Right cancellation is the same
+# statement about columns. A finite operation with both is a quasigroup.
+def u:left_cancels(t) { "Answer 1 when a * b = a * c forces b = c, which is no repeat within any row."; u:no_repeats(t) }
+def u:right_cancels(t) { "Answer 1 when b * a = c * a forces b = c, which is no repeat within any column."; u:no_repeats(transpose(t)) }
+
+def u:no_repeats(t) { "Answer 1 when no row of the table contains the same element twice.";
+  n = u:order(t)
+  if u:is_closed(t) { reduce(:and, flatten(lt(reduce_add(reshape(one_hot(flatten(t), n), [n, n, n]), 1), 2))) } else { 0 }
+}
+
+# The first row where some element appears twice, as {found, row, value}. A
+# repeat is a cancellation failure you can point at: two different partners
+# give the same answer, so the equation has no unique solution.
+def u:repeat_witness(t) { "Answer the first row containing a repeated element, and which element it is.";
+  n = u:order(t)
+  counts = reduce_add(reshape(one_hot(flatten(t), n), [n, n, n]), 1)
+  bad = 1 - lt(counts, 2)
+  flat = flatten(bad)
+  found = reduce(:or, flat)
+  i = take(grade_down(flat), 0, 0) * found
+  {found: found, row: floor(i / n), value: mod(i, n)}
+}
+
+# ---------------------------------------------------------------------------
 # Classification -- the ladder is DERIVED, never declared
 # ---------------------------------------------------------------------------
 

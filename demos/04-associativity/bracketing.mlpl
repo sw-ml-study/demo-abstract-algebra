@@ -119,6 +119,8 @@ u:note("WHAT TO NOTICE: the check is identical in both cases -- same code, same 
 u:note("same 27 triples. Only the colours differ. Associativity is not a property you")
 u:note("declare about an operation; it is the answer this array gives back.")
 
+u:limits("One witness shows the law fails; it does not show HOW badly. Six of 27 triples disagree here, and the count is not visible from the witness alone -- which is why the panels are drawn beside it.")
+
 u:takeaway("A law that fails should hand you a witness, not a verdict. 'associative: no' is unactionable; (rock * paper) * scissors = scissors while rock * (paper * scissors) = rock is something you can check by hand in ten seconds and then reason about. Every predicate in lib/algebra.mlpl has a matching counterexample function for exactly this reason -- and because the check is an array operation, finding the witness costs a stable argsort rather than a search.")
 
 print("wrote out/04-rps-cube.svg:", is_ok(a))

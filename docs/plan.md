@@ -5,7 +5,7 @@ that brief. The category-theory half is deferred to `../demo-category-theory`
 under the contract in `docs/scope-boundary.md`.
 
 Verified baseline: `mlpl-repl 0.20.0` from `../sw-mlpl/target/release`.
-Lessons 01 to 10 are implemented and green; 11 to 13 remain.
+Lessons 01 to 11 are implemented and green; 12 and 13 remain.
 
 ## The thesis
 
@@ -72,7 +72,7 @@ than the subject — they are gone by lesson 03.
 | 08 | `08-groups/latin_square` | Groups; the Latin square derived; `Z4` vs Klein | Three tables: two Latin squares and a failure | **done** |
 | 09 | `09-commutativity/symmetry` | Commutativity as a property, not a rung; `S_3`, the smallest non-abelian group | The fold across the diagonal, and the mirrored pairs that break it | **done** |
 | 10 | `10-enumeration/all_small_magmas` | Every operation on 2 and 3 elements, classified in one batched pass | Population bar chart of the ladder rungs | **done** |
-| 11 | `11-quasigroups/latin_is_not_enough` | Quasigroups and loops; a Latin square that is not a group | Three tables: not Latin, Latin but not a group, and a group | planned |
+| 11 | `11-quasigroups/latin_is_not_enough` | Quasigroups and loops; a Latin square that is not a group; cancellation | Four tables: not Latin, Latin without identity, a loop, a group | **done** |
 | 12 | `12-isomorphism/same_up_to_naming` | Relabeling; canonical forms; equivalence classes | Two tables shown becoming identical under a permutation | planned |
 | 13 | `13-homomorphisms/structure_preserving` | `f(a*b) = f(a)*f(b)`; the bridge out of this repo | Two tables with arrows between them; violated cells flagged | planned |
 
@@ -127,7 +127,7 @@ Each stage is independently shippable, so the repository is always in a
 coherent state rather than permanently half-finished. One AgentRail saga per
 stage; archive and open the next.
 
-### Stage 1 — one operation *(in progress: 10 of 13)*
+### Stage 1 — one operation *(in progress: 11 of 13)*
 
 The ladder from magma to group, plus the two meta-lessons that make the rest
 possible. Detailed in the table above.

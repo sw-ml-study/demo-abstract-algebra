@@ -123,6 +123,8 @@ u:note("As the frames advance the hook slides one step down the diagonal and wra
 u:note("That sliding is the five-fold symmetry: every element has the same shape of wins,")
 u:note("just rotated. It is the reason the game is fair, seen from the table side.")
 
+u:limits("That the graph is a pentagram says nothing about the LAWS of the operation. The arrows draw the beats RELATION; associativity and identity are properties of the winner OPERATION, and only the table tests settle those.")
+
 u:takeaway("Function, table, and graph are three views of ONE object, and going from three choices to five added rules but no laws. This is still a commutative magma: not associative, no identity, no inverses.")
 
 print("wrote out/02-rpsls-frames.svg:", is_ok(frames))
