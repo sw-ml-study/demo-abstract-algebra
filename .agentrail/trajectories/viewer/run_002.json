@@ -1,0 +1,11 @@
+{
+  "task_type": "viewer",
+  "state": {
+    "number": 16,
+    "step": "interactive-viewer"
+  },
+  "action": "Wrote the conformance fixtures before the page so it had something to be measured against.",
+  "result": "success",
+  "reward": 1,
+  "timestamp": "2026-08-14T07:11:56"
+}
