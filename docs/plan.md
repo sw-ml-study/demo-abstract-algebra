@@ -62,6 +62,7 @@ than the subject — they are gone by lesson 03.
 
 | # | Lesson | Concept | New visual | Status |
 |---|---|---|---|---|
+| 00 | `00-map/structure_lattice` | The overview: two routes to a group, and which laws are not steps | The lattice, with each arrow labelled by the law that earns it | **done** |
 | 01 | `01-magmas/rock_paper_scissors` | Magma; closure; a law that fails | Colored Cayley table; ASCII grid | **done** |
 | 02 | `02-rpsls/lizard_spock` | The same structure at n=5; function / table / graph as three views of one object | Dominance digraph on a circle; the labelled animated frames | **done** |
 | 03 | `03-closure/escaping_the_set` | Closure by counterexample; the two repairs (shrink the operation, grow the set) | Escaping cells in grey, marked `!v` | **done** |
@@ -127,7 +128,7 @@ Each stage is independently shippable, so the repository is always in a
 coherent state rather than permanently half-finished. One AgentRail saga per
 stage; archive and open the next.
 
-### Stage 1 — one operation *(COMPLETE: 13 of 13)*
+### Stage 1 — one operation *(COMPLETE: 13 lessons, plus the map)*
 
 The ladder from magma to group, plus the two meta-lessons that make the rest
 possible. Detailed in the table above.
@@ -273,8 +274,9 @@ Queued rather than done, in the review's own priority order:
    lessons.
 5. **Expose more of Stage 1 as browser demos**, roughly one law per file, so
    the web set is a course rather than three leaf nodes.
-6. **A structure map** — a property lattice rather than a single ladder, with
-   the quasigroup/loop branch beside the semigroup/monoid one.
+6. ~~A structure map~~ — **done.** `demos/00-map/structure_lattice.mlpl`
+   renders the lattice from MLPL and *verifies* it: every node carries a real
+   table and the lesson asserts the classifier puts it exactly there.
 7. **Demote RPSLS** from a third of the introductory web curriculum to an
    "explore" node: it is a larger magma, not a further concept.
 

@@ -14,6 +14,23 @@ array predicate with no explicit loop; every counterexample is an index into
 that array; and the array is directly renderable — which is why this is a
 *visual* demo repository rather than a test suite.
 
+## The map
+
+<img src="assets/structure-lattice.svg" alt="Two routes from magma to group, each arrow labelled by the law that earns it" width="520">
+
+Two routes up to a group, and the law that earns each step. The left branch is
+the ladder these lessons climb; the right one reaches the same place through
+unique division. **The same law does different work depending on where you meet
+it** — associativity is the first step on one route and the last on the other.
+
+Commutativity and idempotence are not on the picture, because they are not
+steps: neither depends on anything and nothing depends on them, so they hold or
+fail freely at any node.
+
+The diagram is *checked*, not drawn — every node carries a real table, and
+`demos/00-map/structure_lattice.mlpl` asserts the classifier puts it exactly
+where the picture says.
+
 ## Rock-Paper-Scissors is a magma, and no more
 
 <img src="assets/rps-cycle.svg" alt="Rock-Paper-Scissors as a cycle of arrows: rock beats scissors beats paper beats rock" width="300">

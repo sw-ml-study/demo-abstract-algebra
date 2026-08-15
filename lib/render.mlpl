@@ -434,6 +434,71 @@ def u:cube_svg(k) { "SVG helper: n^3 associativity check as n square panels, whi
 def u:write_cube_svg(path, k) { "SVG helper: write the associativity panels to a file and answer the Result."; write_text(path, u:cube_svg(k)) }
 
 # ---------------------------------------------------------------------------
+# The structure lattice: rungs are not a single ladder
+# ---------------------------------------------------------------------------
+#
+# A node-and-arrow diagram over explicit coordinates. It exists because
+# "magma -> semigroup -> monoid -> group" suggests abstract algebra is one
+# straight hierarchy, and it is not: unique division gives a second route to
+# the same place, and some laws decorate any rung rather than being one.
+#
+# The record it takes: {title, names, node_x, node_y, edges, edge_labels},
+# where edges is an [e, 2] array of node indices.
+
+def u:lattice_node(map, i) { "SVG helper: one lattice node, a rounded box with the structure name inside.";
+  x = take(map.node_x, 0, i)
+  y = take(map.node_y, 0, i)
+  str_join([
+    u:svg_rect(x - 62, y - 17, 124, 34, "#2a2e42"),
+    u:svg_frame(x - 62, y - 17, 124, 34, u:element_color(i)),
+    u:svg_text(x, y, "#c0caf5", unwrap(list_get(map.names, i)))], "")
+}
+
+def u:lattice_nodes(map, i, svg_so_far) { "SVG helper: every lattice node.";
+  if lt(i, list_len(map.names)) {
+    u:lattice_nodes(map, i + 1, str_concat(svg_so_far, u:lattice_node(map, i)))
+  } else { svg_so_far }
+}
+
+def u:lattice_edge(map, i) { "SVG helper: one lattice arrow with the law that earns it written alongside.";
+  a = take(take(map.edges, 0, i), 0, 0)
+  b = take(take(map.edges, 0, i), 0, 1)
+  x0 = take(map.node_x, 0, a)
+  y0 = take(map.node_y, 0, a) + 17
+  x1 = take(map.node_x, 0, b)
+  y1 = take(map.node_y, 0, b) - 17
+  str_join([
+    "<line x1=\"", to_string(x0), "\" y1=\"", to_string(y0),
+    "\" x2=\"", to_string(x1), "\" y2=\"", to_string(y1),
+    "\" stroke=\"#565f89\" stroke-width=\"2\" marker-end=\"url(#arrow)\"/>",
+    u:svg_text(round(x0 + (x1 - x0) * 0.35) + u:label_nudge(x0, x1),
+      round(y0 + (y1 - y0) * 0.35), "#9ece6a",
+      unwrap(list_get(map.edge_labels, i)))], "")
+}
+
+def u:label_nudge(x0, x1) { "SVG helper: push an edge label clear of the arrow it names, to whichever side the arrow leans. A vertical arrow gets pushed right."; if lt(x1, x0) { 0 - 66 } else { 66 } }
+
+def u:lattice_edges(map, i, svg_so_far) { "SVG helper: every lattice arrow.";
+  if lt(i, tally(map.edges)) {
+    u:lattice_edges(map, i + 1, str_concat(svg_so_far, u:lattice_edge(map, i)))
+  } else { svg_so_far }
+}
+
+def u:lattice_svg(map) { "SVG helper: the whole structure lattice, nodes and labelled arrows.";
+  str_join([
+    u:svg_open(map.width, map.height),
+    u:svg_rect(0, 0, map.width, map.height, "#1a1b26"),
+    u:svg_text(round(map.width / 2), 20, "#c0caf5", map.title),
+    u:arrow_defs(),
+    u:lattice_edges(map, 0, ""),
+    u:lattice_nodes(map, 0, ""),
+    u:svg_text(round(map.width / 2), map.height - 16, "#565f89", map.footer),
+    "</svg>"], "")
+}
+
+def u:write_lattice_svg(path, map) { "SVG helper: write the structure lattice to a file and answer the Result."; write_text(path, u:lattice_svg(map)) }
+
+# ---------------------------------------------------------------------------
 # The dominance digraph: the same operation, drawn as a graph
 # ---------------------------------------------------------------------------
 #

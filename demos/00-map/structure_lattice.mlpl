@@ -1,0 +1,129 @@
+# Lesson 00 -- The map: rungs are not a single ladder.
+#
+# Meaning here: a drawing of how the structures in this repository relate,
+# with each arrow labelled by the LAW that earns it.
+# Not to be confused with: a hierarchy. "Ladder" is the word these lessons
+# use and it is a useful one, but it suggests abstract algebra is one straight
+# climb, and it is not. Unique division reaches a group by a different route,
+# and some laws decorate any rung rather than being one.
+#
+# This lesson is numbered 00 because it is the overview, not the first thing
+# to read. It makes most sense once a few rungs are familiar, and it is where
+# to come back to when a later lesson asks "where does this sit?".
+#
+# THE MAP IS CHECKED, NOT DRAWN. Every node carries a real table, and the
+# lesson asserts that the classifier puts that table exactly where the picture
+# says it goes. A diagram that disagreed with the code would be worse than no
+# diagram, and this repository has already shipped one claim that a picture
+# talked it into (see lesson 11).
+#
+# NOT a Web UI file. This is a CLI lesson: it uses include and write_text,
+# neither of which the browser session has, and it ends in ok(...) so the
+# suite can gate on it. See docs/viewing.md.
+#
+# visual: ascii, svg
+# loops: 0
+# complexity: one classification per node
+
+include "../../lib/algebra.mlpl"
+include "../../lib/render.mlpl"
+
+u:prolog({
+  title: "LESSON 00 -- THE MAP: rungs are not a single ladder",
+  intro: "Six structures, two routes, and the laws that separate them. Everything in Stage 1 sits somewhere on this picture, and the picture is verified rather than drawn: each node carries a table, and the classifier must agree about where it belongs."
+})
+
+# --- The witnesses ----------------------------------------------------------
+# One real structure per node, drawn from the lessons that introduce them.
+def u:winner_of(x, y) { "Answer the winner of a Rock-Paper-Scissors matchup."; if eq(mod(x - y + 3, 3), 1) { x } else { y } }
+def u:add_mod_3(x, y) { "Answer the sum modulo 3."; mod(x + y, 3) }
+def u:sub_mod_3(x, y) { "Answer x minus y modulo 3."; mod(x - y + 3, 3) }
+def u:larger_of(x, y) { "Answer whichever argument is larger."; if lt(x, y) { y } else { x } }
+
+magma = table(:u:winner_of, u:elements(3), u:elements(3))       # lesson 01
+semigroup = table(:u:left_arg, u:elements(3), u:elements(3))     # lesson 05
+monoid = table(:u:larger_of, u:elements(3), u:elements(3))       # lesson 06
+quasigroup = table(:u:sub_mod_3, u:elements(3), u:elements(3))   # lesson 11
+loop = [[0, 1, 2, 3, 4], [1, 0, 3, 4, 2], [2, 3, 4, 0, 1],
+        [3, 4, 1, 2, 0], [4, 2, 0, 1, 3]]                        # lesson 11
+group = table(:u:add_mod_3, u:elements(3), u:elements(3))        # lesson 08
+
+# --- Where the classifier says each one sits --------------------------------
+print("node          closed assoc ident inv  latin  ->  rung")
+def u:describe(name, t) { "Print one node's law verdicts and the rung the classifier assigns.";
+  c = u:classify(t)
+  print(name, "  ", c.closed, "     ", c.associative, "    ", c.identity, "    ",
+        c.inverses, "   ", u:is_latin(t), "   ->", u:structure_name(t))
+}
+u:describe("magma     ", magma)
+u:describe("semigroup ", semigroup)
+u:describe("monoid    ", monoid)
+u:describe("quasigroup", quasigroup)
+u:describe("loop      ", loop)
+u:describe("group     ", group)
+
+print("")
+print("Note the two 'quasigroup' and 'loop' rows: the classifier calls both")
+print("MAGMA, because its ladder only knows the associative branch. The rung")
+print("name is not wrong -- those tables really do fail associativity -- but it")
+print("is incomplete, which is exactly why the map has two routes and the")
+print("ladder name alone is not the whole answer.")
+
+# --- The map ----------------------------------------------------------------
+lattice = {
+  title: "Where the structures sit, and the law that earns each step",
+  footer: "commutative and idempotent decorate any node: properties, not rungs",
+  width: 640,
+  height: 430,
+  names: ["magma", "semigroup", "monoid", "quasigroup", "loop", "group"],
+  node_x: [320, 150, 150, 490, 490, 320],
+  node_y: [56, 160, 256, 160, 256, 366],
+  edges: [[0, 1], [1, 2], [2, 5], [0, 3], [3, 4], [4, 5]],
+  edge_labels: ["associativity", "identity", "inverses",
+                "unique division", "identity", "associativity"]
+}
+a = u:write_lattice_svg("out/00-structure-lattice.svg", lattice)
+
+u:epilog_open()
+
+u:explain("out/00-structure-lattice.svg",
+  "Six boxes and six arrows. Each arrow is labelled with the LAW that gets you along it.")
+u:note("Start at magma, top. Two routes leave it and both arrive at group, bottom.")
+u:note("LEFT: add associativity for a semigroup, an identity for a monoid, inverses for")
+u:note("a group. That is the ladder these lessons climb, 04 through 08.")
+u:note("RIGHT: add unique division for a quasigroup, an identity for a loop, and then")
+u:note("associativity for a group. Lesson 11 walks this one.")
+u:note("WHAT TO NOTICE: the same law appears on both routes in different places.")
+u:note("Associativity is the FIRST step on the left and the LAST on the right, and")
+u:note("identity is the middle step on both. The order laws arrive in is a choice of")
+u:note("path, not a property of the subject.")
+u:note("WHAT IS NOT ON THE PICTURE: commutativity and idempotence. Neither is a step,")
+u:note("because neither depends on anything and nothing depends on them -- they hold or")
+u:note("fail freely at any node, which is why the literature writes 'commutative")
+u:note("monoid' and 'abelian group' as adjectives. Lesson 09 makes that case.")
+
+u:limits("This is a map of what these thirteen lessons cover, not of abstract algebra. It stops at group and says nothing about rings, fields, or anything with two operations -- those are Stage 5. It also draws only the routes this repository walks: there are other paths up, and a full lattice of every combination of these laws would have more nodes than are useful to look at.")
+
+u:takeaway("The word 'ladder' is convenient and slightly wrong. There are at least two ways up to a group, and the same law does different work depending on where you meet it -- associativity is the first step on one route and the last on the other. Commutativity and idempotence are not steps at all. Keeping that straight is what stops a picture from talking you into a claim, which is a mistake this repository has already made once.")
+
+print("wrote out/00-structure-lattice.svg:", is_ok(a))
+
+# --- Invariants: the map must agree with the classifier ---------------------
+# Each node's witness must have exactly the laws its position claims.
+cm = u:classify(magma)
+cs = u:classify(semigroup)
+co = u:classify(monoid)
+cq = u:classify(quasigroup)
+cl = u:classify(loop)
+cg = u:classify(group)
+magma_ok = cm.closed * (1 - cm.associative) * (1 - u:is_latin(magma))
+semi_ok = cs.semigroup * (1 - cs.monoid)
+mon_ok = co.monoid * (1 - co.group)
+quasi_ok = u:is_quasigroup(quasigroup) * (1 - u:has_identity(quasigroup)) * (1 - cq.associative)
+loop_ok = u:is_loop(loop) * (1 - cl.associative)
+group_ok = cg.group * u:is_quasigroup(group) * u:is_loop(group)
+if magma_ok * semi_ok * mon_ok * quasi_ok * loop_ok * group_ok * is_ok(a) {
+  ok("every node of the map is where the classifier says it is")
+} else {
+  err("the map disagrees with the classifier")
+}

@@ -1,6 +1,6 @@
 number = 2
 slug = "review-backlog-structure-map"
-status = "pending"
+status = "in-progress"
 description = "Build the structure map docs/research2.txt asked for: a property LATTICE rath..."
 role = "production"
 context_files = []
