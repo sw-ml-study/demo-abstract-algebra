@@ -110,6 +110,32 @@ Different lessons, same fact, no coordination needed.
    is algebra. A lesson whose punchline is "and therefore this square commutes"
    is category theory.
 
+## Stage 1 is complete, and here is what you can build on
+
+**Status as of Stage 1 completion.** Thirteen lessons, all green, zero explicit
+loops. The bridge lesson is `demos/13-homomorphisms/structure_preserving.mlpl`,
+and it deliberately stops exactly where your subject starts: it verifies that
+homomorphisms compose, that the identity map is one, and that composition is
+associative — then says that objects with arrows that compose is the definition
+of a category, and hands over.
+
+It does **not** define a category, draw a commutative diagram, or say the word
+functor. Those are yours.
+
+Concretely available:
+
+- `u:is_homomorphism`, `u:hom_counterexample`, `u:map_then_combine`,
+  `u:combine_then_map` — the law as one array comparison, with a witness.
+- `u:permute_table`, `u:is_isomorphic_under`, `u:canonical_index` — isomorphism
+  as a search whose witness is the permutation, and orbit counting.
+- The batched family (`u:all_tables`, `u:batch_*`) — every operation on `n`
+  elements as one array. If you want "all functors between two small
+  categories", this is the shape of machinery that does it.
+- `lib/render.mlpl` — labelled Cayley tables, ringed cell masks, animated
+  frames, digraphs. The `{title, names, table}` record takes an optional
+  `cell_names` when a table is indexed by one set and filled from another,
+  which is exactly the shape a morphism picture needs.
+
 ## What this repository will have produced, that the other can build on
 
 By the end of the plan in `docs/plan.md`:

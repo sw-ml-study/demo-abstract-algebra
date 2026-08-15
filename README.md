@@ -199,11 +199,19 @@ ASCII, `out/*.svg`, `--svg-out`, and the playground.
 Verified baseline: `mlpl-repl 0.20.0` from the adjacent
 `../sw-mlpl/target/release` build, with mlplunit for conformance.
 
-Lessons 01–08 are implemented and green — the full ladder from magmas to
-groups — with **0 explicit loops**, ASCII + static SVG + animated SVG output,
-and three paste-ready Web UI demos. 12 demos and 14 tests pass.
+**Stage 1 is complete.** All thirteen lessons implemented and green, with
+**0 explicit loops** anywhere: the ladder from magmas to groups, the quasigroup
+and loop branch beside it, commutativity as a property rather than a rung,
+every operation on three elements enumerated and classified, isomorphism, and
+homomorphisms as the door out. 17 demos and 16 tests pass, plus an editable
+[viewer](viewer/cayley.html) and three paste-ready Web UI demos.
 
-Those eight are **Stage 1 of six**. [docs/plan.md](docs/plan.md) sets out a
+Two results worth stating, both checked against published counts: there are
+**3,330** magmas, **24** semigroups and exactly **1** group on three elements
+up to isomorphism — computed here by quotienting all 19,683 tables, with no
+loop over tables.
+
+Stage 1 is one of **six**. [docs/plan.md](docs/plan.md) sets out a
 staged syllabus of about forty lessons — one operation, then inside a group
 (cosets, Lagrange, quotients), groups acting, building new groups from old,
 two operations (rings and fields), and universal algebra — bounded by a stated

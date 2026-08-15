@@ -28,6 +28,17 @@
 # ---------------------------------------------------------------------------
 
 def u:element_name(s, i) { "Answer the human name of element i in this structure."; unwrap(list_get(s.names, i)) }
+
+# A table's cells do not always name elements of the SAME set. A homomorphism
+# picture has source elements on the headings and target elements in the
+# cells, so a structure may carry an optional cell_names for the latter.
+def u:cell_name(s, v) { "Answer the name to print inside a cell: cell_names when the record carries them, otherwise the element names.";
+  if has_field(s, "cell_names") { unwrap(list_get(s.cell_names, v)) } else { u:element_name(s, v) }
+}
+
+def u:cell_range(s) { "Answer how many distinct values a cell may hold, which is the target size when cells and headings name different sets.";
+  if has_field(s, "cell_names") { list_len(s.cell_names) } else { u:order(s.table) }
+}
 def u:yes_or_no(b) { "Answer the word yes or no for a 1 or 0 verdict, for printing law checklists."; unwrap(list_get(["no", "yes"], b)) }
 
 # ---------------------------------------------------------------------------
@@ -137,13 +148,13 @@ def u:heading_gutter_px() { "Answer the space reserved for row and column headin
 def u:title_band_px() { "Answer the space reserved for the diagram title."; 34 }
 
 def u:cell_svg(s, a, b) { "Answer one table cell: a colored square labelled with the name of the result, or grey and marked when the result escapes the set.";
-  n = u:order(s.table)
+  n = u:cell_range(s)
   v = take(take(s.table, 0, a), 0, b)
   x = u:heading_gutter_px() + b * u:cell_size_px()
   y = u:title_band_px() + u:heading_gutter_px() + a * u:cell_size_px()
   inside = (1 - lt(v, 0)) * lt(v, n)
   fill = if inside { u:element_color(v) } else { "#3b3b4d" }
-  label = if inside { u:element_name(s, v) } else { str_concat("!", to_string(v)) }
+  label = if inside { u:cell_name(s, v) } else { str_concat("!", to_string(v)) }
   str_concat(u:svg_rect(x + 2, y + 2, u:cell_size_px() - 4, u:cell_size_px() - 4, fill), u:svg_text(x + u:cell_size_px() / 2, y + u:cell_size_px() / 2, "#12131c", label))
 }
 

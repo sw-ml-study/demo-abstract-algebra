@@ -1,0 +1,174 @@
+# Lesson 13 -- Homomorphisms: the maps that respect the structure.
+#
+# Meaning here: a HOMOMORPHISM is a map f from one structure to another with
+#   f(a * b) = f(a) * f(b)
+# for every pair -- combine first then map, or map first then combine, and you
+# land in the same place.
+# Also called: a morphism, once you are doing category theory. Same object,
+# and the change of word marks a change of interest: algebra asks what a map
+# preserves, category theory asks how maps compose.
+# Not to be confused with: HOMEOMORPHISM, which is topology and unrelated
+# despite the near-identical spelling. Or with isomorphism, which is lesson
+# 12: an isomorphism is a homomorphism that can be undone.
+#
+# This is the last lesson of Stage 1 and the bridge out of this repository.
+# Everything so far asked what laws ONE operation obeys. A homomorphism is the
+# first object that lives BETWEEN two structures, and once you notice that
+# these maps compose, you are doing category theory -- which is
+# ../demo-category-theory's subject, under docs/scope-boundary.md.
+#
+# NOT a Web UI file. This is a CLI lesson: it uses include and write_text,
+# neither of which the browser session has, and it ends in ok(...) so the
+# suite can gate on it. See docs/viewing.md.
+#
+# visual: ascii, svg
+# loops: 0
+# complexity: m^2 to check a map between structures of size m and n
+
+include "../../lib/algebra.mlpl"
+include "../../lib/render.mlpl"
+
+u:prolog({
+  title: "LESSON 13 -- HOMOMORPHISMS: the maps that respect the structure",
+  intro: "Twelve lessons asked what laws one operation obeys. This one asks what survives a map between two of them, which is a question about a pair rather than a thing -- and it is the last lesson here, because once you notice these maps compose you have left algebra for category theory."
+})
+
+def u:add_mod_4(x, y) { "Answer the sum modulo 4."; mod(x + y, 4) }
+def u:add_mod_2(x, y) { "Answer the sum modulo 2."; mod(x + y, 2) }
+
+z4 = table(:u:add_mod_4, u:elements(4), u:elements(4))
+z2 = table(:u:add_mod_2, u:elements(2), u:elements(2))
+z4_names = ["0", "1", "2", "3"]
+z2_names = ["even", "odd"]
+
+# --- A map that works: parity -----------------------------------------------
+# Send each number to whether it is even or odd. Adding then taking parity
+# gives the same answer as taking parity then adding -- which is the fact
+# every schoolchild learns as "odd plus odd is even".
+parity = [0, 1, 0, 1]
+
+print("Z4 under addition, and Z2:")
+print(disp(z4))
+print(disp(z2))
+print("the map f: 0,1,2,3 ->", parity, " (even = 0, odd = 1)")
+
+lhs = {
+  title: "f(a * b): add in Z4, then take parity",
+  names: z4_names,
+  cell_names: z2_names,
+  table: u:map_then_combine(parity, z4)
+}
+rhs = {
+  title: "f(a) * f(b): take parity, then add in Z2",
+  names: z4_names,
+  cell_names: z2_names,
+  table: u:combine_then_map(parity, z2)
+}
+
+print("")
+print("combine then map:")
+print(disp(lhs.table))
+print("map then combine:")
+print(disp(rhs.table))
+print("identical:", u:yes_or_no(u:is_homomorphism(parity, z4, z2)))
+print("  Both tables are indexed by Z4 elements and filled with Z2 elements.")
+print("  A homomorphism is exactly the claim that these two arrays are equal.")
+
+# --- A map that does not work -----------------------------------------------
+bogus = [0, 1, 1, 1]
+bx = u:hom_counterexample(bogus, z4, z2)
+print("")
+print("a map that is not a homomorphism: f =", bogus)
+print("  first failure at a =", unwrap(list_get(z4_names, bx.a)),
+      " b =", unwrap(list_get(z4_names, bx.b)))
+print("    f(a * b)   =", unwrap(list_get(z2_names, bx.left)))
+print("    f(a) * f(b) =", unwrap(list_get(z2_names, bx.right)))
+print("  A failed map names the pair, as every failed law here does.")
+
+# --- Two maps that always work ----------------------------------------------
+# The constant map to the identity is a homomorphism between any two groups,
+# and the identity map is one from a structure to itself. Both are dull, and
+# both matter: they are what make composition into a category.
+constant = [0, 0, 0, 0]
+identity_map = [0, 1, 2, 3]
+print("")
+print("the constant map to the identity:", u:yes_or_no(u:is_homomorphism(constant, z4, z2)))
+print("the identity map Z4 -> Z4:       ", u:yes_or_no(u:is_homomorphism(identity_map, z4, z4)))
+
+# --- Composition: the door out ----------------------------------------------
+# Compose two homomorphisms and you get a homomorphism. That is the whole
+# reason categories exist as a subject: maps that compose, with identities.
+def u:add_mod_8(x, y) { "Answer the sum modulo 8."; mod(x + y, 8) }
+z8 = table(:u:add_mod_8, u:elements(8), u:elements(8))
+halve = [0, 1, 2, 3, 0, 1, 2, 3]          # Z8 -> Z4, reduce modulo 4
+composed = flatten(gather_rows(reshape(parity, [4, 1]), halve))   # then parity
+
+print("")
+print("g: Z8 -> Z4 is a homomorphism:", u:yes_or_no(u:is_homomorphism(halve, z8, z4)))
+print("f: Z4 -> Z2 is a homomorphism:", u:yes_or_no(u:is_homomorphism(parity, z4, z2)))
+print("f after g:", composed)
+print("f after g: Z8 -> Z2 is a homomorphism:",
+      u:yes_or_no(u:is_homomorphism(composed, z8, z2)))
+print("  Composition is closed, the identity map is a homomorphism, and")
+print("  composing is associative because composing functions always is.")
+print("  Closed, associative, identity -- that is a MONOID of maps, and the")
+print("  same three conditions on objects-and-arrows is a CATEGORY.")
+print("  Which is where this repository stops. See docs/scope-boundary.md.")
+
+# --- The diagrams -----------------------------------------------------------
+disagree = 1 - eq(u:map_then_combine(bogus, z4), u:combine_then_map(bogus, z2))
+bad = {
+  title: "A map that is not a homomorphism",
+  names: z4_names,
+  cell_names: z2_names,
+  table: u:map_then_combine(bogus, z4)
+}
+a = u:write_cayley_svg("out/13-hom-lhs.svg", lhs)
+b = u:write_cayley_svg("out/13-hom-rhs.svg", rhs)
+c = u:write_marked_svg("out/13-hom-broken.svg", bad, disagree,
+  "ringed: f(a*b) differs from f(a)*f(b)")
+
+u:epilog_open()
+
+u:explain("out/13-hom-lhs.svg",
+  "A 4x4 grid. Rows and columns are Z4 elements; each cell is the PARITY of their sum.")
+u:note("Only two colours appear, because the cells hold Z2 elements even though the")
+u:note("headings are Z4 elements. A homomorphism picture is not square in that sense:")
+u:note("it is indexed by the source and filled from the target.")
+u:note("WHAT TO NOTICE: the checkerboard. Parity of a sum depends only on parities, so")
+u:note("the 4x4 grid is a 2x2 pattern repeated -- and that repetition IS the")
+u:note("homomorphism, drawn.")
+
+u:explain("out/13-hom-rhs.svg",
+  "The same grid computed the other way round: parity first, then add in Z2.")
+u:note("Identical to the previous picture, cell for cell. That equality is the whole")
+u:note("definition of f being a homomorphism -- two routes, one destination.")
+
+u:explain("out/13-hom-broken.svg",
+  "A map that fails, with every disagreeing cell ringed.")
+u:note("The rings are where combining-then-mapping and mapping-then-combining part")
+u:note("company.")
+u:note("WHAT TO NOTICE: the failures are not everywhere. A bad map can respect the")
+u:note("structure on many pairs and still not be a homomorphism -- the law is universal,")
+u:note("so one ringed cell is enough to sink it. That is why the checker returns the")
+u:note("FIRST failing pair rather than a count.")
+
+u:limits("Composition being closed and associative with identities is checked here on particular maps, not proved in general -- and the general statement is the beginning of category theory rather than the end of algebra. This lesson also says nothing about kernels, images, or the isomorphism theorems, which need subgroups and quotients; those are Stage 2. And a homomorphism need not be reversible: parity loses information, and what it loses is exactly what a kernel measures.")
+
+u:takeaway("A homomorphism is the first object here that is not a structure but a relationship between two. The law f(a * b) = f(a) * f(b) is one array comparison -- combine then map, against map then combine -- and it either holds everywhere or names the pair where it does not. The important thing is what happens next: these maps compose, composition is associative, and every structure has an identity map. Objects with arrows that compose is the definition of a category, which is where ../demo-category-theory begins and this repository's Stage 1 ends.")
+
+print("wrote out/13-hom-lhs.svg:", is_ok(a))
+print("wrote out/13-hom-rhs.svg:", is_ok(b))
+print("wrote out/13-hom-broken.svg:", is_ok(c))
+
+# --- Invariants -------------------------------------------------------------
+works = u:is_homomorphism(parity, z4, z2)
+fails = (1 - u:is_homomorphism(bogus, z4, z2)) * bx.found * (1 - eq(bx.left, bx.right))
+trivial = u:is_homomorphism(constant, z4, z2) * u:is_homomorphism(identity_map, z4, z4)
+# The bridge: composition of homomorphisms is a homomorphism.
+closes = u:is_homomorphism(halve, z8, z4) * u:is_homomorphism(composed, z8, z2)
+if works * fails * trivial * closes * is_ok(a) * is_ok(b) * is_ok(c) {
+  ok("homomorphisms preserve the operation, and they compose: the door to categories")
+} else {
+  err("homomorphism invariants failed")
+}

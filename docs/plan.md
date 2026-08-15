@@ -5,7 +5,7 @@ that brief. The category-theory half is deferred to `../demo-category-theory`
 under the contract in `docs/scope-boundary.md`.
 
 Verified baseline: `mlpl-repl 0.20.0` from `../sw-mlpl/target/release`.
-Lessons 01 to 12 are implemented and green; only 13 remains.
+**Stage 1 is complete**: all 13 lessons implemented and green, 0 explicit loops.
 
 ## The thesis
 
@@ -74,10 +74,10 @@ than the subject — they are gone by lesson 03.
 | 10 | `10-enumeration/all_small_magmas` | Every operation on 2 and 3 elements, classified in one batched pass | Population bar chart of the ladder rungs | **done** |
 | 11 | `11-quasigroups/latin_is_not_enough` | Quasigroups and loops; a Latin square that is not a group; cancellation | Four tables: not Latin, Latin without identity, a loop, a group | **done** |
 | 12 | `12-isomorphism/same_up_to_naming` | Relabelling; canonical forms; quotienting the whole enumeration | Two tables, no cell in common, same structure | **done** |
-| 13 | `13-homomorphisms/structure_preserving` | `f(a*b) = f(a)*f(b)`; the bridge out of this repo | Two tables with arrows between them; violated cells flagged | planned |
+| 13 | `13-homomorphisms/structure_preserving` | `f(a*b) = f(a)*f(b)`; composition, and the door to categories | Two routes to one grid; the violated cells ringed | **done** |
 
-That is **Stage 1 of six**. It covers structures with a single binary
-operation, and it stops at the moment a group has been recognized. The rest of
+That is **Stage 1 of six, and it is done**. It covers structures with a single
+binary operation, from the bottom rung to the map that leads out. The rest of
 the syllabus is below.
 
 ## Scope: what belongs in this repository
@@ -127,7 +127,7 @@ Each stage is independently shippable, so the repository is always in a
 coherent state rather than permanently half-finished. One AgentRail saga per
 stage; archive and open the next.
 
-### Stage 1 — one operation *(in progress: 12 of 13)*
+### Stage 1 — one operation *(COMPLETE: 13 of 13)*
 
 The ladder from magma to group, plus the two meta-lessons that make the rest
 possible. Detailed in the table above.
