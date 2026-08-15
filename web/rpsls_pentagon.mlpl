@@ -9,6 +9,13 @@
 ;
 def u:beats_in_game(x, y) { "Answer 1 when x beats y, which is the whole rulebook in one modular test."; lt(mod(x - y + 5, 5) - 1, 2) * (1 - eq(mod(x - y + 5, 5), 0)) }  # beats the next two around
 def u:winner_of(x, y) { "Answer the winner of a matchup; a tie answers the shared choice."; if u:beats_in_game(x, y) { x } else { y } }  # spock 0 .. rock 4
+# ==========================================================================
+# RENDERING SUPPORT
+#
+# Nothing below this line is needed to define the algebra. It only turns
+# the operation into a picture, and it is here only because the browser
+# cannot load a shared library. Skip to the next block of narration.
+# ==========================================================================
 def u:element_color(i) { "SVG helper: the colour that stands for an element, shared by the graph and the table."; unwrap(list_get(["#7aa2f7", "#f7768e", "#9ece6a", "#e0af68", "#bb9af7"], mod(i, 5))) }  # same palette as the tables
 def u:node_x(element, element_count) { "SVG helper: the x position of a node on a circle, element 0 at the top."; 190 + 130 * cos(2 * pi() * element / element_count - pi() / 2) }
 def u:node_y(element, element_count) { "SVG helper: the y position of a node on a circle."; 190 + 130 * sin(2 * pi() * element / element_count - pi() / 2) }

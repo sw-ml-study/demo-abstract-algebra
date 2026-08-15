@@ -261,16 +261,16 @@ merely illustrating the other.
 
 Queued rather than done, in the review's own priority order:
 
-1. **Mark rendering plumbing as infrastructure** in the generated web demos —
-   a banner saying *nothing below this line is needed to define the algebra*,
-   and emit the mathematics before the graphics.
-2. **Rename opaque renderer parameters** (`a`, `b`, `k`, `f`, `t`, `acc`) to
-   `from_element`, `to_element`, `element_count`, `fraction`, `svg_so_far`.
-   The concept-level names are already good; the plumbing is not.
-3. **Distinguish docstring registers** — `"SVG helper: ..."` for renderers, so
-   a novice has permission to skip them.
-4. **Every demo ends with what it proves AND what it does not prove.** The
-   Latin-square error is exactly what that convention would have caught.
+1. ~~Mark rendering plumbing as infrastructure~~ — **done.** A
+   `RENDERING SUPPORT` banner in `lib/render.mlpl` and in every generated web
+   demo, with the algebra emitted first.
+2. ~~Rename opaque renderer parameters~~ — **done.**
+   `u:along_x(from_element, to_element, element_count, fraction)` and the rest.
+3. ~~Distinguish docstring registers~~ — **done.** `"SVG helper:"` for
+   renderers, enforced by `scripts/check-docstrings`.
+4. ~~Every demo ends with what it proves AND what it does not~~ — **done.**
+   `u:limits(...)`, required by `scripts/check-narration`, written for all 13
+   lessons.
 5. **Expose more of Stage 1 as browser demos**, roughly one law per file, so
    the web set is a course rather than three leaf nodes.
 6. **A structure map** — a property lattice rather than a single ladder, with

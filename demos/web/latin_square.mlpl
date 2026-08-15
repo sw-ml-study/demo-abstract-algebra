@@ -12,6 +12,13 @@
 def u:winner_of(x, y) { "Answer the winner of a matchup; a tie answers the shared choice."; if eq(mod(x - y + 3, 3), 1) { x } else { y } }  # Rock-Paper-Scissors
 def u:add_mod_3(x, y) { "Answer the sum modulo 3, the operation of the cyclic group Z3."; mod(x + y, 3) }  # Z3, addition mod 3
 def u:sub_mod_3(x, y) { "Answer x minus y modulo 3: a Latin square that is not a group."; mod(x - y + 3, 3) }  # subtraction mod 3
+# ==========================================================================
+# RENDERING SUPPORT
+#
+# Nothing below this line is needed to define the algebra. It only turns
+# the operation into a picture, and it is here only because the browser
+# cannot load a shared library. Skip to the next block of narration.
+# ==========================================================================
 def u:element_color(i) { "SVG helper: the colour that stands for an element, shared by the graph and the table."; unwrap(list_get(["#7aa2f7", "#f7768e", "#9ece6a", "#e0af68", "#bb9af7"], mod(i, 5))) }
 def u:label(x, y, fill, font_size, text) { "SVG helper: a text element centred on a point."; str_concat(str_concat(str_concat("<text x=\"", to_string(x)), str_concat("\" y=\"", to_string(y))), str_concat(str_concat(str_concat("\" fill=\"", fill), str_concat("\" font-size=\"", to_string(font_size))), str_concat(str_concat("\" text-anchor=\"middle\" dominant-baseline=\"central\" font-family=\"monospace\">", text), "</text>"))) }
 def u:cell(row, column, result, names) { "SVG helper: one table cell, a coloured square carrying the name of its result."; str_concat(str_concat(str_concat(str_concat("<rect x=\"", to_string(70 + column * 62)), str_concat("\" y=\"", to_string(70 + row * 62))), str_concat(str_concat("\" width=\"58\" height=\"58\" rx=\"4\" fill=\"", u:element_color(result)), "\"/>")), u:label(99 + column * 62, 99 + row * 62, "#12131c", 11, unwrap(list_get(names, result)))) }

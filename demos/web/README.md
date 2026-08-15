@@ -39,6 +39,19 @@ Enforced by `scripts/check-narration`, `scripts/check-web-size` and
 - **Stay under 26 statement groups.** The playground shows one entry per group,
   so length is friction.
 
+- **Put the algebra before the graphics.** A generated demo reads: narration,
+  the two or three functions that ARE the operation, a `RENDERING SUPPORT`
+  banner, then the SVG plumbing. A learner who meets ten helpers before the
+  first table concludes the subject needs them.
+- **Renderer docstrings begin `"SVG helper:"`**, so a reader following the
+  mathematics has explicit permission to skip. Mathematical functions say what
+  they *answer*. `scripts/check-docstrings` enforces the prefix in
+  `lib/render.mlpl`.
+- **Spend characters on parameter names.** `u:along_x(a, b, k, f)` needs its
+  docstring read; `u:along_x(from_element, to_element, element_count, fraction)`
+  teaches itself. sw-MLPL chooses words over glyph terseness, so a demo repo
+  should show that.
+
 The header comment block at the top of each source file is metadata for
 `scripts/check-docstrings`; `build-web-demos` strips it so the generated file
 opens on its prolog.
