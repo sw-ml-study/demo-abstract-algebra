@@ -383,6 +383,61 @@ def u:batch_latin(b) { "Answer the [m] mask marking which tables are Latin squar
 def u:batch_group(b) { "Answer the [m] mask marking which tables are groups, using the theorem that a finite associative Latin square is one."; u:batch_associative(b) * u:batch_latin(b) }
 
 # ---------------------------------------------------------------------------
+# Quotienting a batch by renaming
+# ---------------------------------------------------------------------------
+#
+# Two tables are ISOMORPHIC when some permutation of the element names turns
+# one into the other. Counting structures therefore means counting ORBITS
+# under renaming, not counting tables -- and the standard way to count orbits
+# is to give each one a canonical representative and count the distinct ones.
+#
+# Canonical form here: the smallest base-n index reachable by relabelling.
+# Any consistent choice from the orbit works; smallest is the easy one.
+
+# Re-index both axes of every table in a batch through q, so
+# out[k, a, b] = b[k, q[a], q[b]]. The single-table version is u:reindex_axes.
+def u:batch_reindex(b, q) { "Answer the batch with both axes of every table re-indexed through q.";
+  m = tally(b)
+  n = tally(take(b, 0, 0))
+  slot = reshape(mod(u:elements(m * n), n), [m, n])
+  moved = reshape(gather_rows(reshape(q, [n, 1]), flatten(slot)), [m, n])
+  idx = flatten(reshape(floor(u:elements(m * n) / n), [m, n]) * n + moved)
+  rows_done = reshape(gather_rows(reshape(b, [m * n, n]), idx), [m, n, n])
+  cols_done = reshape(gather_rows(reshape(transpose_axes(rows_done, [0, 2, 1]), [m * n, n]), idx), [m, n, n])
+  transpose_axes(cols_done, [0, 2, 1])
+}
+
+def u:batch_relabel(b, p) { "Answer every table in the batch relabelled under the permutation p: axes re-indexed by the inverse, entries renamed by p.";
+  inner = u:batch_reindex(b, grade_up(p))
+  reshape(gather_rows(reshape(p, [tally(p), 1]), flatten(inner)), shape(inner))
+}
+
+# The inverse of u:all_tables: read each table back as the numeral naming it.
+def u:batch_encode(b) { "Answer the [m] vector of base-n indices naming each table in the batch.";
+  m = tally(b)
+  n = tally(take(b, 0, 0))
+  weights = reshape(pow(n, mod(u:elements(m * n * n), n * n)), [m, n, n])
+  reduce_add(reduce_add(b * weights, 2), 1)
+}
+
+def u:elementwise_min(x, y) { "Answer the elementwise smaller of two vectors."; x + (y - x) * lt(y, x) }
+
+# The canonical index of every table: the smallest index its orbit reaches.
+# perms is a [k, n] array whose rows are the permutations to quotient by.
+def u:canonical_index(b, perms) { "Answer the [m] vector of canonical indices, one per table, by minimising over every relabelling.";
+  u:orbit_fold(b, perms, 0, u:elements(tally(b)) * 0 + pow(tally(take(b, 0, 0)), tally(take(b, 0, 0)) * tally(take(b, 0, 0))))
+}
+
+def u:orbit_fold(b, perms, i, acc) { "Fold the orbit minimum over the permutation list, one relabelling at a time.";
+  if lt(i, tally(perms)) {
+    u:orbit_fold(b, perms, i + 1,
+      u:elementwise_min(acc, u:batch_encode(u:batch_relabel(b, take(perms, 0, i)))))
+  } else { acc }
+}
+
+def u:count_distinct(v) { "Answer how many distinct values a vector holds."; tally(dedupe_rows(reshape(v, [size(v), 1])).rows) }
+
+# ---------------------------------------------------------------------------
 # Structure-preserving maps
 # ---------------------------------------------------------------------------
 #

@@ -1,0 +1,145 @@
+# Lesson 12 -- Isomorphism: when two tables are the same structure.
+#
+# Meaning here: two structures are ISOMORPHIC when some renaming of the
+# elements turns one table into the other exactly. Same object, different
+# labels.
+# Also called: "the same up to isomorphism", which is how mathematicians say
+# "identical for every purpose we care about".
+# Not to be confused with: EQUAL. Two isomorphic tables can be entirely
+# different arrays; what they share is shape, not content.
+#
+# Lesson 10 counted 19,683 operations on three elements and found 3 group
+# tables, and its u:limits said plainly that those counts are of LABELLED
+# tables rather than of structures. This lesson supplies the missing notion:
+# quotient the whole enumeration by renaming and count what is actually there.
+#
+# NOT a Web UI file. This is a CLI lesson: it uses include and write_text,
+# neither of which the browser session has, and it ends in ok(...) so the
+# suite can gate on it. See docs/viewing.md.
+#
+# visual: ascii, svg
+# loops: 0
+# complexity: n! relabellings of the whole batch, each one array operation
+
+include "../../lib/algebra.mlpl"
+include "../../lib/render.mlpl"
+
+u:prolog({
+  title: "LESSON 12 -- ISOMORPHISM: when two tables are the same structure",
+  intro: "Lesson 10 counted tables. This one counts STRUCTURES, which is a smaller and more honest number: two tables that differ only in what the elements are called are the same object twice. Quotienting the full enumeration by renaming turns 19,683 operations into 3,330 structures, and the three group tables into one group."
+})
+
+# The six ways to rename three elements. Renaming IS a permutation, so the
+# group from lesson 09 is doing double duty here as the thing we quotient by.
+perms = [[0, 1, 2], [0, 2, 1], [1, 0, 2], [1, 2, 0], [2, 0, 1], [2, 1, 0]]
+
+# --- Two tables that are the same structure ---------------------------------
+def u:add_mod_3(x, y) { "Answer the sum modulo 3."; mod(x + y, 3) }
+z3 = {
+  title: "Z3 under addition",
+  names: ["0", "1", "2"],
+  table: table(:u:add_mod_3, u:elements(3), u:elements(3))
+}
+# Rename 0->1, 1->2, 2->0 and the array changes completely.
+p = [1, 2, 0]
+renamed = {
+  title: "The same group, elements renamed",
+  names: ["0", "1", "2"],
+  table: u:permute_table(z3.table, p)
+}
+
+u:show_table(z3)
+print("")
+u:show_table(renamed)
+print("")
+print("the two tables are equal:", u:yes_or_no(equal(z3.table, renamed.table)))
+print("they are isomorphic under [1, 2, 0]:",
+      u:yes_or_no(u:is_isomorphic_under(z3.table, renamed.table, p)))
+print("  Different arrays, same structure. Every law agrees, because")
+print("  relabelling cannot create or destroy one:")
+print("    group:", u:classify(z3.table).group, u:classify(renamed.table).group,
+      "  abelian:", u:classify(z3.table).abelian_group, u:classify(renamed.table).abelian_group)
+
+# --- Isomorphism is a search, and the witness is the permutation ------------
+# Two tables are isomorphic when SOME permutation works. Finding it is a
+# search over n! candidates, and the one that succeeds is the proof.
+def u:matches(i) { "Answer 1 when permutation i carries z3 onto the renamed table.";
+  u:is_isomorphic_under(z3.table, renamed.table, take(perms, 0, i))
+}
+hits = each(:u:matches, u:elements(6))
+print("")
+print("permutations that work:", hits, " -- found", reduce_add(hits), "of 6")
+print("  The witness is the permutation itself, so 'isomorphic' is never")
+print("  asserted here either: it is exhibited.")
+
+# --- Quotient the whole enumeration -----------------------------------------
+u:set_base(3)
+all3 = u:all_tables(3, 19683)
+canon = u:canonical_index(all3, perms)
+classes = u:count_distinct(canon)
+
+print("")
+print("every operation on three elements:")
+print("  labelled tables:      ", tally(all3))
+print("  structures up to name:", classes)
+print("  So most tables are duplicates. Renaming has orbits of size up to 6,")
+print("  and the average orbit is about", round(10 * tally(all3) / classes) / 10, "tables.")
+
+# --- The groups collapse to one ---------------------------------------------
+grp = u:batch_group(all3)
+group_classes = u:count_distinct(compress(grp, canon))
+semi = u:batch_associative(all3)
+semi_classes = u:count_distinct(compress(semi, canon))
+print("")
+print("  group tables:", reduce_add(grp), " -> distinct groups:", group_classes)
+print("  semigroup tables:", reduce_add(semi), " -> distinct semigroups:", semi_classes)
+print("  There is exactly ONE group of order 3. The three tables lesson 10")
+print("  counted are it, written three ways -- one per choice of identity.")
+
+# --- Fixed points: structures that are their own only relabelling -----------
+# A table whose canonical index is its own index is the representative of its
+# class. Counting those is another way to reach the same total.
+own = eq(canon, u:elements(19683))
+print("")
+print("tables that are their own canonical form:", reduce_add(own),
+      " -- matches the class count:", u:yes_or_no(eq(reduce_add(own), classes)))
+
+# --- The diagrams -----------------------------------------------------------
+a = u:write_cayley_svg("out/12-z3.svg", z3)
+b = u:write_cayley_svg("out/12-z3-renamed.svg", renamed)
+
+u:epilog_open()
+
+u:explain("out/12-z3.svg",
+  "Z3 under addition. Rows and columns are 0, 1, 2; cells coloured by result.")
+u:note("A Latin square with the white cross on the first row and column.")
+
+u:explain("out/12-z3-renamed.svg",
+  "The same group after renaming 0 to 1, 1 to 2, 2 to 0.")
+u:note("Put the two pictures side by side and NO cell matches. Every entry moved.")
+u:note("WHAT TO NOTICE: the white cross moved too -- the identity is now element 1,")
+u:note("because that is what 0 got renamed to. The identity is a role, not a name.")
+u:note("WHAT IS UNCHANGED: both are Latin squares, both are symmetric about the")
+u:note("diagonal, both have exactly one cross. Every property the earlier lessons")
+u:note("checked survives renaming, which is precisely why those properties are the")
+u:note("right things to have been checking.")
+
+u:limits("A canonical form proves two tables ARE isomorphic and lets classes be counted, but nothing here proves two structures are NOT isomorphic beyond the exhaustive search over all n! renamings -- which only stays cheap because n is 3. At order 6 there are 720 permutations per table, and the enumeration itself is 6^36. Counting structures this way does not scale, and the mathematics that replaces brute force -- invariants, Sylow theory, classification theorems -- is out of this repository's scope by its own criterion, because those are proofs rather than tables.")
+
+u:takeaway("Counting tables and counting structures are different questions, and only the second is about algebra. Renaming partitions the 19,683 operations on three elements into 3,330 orbits, and the three group tables fall into a single orbit: there is exactly one group of order 3. Every law this repository checks is invariant under renaming, which is not a coincidence -- it is the reason those laws, and not the raw arrays, are what a structure IS.")
+
+print("wrote out/12-z3.svg:", is_ok(a))
+print("wrote out/12-z3-renamed.svg:", is_ok(b))
+
+# --- Invariants -------------------------------------------------------------
+distinct_arrays = 1 - equal(z3.table, renamed.table)
+same_structure = u:is_isomorphic_under(z3.table, renamed.table, p)
+laws_survive = eq(u:classify(z3.table).abelian_group, u:classify(renamed.table).abelian_group)
+# 3330 is the known count of magmas on three elements up to isomorphism.
+census_ok = eq(tally(all3), 19683) * eq(classes, 3330) * eq(group_classes, 1)
+fixed_ok = eq(reduce_add(own), classes)
+if distinct_arrays * same_structure * laws_survive * census_ok * fixed_ok * is_ok(a) * is_ok(b) {
+  ok("19,683 tables are 3,330 structures; the three group tables are one group")
+} else {
+  err("isomorphism invariants failed")
+}

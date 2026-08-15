@@ -5,7 +5,7 @@ that brief. The category-theory half is deferred to `../demo-category-theory`
 under the contract in `docs/scope-boundary.md`.
 
 Verified baseline: `mlpl-repl 0.20.0` from `../sw-mlpl/target/release`.
-Lessons 01 to 11 are implemented and green; 12 and 13 remain.
+Lessons 01 to 12 are implemented and green; only 13 remains.
 
 ## The thesis
 
@@ -73,7 +73,7 @@ than the subject — they are gone by lesson 03.
 | 09 | `09-commutativity/symmetry` | Commutativity as a property, not a rung; `S_3`, the smallest non-abelian group | The fold across the diagonal, and the mirrored pairs that break it | **done** |
 | 10 | `10-enumeration/all_small_magmas` | Every operation on 2 and 3 elements, classified in one batched pass | Population bar chart of the ladder rungs | **done** |
 | 11 | `11-quasigroups/latin_is_not_enough` | Quasigroups and loops; a Latin square that is not a group; cancellation | Four tables: not Latin, Latin without identity, a loop, a group | **done** |
-| 12 | `12-isomorphism/same_up_to_naming` | Relabeling; canonical forms; equivalence classes | Two tables shown becoming identical under a permutation | planned |
+| 12 | `12-isomorphism/same_up_to_naming` | Relabelling; canonical forms; quotienting the whole enumeration | Two tables, no cell in common, same structure | **done** |
 | 13 | `13-homomorphisms/structure_preserving` | `f(a*b) = f(a)*f(b)`; the bridge out of this repo | Two tables with arrows between them; violated cells flagged | planned |
 
 That is **Stage 1 of six**. It covers structures with a single binary
@@ -127,7 +127,7 @@ Each stage is independently shippable, so the repository is always in a
 coherent state rather than permanently half-finished. One AgentRail saga per
 stage; archive and open the next.
 
-### Stage 1 — one operation *(in progress: 11 of 13)*
+### Stage 1 — one operation *(in progress: 12 of 13)*
 
 The ladder from magma to group, plus the two meta-lessons that make the rest
 possible. Detailed in the table above.
@@ -319,12 +319,17 @@ once. If the associativity cube cannot be lifted to a batch of tables without a
 loop, that is a genuine finding — record it and ship the loop-based version
 with the friction noted.
 
-### Lesson 11 falls out of lesson 10
+### Lesson 12 fell out of lesson 10, as predicted
 
-19,683 tables at `n=3` collapse to far fewer once relabeling is quotiented out.
-Canonical form = the lexicographically smallest table over all `n!`
-permutations. `u:permute_table` already exists; the work is the quotient and
-the count.
+19,683 tables at `n=3` collapse to **3,330** structures once relabelling is
+quotiented out. Canonical form is the smallest base-`n` index the orbit
+reaches, computed by relabelling the whole batch once per permutation and
+folding an elementwise minimum — `n!` array operations, no loop over tables.
+
+The three numbers all match known values: **3,330** magmas, **24** semigroups
+and **1** group of order 3, up to isomorphism. And the count is reachable two
+ways — distinct canonical indices, and tables that are their own canonical
+form — which the lesson checks against each other.
 
 ## Visual layers, in the order they are built
 
