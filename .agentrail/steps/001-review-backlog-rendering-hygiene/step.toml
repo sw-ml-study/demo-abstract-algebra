@@ -1,8 +1,9 @@
 number = 1
 slug = "review-backlog-rendering-hygiene"
-status = "in-progress"
+status = "completed"
 description = "Close the three cheap items from docs/research2.txt before Stage 2 multiplies..."
 role = "production"
 context_files = []
 created_at = "2026-08-15T13:26:39"
-commits = []
+completed_at = "2026-08-15T14:42:46"
+commits = ["cfe828eb51cbb0d32962e5003ecce1c8cb3f066a"]
