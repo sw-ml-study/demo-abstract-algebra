@@ -1,0 +1,1 @@
+Stage 2 lessons: normal subgroups and conjugation, shown as the blocks that survive conjugation beside ones that do not; quotient groups as the block structure collapsed into a smaller table; and kernel and image with the first isomorphism theorem, which closes the stage.

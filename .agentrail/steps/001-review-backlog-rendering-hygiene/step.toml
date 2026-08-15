@@ -1,0 +1,8 @@
+number = 1
+slug = "review-backlog-rendering-hygiene"
+status = "pending"
+description = "Close the three cheap items from docs/research2.txt before Stage 2 multiplies..."
+role = "production"
+context_files = []
+created_at = "2026-08-15T13:26:39"
+commits = []

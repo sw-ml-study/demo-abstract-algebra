@@ -1,0 +1,8 @@
+number = 5
+slug = "stage-2-cosets-and-lagrange"
+status = "pending"
+description = "Stage 2 lessons: cosets as a partition of the group, shown by permuting the t..."
+role = "production"
+context_files = []
+created_at = "2026-08-15T13:26:39"
+commits = []

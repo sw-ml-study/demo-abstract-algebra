@@ -1,0 +1,8 @@
+number = 4
+slug = "stage-2-subgroups-and-order"
+status = "pending"
+description = "Stage 2 lessons: subgroups as subsets closed under the operation, shown as a ..."
+role = "production"
+context_files = []
+created_at = "2026-08-15T13:26:39"
+commits = []

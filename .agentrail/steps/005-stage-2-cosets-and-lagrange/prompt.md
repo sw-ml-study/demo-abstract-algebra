@@ -1,0 +1,1 @@
+Stage 2 lessons: cosets as a partition of the group, shown by permuting the table into congruent blocks; and Lagrange's theorem as the visible fact that block count times block size is the whole. This is the most visual material in the subject and the reason Stage 2 exists.

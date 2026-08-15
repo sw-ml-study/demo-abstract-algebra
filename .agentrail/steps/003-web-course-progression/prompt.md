@@ -1,0 +1,1 @@
+Expose Stage 1 as a browser course rather than three leaf nodes, per docs/research2.txt item 9. One law per file, in order, each answering a single question with a single visual signature. Demote RPSLS from a third of the curriculum to an explore node. Keep every file under the statement-group budget and keep the narration conventions.

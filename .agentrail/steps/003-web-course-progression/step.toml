@@ -1,0 +1,8 @@
+number = 3
+slug = "web-course-progression"
+status = "pending"
+description = "Expose Stage 1 as a browser course rather than three leaf nodes, per docs/res..."
+role = "production"
+context_files = []
+created_at = "2026-08-15T13:26:39"
+commits = []

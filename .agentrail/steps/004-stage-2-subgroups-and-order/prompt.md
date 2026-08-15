@@ -1,0 +1,1 @@
+Stage 2 lessons: subgroups as subsets closed under the operation, shown as a sub-table highlighted inside the whole; and the order of an element with its cyclic subgroup, shown as the orbit of one element traced through the table. Add the library support -- generated subgroup, subgroup test, element order -- with counterexamples, and keep the batched idiom where it applies.
