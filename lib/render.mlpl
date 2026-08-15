@@ -80,6 +80,15 @@ def u:show_comm_counterexample(s) { "Print the pair where a * b differs from b *
   x
 }
 
+# ===========================================================================
+# RENDERING SUPPORT
+#
+# Nothing below this line is needed to define or check any algebra. It only
+# turns an operation into a picture. A reader following the mathematics can
+# skip to the lessons; every docstring from here on begins "SVG helper:" to
+# say so.
+# ===========================================================================
+
 # ---------------------------------------------------------------------------
 # SVG fragments
 # ---------------------------------------------------------------------------
@@ -92,30 +101,30 @@ def u:show_comm_counterexample(s) { "Print the pair where a * b differs from b *
 # shrink-wraps to its content. Circular, so the picture collapses to zero and
 # all the reader sees is the download arrow. Every built-in renderer emits
 # both attributes; so must this one.
-def u:svg_open(w, h) { "Answer an opening svg tag. WIDTH AND HEIGHT ARE REQUIRED: inline, a viewBox alone collapses to nothing.";
+def u:svg_open(w, h) { "SVG helper: opening svg tag. WIDTH AND HEIGHT ARE REQUIRED: inline, a viewBox alone collapses to nothing.";
   str_join(["<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 ", to_string(w), " ", to_string(h),
     "\" width=\"", to_string(w), "\" height=\"", to_string(h),
     "\" font-family=\"ui-monospace,Menlo,monospace\" font-size=\"12\">"], "")
 }
 
-def u:svg_rect(x, y, w, h, fill) { "Answer a filled rectangle.";
+def u:svg_rect(x, y, w, h, fill) { "SVG helper: filled rectangle.";
   str_join(["<rect x=\"", to_string(x), "\" y=\"", to_string(y),
     "\" width=\"", to_string(w), "\" height=\"", to_string(h),
     "\" fill=\"", fill, "\"/>"], "")
 }
 
-def u:svg_frame(x, y, w, h, stroke) { "Answer an unfilled rectangle, used to ring cells that a law makes special.";
+def u:svg_frame(x, y, w, h, stroke) { "SVG helper: unfilled rectangle, used to ring cells that a law makes special.";
   str_join(["<rect x=\"", to_string(x), "\" y=\"", to_string(y),
     "\" width=\"", to_string(w), "\" height=\"", to_string(h),
     "\" fill=\"none\" stroke-width=\"3\" stroke=\"", stroke, "\"/>"], "")
 }
 
-def u:svg_text(x, y, fill, s) { "Answer a text element centered on the given point.";
+def u:svg_text(x, y, fill, s) { "SVG helper: text element centered on the given point.";
   str_join(["<text x=\"", to_string(x), "\" y=\"", to_string(y), "\" fill=\"", fill,
     "\" text-anchor=\"middle\" dominant-baseline=\"central\">", s, "</text>"], "")
 }
 
-def u:svg_text_left(x, y, fill, s) { "Answer a text element starting at the given point.";
+def u:svg_text_left(x, y, fill, s) { "SVG helper: text element starting at the given point.";
   str_join(["<text x=\"", to_string(x), "\" y=\"", to_string(y), "\" fill=\"", fill,
     "\" text-anchor=\"start\" dominant-baseline=\"central\">", s, "</text>"], "")
 }
@@ -124,7 +133,7 @@ def u:svg_text_left(x, y, fill, s) { "Answer a text element starting at the give
 # BYTE length, not character length -- sw-MLPL cannot count characters
 # (docs/mlpl-blockers.md, B3).  Exact for the ASCII labels used here; a
 # non-ASCII title would over-estimate, which errs toward not clipping.
-def u:text_width_px(s, font_px) { "Answer roughly how wide a string will render, so titles are never clipped. Counts BYTES; sw-MLPL cannot count characters (B3)."; round(size(tokenize_bytes(s)) * font_px * 0.70) }
+def u:text_width_px(s, font_px) { "SVG helper: roughly how wide a string will render, so titles are never clipped. Counts BYTES; sw-MLPL cannot count characters (B3)."; round(size(tokenize_bytes(s)) * font_px * 0.70) }
 
 def u:larger_of(a, b) { "Answer whichever of the two numbers is larger."; if lt(a, b) { b } else { a } }
 
@@ -137,50 +146,50 @@ def u:larger_of(a, b) { "Answer whichever of the two numbers is larger."; if lt(
 # a group's table is a Latin square -- every color exactly once per row and
 # column.  That last one is the payoff, and it is visible at a glance.
 
-def u:element_color(i) { "Answer the color that stands for element i, so identity is visible before any name is read.";
+def u:element_color(element) { "SVG helper: color that stands for element i, so identity is visible before any name is read.";
   unwrap(list_get(
     ["#7aa2f7", "#f7768e", "#9ece6a", "#e0af68", "#bb9af7",
-     "#7dcfff", "#ff9e64", "#73daca"], mod(i, 8)))
+     "#7dcfff", "#ff9e64", "#73daca"], mod(element, 8)))
 }
 
-def u:cell_size_px() { "Answer the edge length of one table cell."; 64 }
-def u:heading_gutter_px() { "Answer the space reserved for row and column headings."; 68 }
-def u:title_band_px() { "Answer the space reserved for the diagram title."; 34 }
+def u:cell_size_px() { "SVG helper: edge length of one table cell."; 64 }
+def u:heading_gutter_px() { "SVG helper: space reserved for row and column headings."; 68 }
+def u:title_band_px() { "SVG helper: space reserved for the diagram title."; 34 }
 
-def u:cell_svg(s, a, b) { "Answer one table cell: a colored square labelled with the name of the result, or grey and marked when the result escapes the set.";
-  n = u:cell_range(s)
-  v = take(take(s.table, 0, a), 0, b)
-  x = u:heading_gutter_px() + b * u:cell_size_px()
-  y = u:title_band_px() + u:heading_gutter_px() + a * u:cell_size_px()
+def u:cell_svg(structure, row, column) { "SVG helper: one table cell: a colored square labelled with the name of the result, or grey and marked when the result escapes the set.";
+  n = u:cell_range(structure)
+  v = take(take(structure.table, 0, row), 0, column)
+  x = u:heading_gutter_px() + column * u:cell_size_px()
+  y = u:title_band_px() + u:heading_gutter_px() + row * u:cell_size_px()
   inside = (1 - lt(v, 0)) * lt(v, n)
   fill = if inside { u:element_color(v) } else { "#3b3b4d" }
-  label = if inside { u:cell_name(s, v) } else { str_concat("!", to_string(v)) }
+  label = if inside { u:cell_name(structure, v) } else { str_concat("!", to_string(v)) }
   str_concat(u:svg_rect(x + 2, y + 2, u:cell_size_px() - 4, u:cell_size_px() - 4, fill), u:svg_text(x + u:cell_size_px() / 2, y + u:cell_size_px() / 2, "#12131c", label))
 }
 
 # Recursive fold over the n*n cells: sw-MLPL has no string reduction, so the
 # accumulator is threaded by hand.  Recursion, not an explicit loop.
-def u:cells_svg(s, i, acc) { "Answer every cell of the table, folded together by recursion because sw-MLPL has no string reduction.";
-  n = u:order(s.table)
-  if lt(i, n * n) {
-    u:cells_svg(s, i + 1, str_concat(acc, u:cell_svg(s, floor(i / n), mod(i, n))))
-  } else { acc }
+def u:cells_svg(structure, cell_index, svg_so_far) { "SVG helper: every cell of the table, folded together by recursion because sw-MLPL has no string reduction.";
+  n = u:order(structure.table)
+  if lt(cell_index, n * n) {
+    u:cells_svg(structure, cell_index + 1, str_concat(svg_so_far, u:cell_svg(structure, floor(cell_index / n), mod(cell_index, n))))
+  } else { svg_so_far }
 }
 
-def u:headers_svg(s, i, acc) { "Answer the row and column headings.";
-  if lt(i, u:order(s.table)) {
-    col = u:svg_text(u:heading_gutter_px() + i * u:cell_size_px() + u:cell_size_px() / 2,
-      u:title_band_px() + u:heading_gutter_px() - 14, "#c0caf5", u:element_name(s, i))
+def u:headers_svg(structure, element, svg_so_far) { "SVG helper: row and column headings.";
+  if lt(element, u:order(structure.table)) {
+    col = u:svg_text(u:heading_gutter_px() + element * u:cell_size_px() + u:cell_size_px() / 2,
+      u:title_band_px() + u:heading_gutter_px() - 14, "#c0caf5", u:element_name(structure, element))
     row = u:svg_text(u:heading_gutter_px() / 2,
-      u:title_band_px() + u:heading_gutter_px() + i * u:cell_size_px() + u:cell_size_px() / 2,
-      "#c0caf5", u:element_name(s, i))
-    u:headers_svg(s, i + 1, str_join([acc, col, row], ""))
-  } else { acc }
+      u:title_band_px() + u:heading_gutter_px() + element * u:cell_size_px() + u:cell_size_px() / 2,
+      "#c0caf5", u:element_name(structure, element))
+    u:headers_svg(structure, element + 1, str_join([svg_so_far, col, row], ""))
+  } else { svg_so_far }
 }
 
 # A white ring around the identity's row and column, when one exists.  This is
 # the picture of "e * x = x and x * e = x": both bands reproduce the headings.
-def u:identity_svg(s) { "Answer white rings around the identity element row and column, or nothing when there is no identity.";
+def u:identity_svg(s) { "SVG helper: white rings around the identity element row and column, or nothing when there is no identity.";
   n = u:order(s.table)
   e = u:identity_of(s.table)
   if u:has_identity(s.table) {
@@ -191,29 +200,29 @@ def u:identity_svg(s) { "Answer white rings around the identity element row and 
 }
 
 # Cell geometry, shared by the static and animated diagrams.
-def u:column_left_px(b) { "Answer the x pixel where column b starts."; u:heading_gutter_px() + b * u:cell_size_px() }
-def u:row_top_px(a) { "Answer the y pixel where row a starts."; u:title_band_px() + u:heading_gutter_px() + a * u:cell_size_px() }
+def u:column_left_px(column) { "SVG helper: x pixel where column b starts."; u:heading_gutter_px() + column * u:cell_size_px() }
+def u:row_top_px(row) { "SVG helper: y pixel where row a starts."; u:title_band_px() + u:heading_gutter_px() + row * u:cell_size_px() }
 # Wide enough for the grid AND the title, so a long title is never clipped.
-def u:diagram_width(s) { "Answer the diagram width, wide enough for both the grid and the title.";
+def u:diagram_width(s) { "SVG helper: diagram width, wide enough for both the grid and the title.";
   u:larger_of(u:heading_gutter_px() + u:order(s.table) * u:cell_size_px() + 16,
     u:text_width_px(s.title, 12) + 32)
 }
-def u:diagram_height(s) { "Answer the diagram height."; u:title_band_px() + u:heading_gutter_px() + u:order(s.table) * u:cell_size_px() + 16 }
+def u:diagram_height(s) { "SVG helper: diagram height."; u:title_band_px() + u:heading_gutter_px() + u:order(s.table) * u:cell_size_px() + 16 }
 
 # Headings, cells, and the identity cross -- everything inside the <svg> that
 # both the static and the animated diagram share.
-def u:table_body(s) { "Answer the headings, cells and identity rings that every table diagram shares.";
+def u:table_body(s) { "SVG helper: headings, cells and identity rings that every table diagram shares.";
   str_join([u:headers_svg(s, 0, ""), u:cells_svg(s, 0, ""), u:identity_svg(s)], "")
 }
 
-def u:cayley_svg(s) { "Answer the labelled, color-coded Cayley table as an SVG document.";
+def u:cayley_svg(s) { "SVG helper: labelled, color-coded Cayley table as an SVG document.";
   w = u:diagram_width(s)
   h = u:diagram_height(s)
   str_join([str_join([u:svg_open(w, h), u:svg_rect(0, 0, w, h, "#1a1b26"), u:svg_text(w / 2, 18, "#c0caf5", s.title)], ""), u:table_body(s), "</svg>"], "")
 }
 
 # Render and write in one call; returns the Result from write_text.
-def u:write_cayley_svg(path, s) { "Write the Cayley table diagram to a file and answer the Result."; write_text(path, u:cayley_svg(s)) }
+def u:write_cayley_svg(path, s) { "SVG helper: write the Cayley table diagram to a file and answer the Result."; write_text(path, u:cayley_svg(s)) }
 
 # ---------------------------------------------------------------------------
 # Animated SVG: watching associativity fail
@@ -235,36 +244,36 @@ def u:write_cayley_svg(path, s) { "Write the Cayley table diagram to a file and 
 # One marker: a ring that dwells on a cell, slides, and dwells again.  `values`
 # and `keyTimes` carry the whole path, so the animation is declarative and the
 # document needs no script.
-def u:marker_svg(x0, y0, x1, y1, color, delay) { "Answer a ring that dwells on one cell, slides to another, and dwells again, tracing one bracketing.";
+def u:marker_svg(x0, y0, x1, y1, color, delay) { "SVG helper: ring that dwells on one cell, slides to another, and dwells again, tracing one bracketing.";
   str_join([str_join(["<rect x=\"", to_string(x0), "\" y=\"", to_string(y0), "\" "], ""), str_join(["width=\"", to_string(u:cell_size_px()), "\" height=\"", to_string(u:cell_size_px()), "\" "], ""), str_join(["fill=\"none\" stroke=\"", color, "\" stroke-width=\"4\" rx=\"6\">"], ""), str_concat(u:animate_attribute("x", u:hold_then_slide(x0, x1), delay), u:animate_attribute("y", u:hold_then_slide(y0, y1), delay)), "</rect>"], "")
 }
 
 # Two stops, each held long enough to read: start, hold, slide, hold.
-def u:hold_then_slide(v0, v1) { "Answer the four SMIL stops that hold a value, move to a second, and hold again.";
-  str_join([to_string(v0), ";", to_string(v0), ";", str_join([to_string(v1), ";", to_string(v1)], "")], "")
+def u:hold_then_slide(first_value, second_value) { "SVG helper: four SMIL stops that hold a value, move to a second, and hold again.";
+  str_join([to_string(first_value), ";", to_string(first_value), ";", str_join([to_string(second_value), ";", to_string(second_value)], "")], "")
 }
 
 # values and keyTimes must have equal length -- a mismatch makes the browser
 # drop the animation silently, which is why tests/test_render.mlpl counts both.
-def u:animate_attribute(attr, values, delay) { "Answer a SMIL animate element. values and keyTimes must have equal length or browsers drop it silently.";
+def u:animate_attribute(attr, values, delay) { "SVG helper: SMIL animate element. values and keyTimes must have equal length or browsers drop it silently.";
   str_join([str_join(["<animate attributeName=\"", attr, "\" "], ""), str_join(["values=\"", values, "\" "], ""), "keyTimes=\"0;0.35;0.5;1\" dur=\"5s\" ", str_join(["begin=\"", to_string(delay), "s\" "], ""), "repeatCount=\"indefinite\" calcMode=\"linear\"/>"], "")
 }
 
 # A legend row: marker swatch, the expression, then the element it reaches in
 # that element's own color.  Laid out from the right edge so nothing runs off.
-def u:legend_svg(s, y, color, label, result) { "Answer one legend row: a marker swatch, the expression it traces, and the element it reaches.";
+def u:legend_svg(s, y, color, label, result) { "SVG helper: one legend row: a marker swatch, the expression it traces, and the element it reaches.";
   w = u:diagram_width(s)
   str_join([str_concat(u:svg_rect(16, y - 8, 14, 14, color), u:svg_text_left(38, y, "#c0caf5", label)), u:svg_text_left(112, y, "#565f89", "="), str_concat(u:svg_rect(w - 132, y - 8, 14, 14, u:element_color(result)), u:svg_text_left(w - 110, y, "#c0caf5", u:element_name(s, result)))], "")
 }
 
 # The whole animated diagram.  Returns "" when the operation IS associative --
 # there is no counterexample to walk, and drawing one would be a lie.
-def u:assoc_walk_svg(s) { "Answer an animation of two markers walking the two bracketings to different results, or nothing when the operation IS associative.";
+def u:assoc_walk_svg(s) { "SVG helper: animation of two markers walking the two bracketings to different results, or nothing when the operation IS associative.";
   x = u:assoc_counterexample(s.table)
   if x.found { u:assoc_walk_found(s, x) } else { "" }
 }
 
-def u:assoc_walk_found(s, x) { "Answer the walk animation for a table already known to have a disagreeing triple.";
+def u:assoc_walk_found(s, x) { "SVG helper: walk animation for a table already known to have a disagreeing triple.";
   w = u:diagram_width(s)
   h = u:diagram_height(s) + 76
   caption = str_join(["(", u:element_name(s, x.a), "*", u:element_name(s, x.b), str_join([")*", u:element_name(s, x.c), "  vs  ", u:element_name(s, x.a), "*("], "")], "")
@@ -275,7 +284,7 @@ def u:assoc_walk_found(s, x) { "Answer the walk animation for a table already kn
         "#f7768e", 0.4)], ""), str_join([u:legend_svg(s, u:diagram_height(s) + 12, "#ffffff", "(a*b)*c", x.left), u:legend_svg(s, u:diagram_height(s) + 40, "#f7768e", "a*(b*c)", x.right), "</svg>"], "")], "")
 }
 
-def u:write_assoc_walk_svg(path, s) { "Write the associativity walk animation to a file and answer the Result."; write_text(path, u:assoc_walk_svg(s)) }
+def u:write_assoc_walk_svg(path, s) { "SVG helper: write the associativity walk animation to a file and answer the Result."; write_text(path, u:assoc_walk_svg(s)) }
 
 # ---------------------------------------------------------------------------
 # Animated frames: which pairings produce which element
@@ -290,52 +299,52 @@ def u:write_assoc_walk_svg(path, s) { "Write the associativity walk animation to
 # belonging to frame k, captioned with the element's name, at a pace you can
 # read. Nothing blinks out of existence, so you never lose your place.
 
-def u:seconds_per_frame() { "Answer how long each animation frame is held, slow enough to read a labelled table."; 1.6 }
+def u:seconds_per_frame() { "SVG helper: how long each animation frame is held, slow enough to read a labelled table."; 1.6 }
 
 # One ring per cell whose product is element k.
-def u:frame_rings(s, k, i, acc) { "Answer rings around every cell whose result is element k.";
-  n = u:order(s.table)
-  if lt(i, n * n) {
-    a = floor(i / n)
-    b = mod(i, n)
-    piece = if eq(take(take(s.table, 0, a), 0, b), k) {
+def u:frame_rings(structure, element, cell_index, svg_so_far) { "SVG helper: rings around every cell whose result is element k.";
+  n = u:order(structure.table)
+  if lt(cell_index, n * n) {
+    a = floor(cell_index / n)
+    b = mod(cell_index, n)
+    piece = if eq(take(take(structure.table, 0, a), 0, b), element) {
       u:svg_frame(u:column_left_px(b) + 3, u:row_top_px(a) + 3, u:cell_size_px() - 6,
         u:cell_size_px() - 6, "#ffffff")
     } else { "" }
-    u:frame_rings(s, k, i + 1, str_concat(acc, piece))
-  } else { acc }
+    u:frame_rings(structure, element, cell_index + 1, str_concat(svg_so_far, piece))
+  } else { svg_so_far }
 }
 
 # Discrete opacity: frame k is the only visible overlay during its 1/n slot.
 # values and keyTimes must be the same length or browsers drop the animation
 # silently, so both are built from the same three stops.
-def u:frame_anim(k, n) { "Answer the discrete SMIL schedule that shows frame k only during its own slot of the loop.";
-  t0 = round(1000 * k / n) / 1000
-  t1 = round(1000 * (k + 1) / n) / 1000
-  str_join([str_join(["<animate attributeName=\"opacity\" dur=\"", to_string(n * u:seconds_per_frame()), "s\" "], ""), "repeatCount=\"indefinite\" calcMode=\"discrete\" ", str_join(["keyTimes=\"0;", to_string(t0), ";", to_string(t1), ";1\" "], ""), "values=\"0;1;0;0\"", "/>"], "")
+def u:frame_anim(element, element_count) { "SVG helper: discrete SMIL schedule that shows frame k only during its own slot of the loop.";
+  t0 = round(1000 * element / element_count) / 1000
+  t1 = round(1000 * (element + 1) / element_count) / 1000
+  str_join([str_join(["<animate attributeName=\"opacity\" dur=\"", to_string(element_count * u:seconds_per_frame()), "s\" "], ""), "repeatCount=\"indefinite\" calcMode=\"discrete\" ", str_join(["keyTimes=\"0;", to_string(t0), ";", to_string(t1), ";1\" "], ""), "values=\"0;1;0;0\"", "/>"], "")
 }
 
 # The overlay for one frame: the rings, plus a caption naming the element.
-def u:frame_group(s, k) { "Answer one frame overlay: the rings for element k, captioned with its name.";
-  n = u:order(s.table)
-  str_join([str_join(["<g opacity=\"0\">", u:frame_rings(s, k, 0, ""), u:svg_text(u:diagram_width(s) / 2, u:diagram_height(s) + 16, u:element_color(k),
-        str_join(["a * b  =  ", u:element_name(s, k), ""], ""))], ""), u:frame_anim(k, n), "</g>"], "")
+def u:frame_group(structure, element) { "SVG helper: one frame overlay: the rings for element k, captioned with its name.";
+  n = u:order(structure.table)
+  str_join([str_join(["<g opacity=\"0\">", u:frame_rings(structure, element, 0, ""), u:svg_text(u:diagram_width(structure) / 2, u:diagram_height(structure) + 16, u:element_color(element),
+        str_join(["a * b  =  ", u:element_name(structure, element), ""], ""))], ""), u:frame_anim(element, n), "</g>"], "")
 }
 
-def u:frame_groups(s, k, acc) { "Answer every frame overlay, one per element.";
-  if lt(k, u:order(s.table)) {
-    u:frame_groups(s, k + 1, str_concat(acc, u:frame_group(s, k)))
-  } else { acc }
+def u:frame_groups(structure, element, svg_so_far) { "SVG helper: every frame overlay, one per element.";
+  if lt(element, u:order(structure.table)) {
+    u:frame_groups(structure, element + 1, str_concat(svg_so_far, u:frame_group(structure, element)))
+  } else { svg_so_far }
 }
 
 # The labelled table, animated: every element highlighted in turn.
-def u:frames_svg(s) { "Answer the labelled table animated, ringing each element in turn. The built-in life renderer cannot label or pace itself; see work-order C1.";
+def u:frames_svg(s) { "SVG helper: labelled table animated, ringing each element in turn. The built-in life renderer cannot label or pace itself; see work-order C1.";
   w = u:diagram_width(s)
   h = u:diagram_height(s) + 34
   str_join([str_join([u:svg_open(w, h), u:svg_rect(0, 0, w, h, "#1a1b26"), u:svg_text(w / 2, 18, "#c0caf5", s.title)], ""), str_concat(u:table_body(s), u:frame_groups(s, 0, "")), "</svg>"], "")
 }
 
-def u:write_frames_svg(path, s) { "Write the animated frames diagram to a file and answer the Result."; write_text(path, u:frames_svg(s)) }
+def u:write_frames_svg(path, s) { "SVG helper: write the animated frames diagram to a file and answer the Result."; write_text(path, u:frames_svg(s)) }
 
 # ---------------------------------------------------------------------------
 # The labelled table with a set of cells ringed
@@ -346,27 +355,27 @@ def u:write_frames_svg(path, s) { "Write the animated frames diagram to a file a
 # homomorphism gets wrong. One renderer covers them all -- draw the table, ring
 # the cells an [n, n] 0/1 mask selects.
 
-def u:ring_cells(s, mask, i, acc) { "Answer rings around every cell the given mask selects.";
-  n = u:order(s.table)
-  if lt(i, n * n) {
-    a = floor(i / n)
-    b = mod(i, n)
+def u:ring_cells(structure, mask, cell_index, svg_so_far) { "SVG helper: rings around every cell the given mask selects.";
+  n = u:order(structure.table)
+  if lt(cell_index, n * n) {
+    a = floor(cell_index / n)
+    b = mod(cell_index, n)
     piece = if take(take(mask, 0, a), 0, b) {
       u:svg_frame(u:column_left_px(b) + 3, u:row_top_px(a) + 3, u:cell_size_px() - 6,
         u:cell_size_px() - 6, "#ffffff")
     } else { "" }
-    u:ring_cells(s, mask, i + 1, str_concat(acc, piece))
-  } else { acc }
+    u:ring_cells(structure, mask, cell_index + 1, str_concat(svg_so_far, piece))
+  } else { svg_so_far }
 }
 
 # The table, with the masked cells ringed and a caption saying what they are.
-def u:marked_svg(s, mask, caption) { "Answer the table with the masked cells ringed and a caption saying what they are.";
+def u:marked_svg(s, mask, caption) { "SVG helper: table with the masked cells ringed and a caption saying what they are.";
   w = u:diagram_width(s)
   h = u:diagram_height(s) + 30
   str_join([str_join([u:svg_open(w, h), u:svg_rect(0, 0, w, h, "#1a1b26"), u:svg_text(w / 2, 18, "#c0caf5", s.title)], ""), str_join([u:table_body(s), u:ring_cells(s, mask, 0, ""), u:svg_text(w / 2, u:diagram_height(s) + 14, "#9ece6a", caption)], ""), "</svg>"], "")
 }
 
-def u:write_marked_svg(path, s, mask, caption) { "Write a table with ringed cells to a file and answer the Result.";
+def u:write_marked_svg(path, s, mask, caption) { "SVG helper: write a table with ringed cells to a file and answer the Result.";
   write_text(path, u:marked_svg(s, mask, caption))
 }
 
@@ -381,39 +390,39 @@ def u:write_marked_svg(path, s, mask, caption) { "Write a table with ringed cell
 # Green agrees, red does not. A fully associative operation is n green squares
 # and nothing else -- which is a very fast thing to check by eye.
 
-def u:panel_cell_px() { "Answer the edge length of one cell inside an associativity panel."; 26 }
-def u:panel_gap_px() { "Answer the space between adjacent panels."; 22 }
-def u:panel_side_px(s) { "Answer the edge length of one whole panel."; u:order(s.table) * u:panel_cell_px() }
+def u:panel_cell_px() { "SVG helper: edge length of one cell inside an associativity panel."; 26 }
+def u:panel_gap_px() { "SVG helper: space between adjacent panels."; 22 }
+def u:panel_side_px(s) { "SVG helper: edge length of one whole panel."; u:order(s.table) * u:panel_cell_px() }
 
 # One cell of one panel.
-def u:cube_cell(cube, k, a, b, c) { "Answer one square of one panel: green when the two bracketings agreed on that triple, red when they did not.";
-  agree = take(take(take(cube, 0, a), 0, b), 0, c)
-  x = 16 + a * (u:panel_side_px(k) + u:panel_gap_px()) + c * u:panel_cell_px()
-  y = 62 + b * u:panel_cell_px()
+def u:cube_cell(cube, structure, first, second, third) { "SVG helper: one square of one panel: green when the two bracketings agreed on that triple, red when they did not.";
+  agree = take(take(take(cube, 0, first), 0, second), 0, third)
+  x = 16 + first * (u:panel_side_px(structure) + u:panel_gap_px()) + third * u:panel_cell_px()
+  y = 62 + second * u:panel_cell_px()
   fill = if agree { "#9ece6a" } else { "#f7768e" }
   u:svg_rect(x + 1, y + 1, u:panel_cell_px() - 2, u:panel_cell_px() - 2, fill)
 }
 
-def u:cube_cells(cube, k, i, acc) { "Answer every square of every panel, one per triple.";
-  n = u:order(k.table)
-  if lt(i, n * n * n) {
-    a = floor(i / (n * n))
-    b = floor(mod(i, n * n) / n)
-    c = mod(i, n)
-    u:cube_cells(cube, k, i + 1, str_concat(acc, u:cube_cell(cube, k, a, b, c)))
-  } else { acc }
+def u:cube_cells(cube, structure, triple_index, svg_so_far) { "SVG helper: every square of every panel, one per triple.";
+  n = u:order(structure.table)
+  if lt(triple_index, n * n * n) {
+    a = floor(triple_index / (n * n))
+    b = floor(mod(triple_index, n * n) / n)
+    c = mod(triple_index, n)
+    u:cube_cells(cube, structure, triple_index + 1, str_concat(svg_so_far, u:cube_cell(cube, structure, a, b, c)))
+  } else { svg_so_far }
 }
 
 # A caption under each panel naming the element it holds fixed.
-def u:cube_labels(k, a, acc) { "Answer the caption under each panel naming the element it holds fixed.";
-  if lt(a, u:order(k.table)) {
-    x = 16 + a * (u:panel_side_px(k) + u:panel_gap_px()) + u:panel_side_px(k) / 2
-    lab = u:svg_text(x, 50, "#c0caf5", str_join(["a = ", u:element_name(k, a), ""], ""))
-    u:cube_labels(k, a + 1, str_concat(acc, lab))
-  } else { acc }
+def u:cube_labels(structure, panel, svg_so_far) { "SVG helper: caption under each panel naming the element it holds fixed.";
+  if lt(panel, u:order(structure.table)) {
+    x = 16 + panel * (u:panel_side_px(structure) + u:panel_gap_px()) + u:panel_side_px(structure) / 2
+    lab = u:svg_text(x, 50, "#c0caf5", str_join(["a = ", u:element_name(structure, panel), ""], ""))
+    u:cube_labels(structure, panel + 1, str_concat(svg_so_far, lab))
+  } else { svg_so_far }
 }
 
-def u:cube_svg(k) { "Answer the n^3 associativity check as n square panels, which is how a cube fits on a page.";
+def u:cube_svg(k) { "SVG helper: n^3 associativity check as n square panels, which is how a cube fits on a page.";
   n = u:order(k.table)
   cube = u:assoc_cube(k.table)
   w = 32 + n * u:panel_side_px(k) + (n - 1) * u:panel_gap_px()
@@ -422,7 +431,7 @@ def u:cube_svg(k) { "Answer the n^3 associativity check as n square panels, whic
         "green: (a*b)*c = a*(b*c)   red: they differ"), u:cube_labels(k, 0, ""), u:cube_cells(cube, k, 0, "")], ""), "</svg>"], "")
 }
 
-def u:write_cube_svg(path, k) { "Write the associativity panels to a file and answer the Result."; write_text(path, u:cube_svg(k)) }
+def u:write_cube_svg(path, k) { "SVG helper: write the associativity panels to a file and answer the Result."; write_text(path, u:cube_svg(k)) }
 
 # ---------------------------------------------------------------------------
 # The dominance digraph: the same operation, drawn as a graph
@@ -436,31 +445,26 @@ def u:write_cube_svg(path, k) { "Write the associativity panels to a file and an
 # Nothing new is computed here.  The graph reads the SAME table the laws are
 # checked against, which is the point: three views, one source of truth.
 
-def u:node_ring_radius(s) { "Answer the radius of the circle the nodes sit on."; 36 + 28 * u:order(s.table) }
-def u:node_ring_center_x(s) { "Answer the x center of the node circle."; u:node_ring_radius(s) + 60 }
-def u:node_ring_center_y(s) { "Answer the y center of the node circle."; u:node_ring_radius(s) + 74 }
-def u:node_radius() { "Answer the radius of one node."; 32 }
+def u:node_ring_radius(s) { "SVG helper: radius of the circle the nodes sit on."; 36 + 28 * u:order(s.table) }
+def u:node_ring_center_x(s) { "SVG helper: x center of the node circle."; u:node_ring_radius(s) + 60 }
+def u:node_ring_center_y(s) { "SVG helper: y center of the node circle."; u:node_ring_radius(s) + 74 }
+def u:node_radius() { "SVG helper: radius of one node."; 32 }
 
-# Node i sits at angle -pi/2 + 2*pi*i/n, so element 0 is at the top.
-def u:node_x(s, i) { "Answer the x position of node i, with element 0 at the top.";
-  u:node_ring_center_x(s) + u:node_ring_radius(s) * cos(0 - pi() / 2 + 2 * pi() * i / u:order(s.table))
+# A node sits at angle -pi/2 + 2*pi*element/n, so element 0 is at the top.
+def u:node_x(structure, element) { "SVG helper: x position of a node on the ring, with element 0 at the top.";
+  u:node_ring_center_x(structure) + u:node_ring_radius(structure) * cos(0 - pi() / 2 + 2 * pi() * element / u:order(structure.table))
 }
-def u:node_y(s, i) { "Answer the y position of node i.";
-  u:node_ring_center_y(s) + u:node_ring_radius(s) * sin(0 - pi() / 2 + 2 * pi() * i / u:order(s.table))
-}
-
-# a beats b when the operation returns a and the two differ.
-def u:row_beats_column(s, a, b) { "Answer 1 when a beats b, read off the table as a * b = a with a and b different.";
-  eq(take(take(s.table, 0, a), 0, b), a) * (1 - eq(a, b))
+def u:node_y(structure, element) { "SVG helper: y position of a node on the ring.";
+  u:node_ring_center_y(structure) + u:node_ring_radius(structure) * sin(0 - pi() / 2 + 2 * pi() * element / u:order(structure.table))
 }
 
 # An arrow from a to b, stopped short of both node circles so the head is
 # visible rather than buried under the target.
-def u:edge_svg(s, a, b) { "Answer one arrow from a to b, stopped short of both nodes so the head stays visible.";
-  x0 = u:node_x(s, a)
-  y0 = u:node_y(s, a)
-  dx = u:node_x(s, b) - x0
-  dy = u:node_y(s, b) - y0
+def u:edge_svg(structure, from_element, to_element) { "SVG helper: one arrow from a to b, stopped short of both nodes so the head stays visible.";
+  x0 = u:node_x(structure, from_element)
+  y0 = u:node_y(structure, from_element)
+  dx = u:node_x(structure, to_element) - x0
+  dy = u:node_y(structure, to_element) - y0
   len = sqrt(dx * dx + dy * dy)
   ux = dx / len
   uy = dy / len
@@ -468,35 +472,35 @@ def u:edge_svg(s, a, b) { "Answer one arrow from a to b, stopped short of both n
   str_join([str_join(["<line x1=\"", to_string(round(x0 + ux * gap)), "\" y1=\"", to_string(round(y0 + uy * gap)), "\" "], ""), str_join(["x2=\"", to_string(round(x0 + dx - ux * gap)), "\" y2=\"", to_string(round(y0 + dy - uy * gap)), "\" "], ""), "stroke=\"#565f89\" stroke-width=\"2\" ", "marker-end=\"url(#arrow)\"", "/>"], "")
 }
 
-def u:edges_svg(s, i, acc) { "Answer an arrow for every ordered pair where the row beats the column.";
-  n = u:order(s.table)
-  if lt(i, n * n) {
-    a = floor(i / n)
-    b = mod(i, n)
-    piece = if u:row_beats_column(s, a, b) { u:edge_svg(s, a, b) } else { "" }
-    u:edges_svg(s, i + 1, str_concat(acc, piece))
-  } else { acc }
+def u:edges_svg(structure, pair_index, svg_so_far) { "SVG helper: arrow for every ordered pair where the row beats the column.";
+  n = u:order(structure.table)
+  if lt(pair_index, n * n) {
+    a = floor(pair_index / n)
+    b = mod(pair_index, n)
+    piece = if u:row_beats_column(structure, a, b) { u:edge_svg(structure, a, b) } else { "" }
+    u:edges_svg(structure, pair_index + 1, str_concat(svg_so_far, piece))
+  } else { svg_so_far }
 }
 
-def u:nodes_svg(s, i, acc) { "Answer a labelled colored circle for every element.";
-  if lt(i, u:order(s.table)) {
-    node = str_concat(str_join([str_join(["<circle cx=\"", to_string(round(u:node_x(s, i))), "\" cy=\"", to_string(round(u:node_y(s, i))), "\" "], ""), str_join(["r=\"", to_string(u:node_radius()), "\" fill=\""], ""), str_join([u:element_color(i), "\" stroke=\"#1a1b26\" stroke-width=\"3\"", "/>"], "")], ""), u:svg_text(round(u:node_x(s, i)), round(u:node_y(s, i)), "#12131c",
-        u:element_name(s, i)))
-    u:nodes_svg(s, i + 1, str_concat(acc, node))
-  } else { acc }
+def u:nodes_svg(structure, element, svg_so_far) { "SVG helper: labelled colored circle for every element.";
+  if lt(element, u:order(structure.table)) {
+    node = str_concat(str_join([str_join(["<circle cx=\"", to_string(round(u:node_x(structure, element))), "\" cy=\"", to_string(round(u:node_y(structure, element))), "\" "], ""), str_join(["r=\"", to_string(u:node_radius()), "\" fill=\""], ""), str_join([u:element_color(element), "\" stroke=\"#1a1b26\" stroke-width=\"3\"", "/>"], "")], ""), u:svg_text(round(u:node_x(structure, element)), round(u:node_y(structure, element)), "#12131c",
+        u:element_name(structure, element)))
+    u:nodes_svg(structure, element + 1, str_concat(svg_so_far, node))
+  } else { svg_so_far }
 }
 
-def u:arrow_defs() { "Answer the arrowhead marker definition, referenced by every edge.";
+def u:arrow_defs() { "SVG helper: arrowhead marker definition, referenced by every edge.";
   str_join(["<defs><marker id=\"arrow\" viewBox=\"0 0 10 10\" refX=\"9\" refY=\"5\" ", "markerWidth=\"6\" markerHeight=\"6\" orient=\"auto-start-reverse\">", "<path d=\"M 0 0 L 10 5 L 0 10 z\" fill=\"#565f89\"/></marker></defs>"], "")
 }
 
-def u:dominance_svg(s) { "Answer the operation drawn as a directed graph. sw-MLPL has no graph renderer; see work-order C3.";
+def u:dominance_svg(s) { "SVG helper: operation drawn as a directed graph. sw-MLPL has no graph renderer; see work-order C3.";
   w = u:larger_of(2 * u:node_ring_center_x(s), u:text_width_px(s.title, 12) + 32)
   h = u:node_ring_center_y(s) + u:node_ring_radius(s) + 60
   str_join([str_join([u:svg_open(w, h), u:svg_rect(0, 0, w, h, "#1a1b26"), u:svg_text(w / 2, 18, "#c0caf5", s.title)], ""), str_join([u:arrow_defs(), u:edges_svg(s, 0, ""), u:nodes_svg(s, 0, "")], ""), "</svg>"], "")
 }
 
-def u:write_dominance_svg(path, s) { "Write the dominance graph to a file and answer the Result."; write_text(path, u:dominance_svg(s)) }
+def u:write_dominance_svg(path, s) { "SVG helper: write the dominance graph to a file and answer the Result."; write_text(path, u:dominance_svg(s)) }
 
 # ---------------------------------------------------------------------------
 # Prolog and epilog: a diagram nobody can read has not taught anything
@@ -508,7 +512,7 @@ def u:write_dominance_svg(path, s) { "Write the dominance graph to a file and an
 # the colors mean, and what to notice. A learner who sees a colored grid with
 # no legend has been shown nothing.
 
-def u:banner_rule() { "Answer the asterisk rule that frames a printed narration block."; "**********************************************************************" }
+def u:banner_rule() { "SVG helper: asterisk rule that frames a printed narration block."; "**********************************************************************" }
 
 def u:prolog(s) { "Print what the lesson is about to show, before any of it happens.";
   print(u:banner_rule())

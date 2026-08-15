@@ -382,6 +382,14 @@ def u:batch_latin(b) { "Answer the [m] mask marking which tables are Latin squar
 # quasigroup -- which is why associativity appears in this product.
 def u:batch_group(b) { "Answer the [m] mask marking which tables are groups, using the theorem that a finite associative Latin square is one."; u:batch_associative(b) * u:batch_latin(b) }
 
+# A "winner" operation carries a relation inside it: a beats b exactly when
+# a * b = a and a is not b. Reading it off the table rather than defining it
+# separately is what keeps a dominance drawing honest -- the picture cannot
+# disagree with the algebra because it IS the algebra.
+def u:row_beats_column(structure, row, column) { "Answer 1 when the row element beats the column element, read off the table as a * b = a with a and b different.";
+  eq(take(take(structure.table, 0, row), 0, column), row) * (1 - eq(row, column))
+}
+
 # ---------------------------------------------------------------------------
 # Quotienting a batch by renaming
 # ---------------------------------------------------------------------------

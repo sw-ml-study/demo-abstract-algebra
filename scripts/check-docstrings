@@ -50,6 +50,21 @@ for f in $(find "$repo_root/demos" "$repo_root/probes" "$repo_root/tests" "$repo
   fi
 done
 
+# Rendering code says so in its docstring. A reader following the mathematics
+# needs permission to skip the SVG plumbing, and a one-word prefix gives it.
+# Everything after the RENDERING SUPPORT banner in lib/render.mlpl must carry
+# it (docs/research2.txt item 7).
+render_start=$(grep -n '^# RENDERING SUPPORT' "$repo_root/lib/render.mlpl" | cut -d: -f1)
+if [ -n "$render_start" ]; then
+  unmarked=$(tail -n "+$render_start" "$repo_root/lib/render.mlpl" \
+    | grep -E '^def u:' | grep -v '"SVG helper' | grep -vE 'u:prolog|u:epilog_open|u:explain|u:note|u:takeaway|u:limits|u:structure_record|u:structure_json|u:write_structure_json|u:element_name|u:cell_name|u:cell_range|u:yes_or_no|u:show_|u:larger_of' || true)
+  if [ -n "$unmarked" ]; then
+    echo "lib/render.mlpl: rendering functions missing the \"SVG helper:\" prefix" >&2
+    printf '%s\n' "$unmarked" | head -4 | sed 's/^/    /' >&2
+    failures=$((failures + 1))
+  fi
+fi
+
 [ "$failures" -eq 0 ] || {
   echo "" >&2
   echo "A docstring says what the function ANSWERS, not what its name already says." >&2

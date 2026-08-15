@@ -1,6 +1,6 @@
 number = 1
 slug = "review-backlog-rendering-hygiene"
-status = "pending"
+status = "in-progress"
 description = "Close the three cheap items from docs/research2.txt before Stage 2 multiplies..."
 role = "production"
 context_files = []
