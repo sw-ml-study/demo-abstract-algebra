@@ -1,6 +1,6 @@
-number = 4
+number = 3
 slug = "stage-2-subgroups-and-order"
-status = "pending"
+status = "in-progress"
 description = "Stage 2 lessons: subgroups as subsets closed under the operation, shown as a ..."
 role = "production"
 context_files = []

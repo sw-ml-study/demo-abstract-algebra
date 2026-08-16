@@ -133,20 +133,21 @@ stage; archive and open the next.
 The ladder from magma to group, plus the two meta-lessons that make the rest
 possible. Detailed in the table above.
 
-### Stage 2 — inside a group
+### Stage 2 — inside a group *(in progress: 1 of 6)*
 
 The structure a single group contains. This is the most visual material in the
 subject and the stage with the highest teaching return.
 
-| Lesson | Concept | Visual |
-|---|---|---|
-| 13 | Subgroups: subsets closed under the operation | The sub-table highlighted inside the whole |
-| 14 | Order of an element; cyclic subgroups and generators | The orbit of one element traced through the table |
-| 15 | Cosets: `aH` partitions the group | The table permuted into congruent blocks |
-| 16 | Lagrange's theorem | Block count times block size equals the whole — visibly |
-| 17 | Normal subgroups; conjugation | The blocks that survive conjugation, side by side with ones that do not |
-| 18 | Quotient groups | The block structure collapsed into a smaller table |
-| 19 | Kernel and image; the first isomorphism theorem | A homomorphism's kernel as a subgroup, its image as a sub-table |
+Stage 1 grew to 13 lessons, so Stage 2 runs 14 to 20.
+
+| Lesson | Concept | Visual | |
+|---|---|---|---|
+| 14 | `14-subgroups/inside_a_group` — subgroups as closed subsets; element order; cyclic subgroups | The sub-table ringed inside the whole | **done** |
+| 15 | Cosets: `aH` partitions the group | The table permuted into congruent blocks | next |
+| 16 | Lagrange's theorem | Block count times block size equals the whole — visibly | |
+| 17 | Normal subgroups; conjugation | The blocks that survive conjugation, beside ones that do not | |
+| 18 | Quotient groups | The block structure collapsed into a smaller table | |
+| 19 | Kernel and image; the first isomorphism theorem | A homomorphism's kernel as a subgroup, its image as a sub-table | |
 
 ### Stage 3 — groups acting
 

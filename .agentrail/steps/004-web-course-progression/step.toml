@@ -1,6 +1,6 @@
-number = 3
+number = 4
 slug = "web-course-progression"
-status = "pending"
+status = "in-progress"
 description = "Expose Stage 1 as a browser course rather than three leaf nodes, per docs/res..."
 role = "production"
 context_files = []
