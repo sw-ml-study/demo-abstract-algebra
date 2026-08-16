@@ -1,8 +1,9 @@
 number = 3
 slug = "stage-2-subgroups-and-order"
-status = "in-progress"
+status = "completed"
 description = "Stage 2 lessons: subgroups as subsets closed under the operation, shown as a ..."
 role = "production"
 context_files = []
 created_at = "2026-08-15T13:26:39"
-commits = []
+completed_at = "2026-08-15T20:00:52"
+commits = ["af4985ead60a9bb58b28d41646d37a4d230097a3"]
