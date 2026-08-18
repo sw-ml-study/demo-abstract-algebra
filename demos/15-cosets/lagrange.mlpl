@@ -1,0 +1,212 @@
+# Lesson 15 -- Cosets and Lagrange: why the sizes had to divide.
+#
+# Meaning here: a left COSET aH is everything a reaches by multiplying into a
+# subgroup H -- the set {a * h : h in H}. The INDEX of H is how many distinct
+# cosets there are.
+# Also called: for the right-hand version, Ha, which is a genuinely different
+# set in a non-abelian group. This lesson uses left cosets throughout.
+# Not to be confused with: a subgroup. Exactly ONE coset is a subgroup, namely
+# eH = H itself. The others are shifted copies and contain no identity.
+#
+# Lesson 14 found the subgroups of Z6 and S3 and observed that their sizes were
+# always divisors of the group order. That was six examples, not a theorem, and
+# this lesson supplies the missing argument -- which turns out to be a picture.
+# The cosets of H cut the group into pieces that are disjoint, exhaustive, and
+# all exactly the size of H. Once that is on screen, |G| = |H| * index is
+# counting, not proof.
+#
+# NOT a Web UI file. This is a CLI lesson: it uses include and write_text,
+# neither of which the browser session has, and it ends in ok(...) so the
+# suite can gate on it. See docs/viewing.md.
+#
+# visual: ascii, svg
+# loops: 0
+# complexity: n^2 per coset, n^3 to lay the whole partition out
+
+include "../../lib/algebra.mlpl"
+include "../../lib/render.mlpl"
+
+u:prolog({
+  title: "LESSON 15 -- COSETS AND LAGRANGE: why the sizes had to divide",
+  intro: "A subgroup shifts. Multiply every member of H by a fixed element and you get a set the same size as H, either identical to it or sharing nothing with it. Those shifted copies tile the group exactly, and this lesson permutes the Cayley table so the tiling becomes visible: equal blocks, no gaps, no overlaps. Lagrange's theorem is then the observation that a rectangle's area is its block count times its block size."
+})
+
+def u:add_mod_6(x, y) { "Answer the sum modulo 6."; mod(x + y, 6) }
+z6 = {
+  title: "Z6 under addition",
+  names: ["0", "1", "2", "3", "4", "5"],
+  table: table(:u:add_mod_6, u:elements(6), u:elements(6))
+}
+
+# H = {0, 2, 4}, the subgroup lesson 14 ringed.
+evens = u:cyclic_subgroup(z6.table, 2)
+u:show_table(z6)
+print("")
+print("H = <2> =", evens, " size", u:subset_size(evens))
+
+# --- One coset at a time ----------------------------------------------------
+# Shifting H by 0 gives H back. Shifting by 1 gives the odds. Shifting by 2
+# gives H again -- because 2 was already in H, and adding a member to a subgroup
+# only reshuffles it.
+print("")
+print("0 + H =", u:left_coset(z6.table, 0, evens))
+print("1 + H =", u:left_coset(z6.table, 1, evens))
+print("2 + H =", u:left_coset(z6.table, 2, evens))
+print("3 + H =", u:left_coset(z6.table, 3, evens))
+print("  Two distinct sets, each appearing three times. Shifting by a member of")
+print("  H lands back on H; shifting by a non-member lands on the same other set")
+print("  every time. There is no third possibility, and that is the whole theorem.")
+
+# --- Disjoint, exhaustive, equal --------------------------------------------
+# The three properties that make the cosets a PARTITION, each checked rather
+# than asserted. A coset is named here by its smallest member, so two elements
+# share a label exactly when they share a coset.
+labels = u:coset_labels(z6.table, evens)
+print("")
+print("element:      ", z6.names)
+print("its coset:    ", labels)
+
+def u:size_of_coset_at(a) { "Answer how many members the left coset containing a has."; reduce_add(u:left_coset(z6.table, a, evens)) }
+coset_sizes = each(:u:size_of_coset_at, u:elements(6))
+print("coset size:   ", coset_sizes)
+print("  Every element has exactly one label, so the cosets are DISJOINT and")
+print("  they COVER the group -- nothing is listed twice and nothing is missed.")
+print("  Every coset has", u:subset_size(evens), "members, the size of H itself,")
+print("  because shifting is reversible: multiply back by the inverse of a.")
+
+# --- Lagrange ---------------------------------------------------------------
+index_of_evens = u:coset_count(z6.table, evens)
+print("")
+print("index of H (how many cosets):", index_of_evens)
+print("|H| * index =", u:subset_size(evens), "*", index_of_evens, "=",
+      u:subset_size(evens) * index_of_evens, "   |G| =", u:order(z6.table))
+print("  That is Lagrange's theorem. Not a deep fact once the partition is")
+print("  drawn -- equal pieces that tile a set with no overlap must divide it.")
+
+# --- The table, reordered by coset ------------------------------------------
+# grade_up on the labels is a stable sort, so this permutation groups the
+# cosets together without disturbing the order inside one.
+ordering = u:coset_order(z6.table, evens)
+print("")
+print("reading order that groups the cosets:", ordering)
+blocked = {
+  title: "Z6 reordered by coset of <2>: each cell shows which coset the result lands in",
+  names: u:reorder_names(z6.names, ordering),
+  cell_names: ["A", "B"],
+  table: u:coset_block_table(z6.table, evens)
+}
+u:show_table(blocked)
+print("")
+print("  Solid blocks, three by three, no fragments. The rows of one coset all")
+print("  behave the same way, so the 6x6 table has collapsed into a 2x2 pattern.")
+
+# --- The same thing where the group is not abelian --------------------------
+# S3 has subgroups of order 2 and order 3. Both partition the group -- Lagrange
+# does not care about commutativity. Something else differs, and lesson 16
+# is about that.
+perms = [[0, 1, 2], [0, 2, 1], [1, 0, 2], [1, 2, 0], [2, 0, 1], [2, 1, 0]]
+def u:after(a, b) { "Answer the permutation a-after-b: apply b, then a."; flatten(gather_rows(reshape(a, [3, 1]), b)) }
+def u:which_perm(p) { "Answer which of the six permutations p is."; argmax(reduce(:and, eq(perms, gather_rows(reshape(p, [1, 3]), fill([6], 0))), 1)) }
+def u:compose(i, j) { "Answer the index of permutation i composed after permutation j."; u:which_perm(u:after(take(perms, 0, i), take(perms, 0, j))) }
+s3 = {
+  title: "S3, the symmetries of a triangle",
+  names: ["e", "s", "t", "r", "r2", "u"],
+  table: table(:u:compose, u:elements(6), u:elements(6))
+}
+
+rotations = u:cyclic_subgroup(s3.table, 3)
+a_flip = u:cyclic_subgroup(s3.table, 1)
+print("")
+print("S3, H = <r> (the rotations):  size", u:subset_size(rotations),
+      " index", u:coset_count(s3.table, rotations),
+      " product", u:subset_size(rotations) * u:coset_count(s3.table, rotations))
+print("S3, H = <s> (one flip):       size", u:subset_size(a_flip),
+      " index", u:coset_count(s3.table, a_flip),
+      " product", u:subset_size(a_flip) * u:coset_count(s3.table, a_flip))
+print("  Both partition S3 and both multiply out to 6. Lagrange holds either way.")
+
+# --- Where the two differ ---------------------------------------------------
+# The partition always works. Whether each BLOCK holds a single value is a
+# separate question, and it is the one that decides whether the quotient makes
+# sense. Here the answer differs between the two subgroups of the same group.
+flip_blocked = {
+  title: "S3 by coset of <s>: the blocks are NOT constant",
+  names: u:reorder_names(s3.names, u:coset_order(s3.table, a_flip)),
+  cell_names: ["A", "B", "C"],
+  table: u:coset_block_table(s3.table, a_flip)
+}
+print("")
+u:show_table(flip_blocked)
+print("")
+print("blocks constant --  Z6 by <2>:", u:yes_or_no(u:coset_blocks_constant(z6.table, evens)),
+      "  S3 by <r>:", u:yes_or_no(u:coset_blocks_constant(s3.table, rotations)),
+      "  S3 by <s>:", u:yes_or_no(u:coset_blocks_constant(s3.table, a_flip)))
+print("  Same group, two subgroups, two different answers. The next lesson is")
+print("  about which subgroups give constant blocks and what that buys.")
+
+# --- The diagrams -----------------------------------------------------------
+a = u:write_marked_svg("out/15-one-coset.svg", z6, u:subset_cells(u:left_coset(z6.table, 1, evens)),
+  "ringed: the coset 1 + H, the odd numbers")
+b = u:write_cayley_svg("out/15-blocks.svg", blocked)
+c = u:write_cayley_svg("out/15-not-constant.svg", flip_blocked)
+
+u:epilog_open()
+
+u:explain("out/15-one-coset.svg",
+  "The 6x6 Z6 table with the nine cells pairing members of 1 + H = {1, 3, 5} ringed.")
+u:note("Compare it with out/14-subgroup-block.svg, which ringed H = {0, 2, 4} itself.")
+u:note("WHAT TO NOTICE: the two ringed regions are the same shape and the same size, and")
+u:note("they do not overlap. That is the coset property in one image -- a shifted copy of")
+u:note("a subgroup is congruent to it. The difference is that this one has no white cross")
+u:note("through it: the identity is not here, so this coset is NOT a subgroup.")
+
+u:explain("out/15-blocks.svg",
+  "Z6 with rows and columns reordered so the two cosets are contiguous, each cell coloured by WHICH coset its result lands in rather than by the result.")
+u:note("Headings now read 0 2 4 1 3 5: the even coset first, then the odd one.")
+u:note("WHAT TO NOTICE: four solid 3x3 blocks in a 2x2 arrangement, and the block pattern")
+u:note("is itself a Cayley table -- A B over B A, which is Z2. Two blocks across times")
+u:note("three cells each is six, and that product IS Lagrange's theorem.")
+u:note("Nothing was rearranged to make this pretty; the ordering came from sorting the")
+u:note("coset labels, and the blocks appeared.")
+
+u:explain("out/15-not-constant.svg",
+  "S3 reordered by the cosets of a single flip, same construction, 2x2 cells per block.")
+u:note("The partition still works -- three cosets of two elements, tiling six. Here the")
+u:note("cosets {e,s}, {t,r}, {r2,u} were already contiguous, so the reordering left the")
+u:note("headings alone; nothing was arranged to produce the effect below.")
+u:note("WHAT TO NOTICE: the blocks are no longer one colour. Take the block where coset A")
+u:note("meets coset B -- rows e and s against columns t and r. Row e reads B B and row s")
+u:note("reads C C. Two members of the SAME coset send the same coset to different places,")
+u:note("so there is no way to read this picture as a smaller table. Compare the previous")
+u:note("diagram, where every block was solid. Lagrange survives; the collapse does not.")
+
+u:limits("Only left cosets appear here. In a non-abelian group aH and Ha generally differ, and nothing in this lesson shows that -- it is the next lesson's subject. Lagrange is demonstrated on two groups of order 6 rather than proved in general; the argument the pictures stand for is that shifting by a is invertible, hence a bijection H -> aH, which is asserted here and not derived. And the converse is NOT claimed: that every divisor of |G| is the size of some subgroup is false, and the smallest counterexample is A4, which has no subgroup of order 6. Nothing here exhibits it.")
+
+u:takeaway("A subgroup shifted is a set of the same size, and any two shifts are identical or disjoint -- so the cosets tile the group with congruent pieces. Sort the elements by which piece they belong to, and the Cayley table falls into equal blocks whose count times whose size is the order of the group. That is Lagrange's theorem, and it answers the question lesson 14 left open: 4 and 5 never appeared as subgroup sizes of a group of order 6 because 4 and 5 do not divide 6. The picture also reveals something Lagrange does not mention -- for some subgroups each block holds a single value and for others it does not, which is the difference between a subgroup you can quotient by and one you cannot.")
+
+print("wrote out/15-one-coset.svg:", is_ok(a))
+print("wrote out/15-blocks.svg:", is_ok(b))
+print("wrote out/15-not-constant.svg:", is_ok(c))
+
+# --- Invariants -------------------------------------------------------------
+# The three properties that make a partition, checked rather than asserted.
+every_element_placed = eq(size(labels), u:order(z6.table))
+all_cosets_equal_size = eq(reduce_add(eq(coset_sizes, u:subset_size(evens))), 6)
+# Lagrange itself, on both groups and three subgroups.
+lagrange_z6 = eq(u:subset_size(evens) * index_of_evens, u:order(z6.table))
+lagrange_rot = eq(u:subset_size(rotations) * u:coset_count(s3.table, rotations), 6)
+lagrange_flip = eq(u:subset_size(a_flip) * u:coset_count(s3.table, a_flip), 6)
+lagrange = lagrange_z6 * lagrange_rot * lagrange_flip
+# eH is H, and it is the only coset that is a subgroup.
+identity_coset = equal(u:left_coset(z6.table, 0, evens), evens)
+shifted_is_not_subgroup = 1 - u:subset_closed(z6.table, u:left_coset(z6.table, 1, evens))
+# Constant blocks distinguish two subgroups of the SAME group, so the property
+# is about the subgroup and not about the group being abelian.
+blocks_z6 = u:coset_blocks_constant(z6.table, evens)
+blocks_differ = u:coset_blocks_constant(s3.table, rotations) * (1 - u:coset_blocks_constant(s3.table, a_flip))
+partition = every_element_placed * all_cosets_equal_size * identity_coset * shifted_is_not_subgroup
+if partition * lagrange * blocks_z6 * blocks_differ * is_ok(a) * is_ok(b) * is_ok(c) {
+  ok("cosets partition a group into congruent blocks, so |H| times the index is |G|")
+} else {
+  err("coset invariants failed")
+}

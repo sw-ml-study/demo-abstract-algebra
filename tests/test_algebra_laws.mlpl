@@ -212,4 +212,60 @@ def u:test_census() { "Independent numbers: if these drift, the batched machiner
   ok({test: "order-3-census", cases: 7})
 }
 
+@test {name: "cosets partition, and Lagrange holds for every subgroup", tags: ["laws", "cosets"]}
+def u:test_cosets() { "Cosets tile a group with congruent pieces, so |H| times the index is |G|.";
+  z6 = table(:u:z6_add, u:elements(6), u:elements(6));
+  evens = u:cyclic_subgroup(z6, 2);
+  # The identity's coset IS the subgroup; no other coset is even closed.
+  u:assert_true(equal(u:left_coset(z6, 0, evens), evens), "eH is H")?;
+  u:assert_eq(u:subset_closed(z6, u:left_coset(z6, 1, evens)), 0, "a shifted coset is not a subgroup")?;
+  # Two cosets, three members each, disjoint and covering.
+  u:assert_eq(u:coset_count(z6, evens), 2, "index of the evens in Z6")?;
+  u:assert_true(equal(u:coset_labels(z6, evens), [0, 1, 0, 1, 0, 1]), "coset labels alternate")?;
+  # Lagrange over every subgroup of Z6 and of S3, not just a chosen one.
+  u:assert_eq(u:lagrange_failures(z6), 0, "Lagrange holds for all 4 subgroups of Z6")?;
+  s3 = u:s3_table();
+  u:assert_eq(u:lagrange_failures(s3), 0, "Lagrange holds for all 6 subgroups of S3")?;
+  # Normality is a property of the subgroup, not of the group: Z6 is abelian so
+  # all 4 are normal, while S3 has exactly 3 -- the trivial one, A3, and itself.
+  u:assert_eq(u:normal_subgroup_count(z6), 4, "every subgroup of an abelian group is normal")?;
+  u:assert_eq(u:normal_subgroup_count(s3), 3, "S3 has exactly three normal subgroups")?;
+  ok({test: "cosets", cases: 8})
+}
+
+# Helpers for the coset test. `each` needs a one-argument function, so the group
+# under test is parked in a global rather than threaded through.
+def u:z6_add(x, y) { "Answer the sum modulo 6, the cyclic group of order six."; mod(x + y, 6) }
+
+def u:s3_table() { "Answer the Cayley table of S3, built by composing the six permutations of three things.";
+  table(:u:s3_compose, u:elements(6), u:elements(6))
+}
+
+def u:s3_compose(i, j) { "Answer the index of permutation i composed after permutation j.";
+  ps = [[0,1,2],[0,2,1],[1,0,2],[1,2,0],[2,0,1],[2,1,0]];
+  composed = flatten(gather_rows(reshape(take(ps, 0, i), [3, 1]), take(ps, 0, j)));
+  argmax(reduce(:and, eq(ps, gather_rows(reshape(composed, [1, 3]), fill([6], 0))), 1))
+}
+
+def u:lagrange_failures(t) { "Answer how many subgroups of t violate |H| * index = |G|, which should always be none.";
+  global_set("mlpl_test_coset_group", t);
+  global_set("mlpl_test_coset_subs", u:all_subgroups(t));
+  subs = u:all_subgroups(t);
+  reduce_add(1 - each(:u:lagrange_holds_at, u:elements(tally(subs))))
+}
+
+def u:lagrange_holds_at(i) { "Answer 1 when subgroup i of the pending group satisfies Lagrange.";
+  h = take(mlpl_test_coset_subs, 0, i);
+  eq(u:subset_size(h) * u:coset_count(mlpl_test_coset_group, h), u:order(mlpl_test_coset_group))
+}
+
+def u:normal_subgroup_count(t) { "Answer how many subgroups of t have constant coset blocks, which is how many are normal.";
+  global_set("mlpl_test_coset_group", t);
+  global_set("mlpl_test_coset_subs", u:all_subgroups(t));
+  subs = u:all_subgroups(t);
+  reduce_add(each(:u:normal_at, u:elements(tally(subs))))
+}
+
+def u:normal_at(i) { "Answer 1 when subgroup i of the pending group is normal."; u:coset_blocks_constant(mlpl_test_coset_group, take(mlpl_test_coset_subs, 0, i)) }
+
 u:run_registered_tests()

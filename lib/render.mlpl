@@ -176,6 +176,22 @@ def u:cells_svg(structure, cell_index, svg_so_far) { "SVG helper: every cell of 
   } else { svg_so_far }
 }
 
+# Reordering a table permutes its headings too, and `each` cannot answer a
+# string per element -- so the permuted names are folded into one delimited
+# string and split back, the same recursion the cells use above. The delimiter
+# is a vertical bar, which no element name in this repository contains.
+def u:reorder_names(names, ordering) { "SVG helper: the name list permuted through ordering, so headings still match a reordered table.";
+  str_split(u:names_folded(names, ordering, 0, ""), "|")
+}
+
+def u:names_folded(names, ordering, position, names_so_far) { "SVG helper: the permuted names joined by a delimiter, folded by recursion.";
+  if lt(position, size(ordering)) {
+    here = unwrap(list_get(names, take(ordering, 0, position)))
+    joined = if eq(position, 0) { here } else { str_join([names_so_far, "|", here], "") }
+    u:names_folded(names, ordering, position + 1, joined)
+  } else { names_so_far }
+}
+
 def u:headers_svg(structure, element, svg_so_far) { "SVG helper: row and column headings.";
   if lt(element, u:order(structure.table)) {
     col = u:svg_text(u:heading_gutter_px() + element * u:cell_size_px() + u:cell_size_px() / 2,

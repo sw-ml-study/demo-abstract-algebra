@@ -523,6 +523,69 @@ def u:all_subgroups(t) { "Answer every subgroup of the group as a matrix of 0/1 
 def u:subgroup_at(i) { "Answer 1 when subset i of the pending enumeration is a subgroup."; u:is_subgroup(mlpl_algebra_group, take(mlpl_algebra_subsets, 0, i)) }
 
 # ---------------------------------------------------------------------------
+# Cosets: how a subgroup cuts up the group
+# ---------------------------------------------------------------------------
+#
+# The left coset aH is {a * h : h in H}. The cosets of a subgroup PARTITION
+# the group -- every element lies in exactly one, and they all have the same
+# size as H. Those two facts together ARE Lagrange's theorem, and both are
+# visible rather than argued.
+
+def u:left_coset(t, a, mask) { "Answer the [n] mask of the left coset aH: everything a reaches by multiplying into the subgroup.";
+  n = u:order(t)
+  hot = reshape(one_hot(take(t, 0, a), n), [n, n])
+  members = reshape(gather_rows(reshape(mask, [n, 1]), flatten(u:index_matrix(n))), [n, n])
+  1 - lt(reduce_add(members * hot, 0), 1)
+}
+
+# Each coset is named after its smallest member, so labels are canonical.
+def u:coset_label(t, mask, a) { "Answer the label of the coset containing a: the smallest element that coset holds."; argmax(u:left_coset(t, a, mask)) }
+
+def u:coset_labels(t, mask) { "Answer the [n] vector labelling each element by the coset it belongs to.";
+  global_set("mlpl_algebra_coset_group", t)
+  global_set("mlpl_algebra_coset_sub", mask)
+  each(:u:coset_label_at, u:elements(u:order(t)))
+}
+
+def u:coset_label_at(a) { "Answer the coset label of element a for the pending subgroup."; u:coset_label(mlpl_algebra_coset_group, mlpl_algebra_coset_sub, a) }
+
+# Renumber the labels 0, 1, 2, ... A coset is named after its smallest member,
+# so an element IS a coset representative exactly when it equals its own label.
+# The rank of a label is then how many representatives sit below it.
+def u:dense_labels(labels) { "Answer the coset labels renumbered 0, 1, 2, ... so a coset index is small and printable.";
+  n = size(labels)
+  is_rep = eq(labels, u:elements(n))
+  mine = reshape(gather_rows(reshape(labels, [n, 1]), flatten(u:index_matrix(n))), [n, n])
+  reps = reshape(gather_rows(reshape(is_rep, [n, 1]), flatten(u:header_matrix(n))), [n, n])
+  reduce_add(reps * lt(u:header_matrix(n), mine), 1)
+}
+
+def u:coset_count(t, mask) { "Answer how many distinct left cosets the subgroup has, which is its INDEX in the group."; u:count_distinct(u:coset_labels(t, mask)) }
+
+# grade_up is a STABLE sort, so members keep their original order inside a
+# coset and the reordering is reproducible.
+def u:coset_order(t, mask) { "Answer the permutation that groups the elements coset by coset."; grade_up(u:coset_labels(t, mask)) }
+
+# The table reordered so cosets are contiguous, with each cell showing WHICH
+# coset its result falls into rather than which element. This is the picture
+# that makes the block structure appear.
+# Cosets always cut the table into equal-sized blocks. Whether each block holds
+# a SINGLE value is a further question -- it is exactly normality, and lesson 17
+# takes it up. The predicate lives here so the picture can be checked.
+def u:coset_blocks_constant(t, mask) { "Answer 1 when every coset block of the reordered table holds a single value, which happens exactly when the subgroup is NORMAL.";
+  n = u:order(t)
+  blocked = u:coset_block_table(t, mask)
+  block_size = u:subset_size(mask)
+  corners = u:elements(n) - mod(u:elements(n), block_size)
+  equal(blocked, u:reindex_axes(blocked, corners))
+}
+
+def u:coset_block_table(t, mask) { "Answer the reordered table with every cell replaced by the index of the coset its result lands in.";
+  ordering = u:coset_order(t, mask)
+  u:rename_entries(u:reindex_axes(t, ordering), u:dense_labels(u:coset_labels(t, mask)))
+}
+
+# ---------------------------------------------------------------------------
 # Structure-preserving maps
 # ---------------------------------------------------------------------------
 #

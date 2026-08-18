@@ -133,21 +133,23 @@ stage; archive and open the next.
 The ladder from magma to group, plus the two meta-lessons that make the rest
 possible. Detailed in the table above.
 
-### Stage 2 — inside a group *(in progress: 1 of 6)*
+### Stage 2 — inside a group *(in progress: 2 of 5)*
 
 The structure a single group contains. This is the most visual material in the
 subject and the stage with the highest teaching return.
 
-Stage 1 grew to 13 lessons, so Stage 2 runs 14 to 20.
+Stage 1 grew to 13 lessons, so Stage 2 runs 14 to 18. Cosets and Lagrange were
+planned as two lessons and shipped as one: the partition *is* the proof, and
+splitting them would have left lesson 14's closing promise dangling for two
+lessons instead of one.
 
 | Lesson | Concept | Visual | |
 |---|---|---|---|
 | 14 | `14-subgroups/inside_a_group` — subgroups as closed subsets; element order; cyclic subgroups | The sub-table ringed inside the whole | **done** |
-| 15 | Cosets: `aH` partitions the group | The table permuted into congruent blocks | next |
-| 16 | Lagrange's theorem | Block count times block size equals the whole — visibly | |
-| 17 | Normal subgroups; conjugation | The blocks that survive conjugation, beside ones that do not | |
-| 18 | Quotient groups | The block structure collapsed into a smaller table | |
-| 19 | Kernel and image; the first isomorphism theorem | A homomorphism's kernel as a subgroup, its image as a sub-table | |
+| 15 | `15-cosets/lagrange` — cosets partition the group; Lagrange's theorem | The table permuted into congruent blocks; block count times block size is the whole | **done** |
+| 16 | Normal subgroups; conjugation | The blocks that hold a single value, beside ones that do not | next |
+| 17 | Quotient groups | The block structure collapsed into a smaller table | |
+| 18 | Kernel and image; the first isomorphism theorem | A homomorphism's kernel as a subgroup, its image as a sub-table | |
 
 ### Stage 3 — groups acting
 
@@ -157,12 +159,12 @@ which stresses the array thesis productively.
 
 | Lesson | Concept | Visual |
 |---|---|---|
-| 20 | Permutations as a group; `S_3`, `S_4` | Permutation matrices, composed |
-| 21 | Cayley's theorem: every group IS a permutation group | Each row of the table read as a permutation |
-| 22 | Dihedral groups; the symmetries of a polygon | The polygon, with each symmetry animated |
-| 23 | Group actions `G x X -> X` | A rectangular action table beside the square group table |
-| 24 | Orbits and stabilizers | The set coloured by orbit; the orbit-stabilizer count |
-| 25 | Burnside's counting lemma | Necklace colourings counted by averaging fixed points |
+| 19 | Permutations as a group; `S_3`, `S_4` | Permutation matrices, composed |
+| 20 | Cayley's theorem: every group IS a permutation group | Each row of the table read as a permutation |
+| 21 | Dihedral groups; the symmetries of a polygon | The polygon, with each symmetry animated |
+| 22 | Group actions `G x X -> X` | A rectangular action table beside the square group table |
+| 23 | Orbits and stabilizers | The set coloured by orbit; the orbit-stabilizer count |
+| 24 | Burnside's counting lemma | Necklace colourings counted by averaging fixed points |
 
 ### Stage 4 — building new from old
 
@@ -172,11 +174,11 @@ than states.
 
 | Lesson | Concept | Visual |
 |---|---|---|
-| 26 | Direct products `G x H` | The product table as a block pattern of the factors |
-| 27 | Every group of order 4, derived | Two tables, proven non-isomorphic by search |
-| 28 | Groups of order 6: `Z6` and `S_3` | The first non-abelian appearance |
-| 29 | Classification through order 8 | A gallery of all five, with the isomorphism classes computed |
-| 30 | Generators and relations, finitely presented | A presentation expanded into a table |
+| 25 | Direct products `G x H` | The product table as a block pattern of the factors |
+| 26 | Every group of order 4, derived | Two tables, proven non-isomorphic by search |
+| 27 | Groups of order 6: `Z6` and `S_3` | The first non-abelian appearance |
+| 28 | Classification through order 8 | A gallery of all five, with the isomorphism classes computed |
+| 29 | Generators and relations, finitely presented | A presentation expanded into a table |
 
 ### Stage 5 — two operations
 
@@ -186,22 +188,22 @@ built the renderer for.
 
 | Lesson | Concept | Visual |
 |---|---|---|
-| 31 | Rings: two operations, one distributive law | Two tables side by side; the distributivity cube |
-| 32 | Zero divisors; integral domains | The multiplication table's zero pattern |
-| 33 | Fields; `Z_p` versus `Z_n` for composite `n` | Which tables have full inverse coverage |
-| 34 | `F_4`: a field that is not `Z_4` | Two order-4 tables that differ where it matters |
-| 35 | Characteristic | Repeated addition of 1, traced to zero |
-| 36 | Ideals and quotient rings | The ring analogue of Stage 2's blocks |
+| 30 | Rings: two operations, one distributive law | Two tables side by side; the distributivity cube |
+| 31 | Zero divisors; integral domains | The multiplication table's zero pattern |
+| 32 | Fields; `Z_p` versus `Z_n` for composite `n` | Which tables have full inverse coverage |
+| 33 | `F_4`: a field that is not `Z_4` | Two order-4 tables that differ where it matters |
+| 34 | Characteristic | Repeated addition of 1, traced to zero |
+| 35 | Ideals and quotient rings | The ring analogue of Stage 2's blocks |
 
 ### Stage 6 — universal algebra, and the handoff
 
 | Lesson | Concept | Visual |
 |---|---|---|
-| 37 | Signatures: an algebra is a set with operations | The same set under several signatures |
-| 38 | Equational laws as data, not code | A law table checked against a structure table |
-| 39 | Varieties: the class of all structures satisfying a law set | The enumeration of Stage 1, sliced by law |
-| 40 | Free algebras; terms as trees | Term trees evaluated into a table |
-| 41 | The bridge: homomorphisms compose, so algebras form a category | The handoff to `demo-category-theory` |
+| 36 | Signatures: an algebra is a set with operations | The same set under several signatures |
+| 37 | Equational laws as data, not code | A law table checked against a structure table |
+| 38 | Varieties: the class of all structures satisfying a law set | The enumeration of Stage 1, sliced by law |
+| 39 | Free algebras; terms as trees | Term trees evaluated into a table |
+| 40 | The bridge: homomorphisms compose, so algebras form a category | The handoff to `demo-category-theory` |
 
 About forty lessons, six stages, one criterion. Finite because the criterion is
 finite, not because a number was picked.
