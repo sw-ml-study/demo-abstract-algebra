@@ -7,7 +7,8 @@
 include "lib/algebra.mlpl";
 
 @test {name: "known structures classify correctly", tags: ["laws"]}
-def u:test_known_structures() { "Every rung of the ladder, one witness each.";
+def u:test_known_structures() {
+  "Every rung of the ladder, one witness each.";
   # Z3 under addition: an abelian group.
   z3 = table(:u:z3_add, u:elements(3), u:elements(3));
   cz3 = u:classify(z3);
@@ -43,11 +44,22 @@ def u:test_known_structures() { "Every rung of the ladder, one witness each.";
   ok({test: "known-structures", cases: 14})
 }
 
-def u:z3_add(x, y) { "Answer the sum modulo 3, an associative operation to contrast against."; mod(x + y, 3) }
-def u:larger_of(x, y) { "Answer whichever argument is larger."; if lt(x, y) { y } else { x } }
+def u:z3_add(x, y) {
+  "Answer the sum modulo 3, an associative operation to contrast against.";
+  mod(x + y, 3)
+}
+def u:larger_of(x, y) {
+  "Answer whichever argument is larger.";
+  if lt(x, y) {
+    y
+  } else {
+    x
+  }
+}
 
 @test {name: "counterexamples name a real witness", tags: ["laws"]}
-def u:test_counterexamples() { "A failed law must exhibit the failing triple.";
+def u:test_counterexamples() {
+  "A failed law must exhibit the failing triple.";
   rps = [[0, 1, 0], [1, 1, 2], [0, 2, 2]];
   x = u:assoc_counterexample(rps);
   u:assert_eq(x.found, 1, "rps associativity failure not detected")?;
@@ -83,7 +95,8 @@ def u:test_counterexamples() { "A failed law must exhibit the failing triple.";
 }
 
 @test {name: "homomorphisms and isomorphism", tags: ["maps"]}
-def u:test_structure_preserving() { "Structure-preserving maps between tables.";
+def u:test_structure_preserving() {
+  "Structure-preserving maps between tables.";
   z4 = table(:u:z4_add, u:elements(4), u:elements(4));
   z2 = table(:u:z2_add, u:elements(2), u:elements(2));
   # Parity is a homomorphism Z4 -> Z2.
@@ -110,11 +123,18 @@ def u:test_structure_preserving() { "Structure-preserving maps between tables.";
   ok({test: "structure-preserving", cases: 9})
 }
 
-def u:z4_add(x, y) { "Answer the sum modulo 4, the cyclic group of order four."; mod(x + y, 4) }
-def u:z2_add(x, y) { "Answer the sum modulo 2."; mod(x + y, 2) }
+def u:z4_add(x, y) {
+  "Answer the sum modulo 4, the cyclic group of order four.";
+  mod(x + y, 4)
+}
+def u:z2_add(x, y) {
+  "Answer the sum modulo 2.";
+  mod(x + y, 2)
+}
 
 @test {name: "trivial and edge-case orders", tags: ["laws", "edges"]}
-def u:test_edges() { "Order-1 structures and boundary shapes.";
+def u:test_edges() {
+  "Order-1 structures and boundary shapes.";
   # The trivial group: one element, which is its own identity and inverse.
   one = [[0]];
   c = u:classify(one);
@@ -124,7 +144,8 @@ def u:test_edges() { "Order-1 structures and boundary shapes.";
   # A NON-CLOSED table: associativity is undefined, not false, and asking must
   # not crash. The cube gathers by table entries, so an escaping value would
   # index out of range -- lesson 03 found this the hard way.
-  esc = [[0, 1, 2], [1, 2, 3], [2, 3, 4]];   # ordinary addition on {0,1,2}
+  esc = [[0, 1, 2], [1, 2, 3], [2, 3, 4]];
+  # ordinary addition on {0,1,2}
   ce = u:classify(esc);
   u:assert_eq(ce.closed, 0, "escaping table reported closed")?;
   u:assert_eq(ce.associative, 0, "associativity on a non-closed table")?;
@@ -143,7 +164,8 @@ def u:test_edges() { "Order-1 structures and boundary shapes.";
 }
 
 @test {name: "Latin square is necessary for a group, not sufficient", tags: ["laws"]}
-def u:test_latin() { "Every group is a Latin square; the converse is false, and this pins the counterexample.";
+def u:test_latin() {
+  "Every group is a Latin square; the converse is false, and this pins the counterexample.";
   z4 = table(:u:z4_add, u:elements(4), u:elements(4));
   kl = table(:u:xor4, u:elements(4), u:elements(4));
   mx = table(:u:larger_of, u:elements(4), u:elements(4));
@@ -171,11 +193,18 @@ def u:test_latin() { "Every group is a Latin square; the converse is false, and 
   ok({test: "latin-square", cases: 12})
 }
 
-def u:xor4(x, y) { "Answer the bitwise exclusive-or, which realizes the Klein four-group."; bxor(x, y) }
-def u:sub_mod_3(x, y) { "Answer x minus y modulo 3: a Latin square that is not a group."; mod(x - y + 3, 3) }
+def u:xor4(x, y) {
+  "Answer the bitwise exclusive-or, which realizes the Klein four-group.";
+  bxor(x, y)
+}
+def u:sub_mod_3(x, y) {
+  "Answer x minus y modulo 3: a Latin square that is not a group.";
+  mod(x - y + 3, 3)
+}
 
 @test {name: "identity cells and the diagonal", tags: ["laws"]}
-def u:test_identity_cells() { "The cross covers 2n-1 cells; the diagonal is a*a.";
+def u:test_identity_cells() {
+  "The cross covers 2n-1 cells; the diagonal is a*a.";
   mx = table(:u:larger_of, u:elements(3), u:elements(3));
   u:assert_eq(reduce_add(flatten(u:mask_of_identity(mx))), 2 * 3 - 1, "cross size")?;
   # No identity means no cells.
@@ -190,7 +219,8 @@ def u:test_identity_cells() { "The cross covers 2n-1 cells; the diagonal is a*a.
 }
 
 @test {name: "the order-3 census matches known counts", tags: ["laws", "census"]}
-def u:test_census() { "Independent numbers: if these drift, the batched machinery is wrong.";
+def u:test_census() {
+  "Independent numbers: if these drift, the batched machinery is wrong.";
   # These are published counts, not values this code produced. That is the
   # point -- they check the implementation against mathematics rather than
   # against itself.
@@ -213,7 +243,8 @@ def u:test_census() { "Independent numbers: if these drift, the batched machiner
 }
 
 @test {name: "cosets partition, and Lagrange holds for every subgroup", tags: ["laws", "cosets"]}
-def u:test_cosets() { "Cosets tile a group with congruent pieces, so |H| times the index is |G|.";
+def u:test_cosets() {
+  "Cosets tile a group with congruent pieces, so |H| times the index is |G|.";
   z6 = table(:u:z6_add, u:elements(6), u:elements(6));
   evens = u:cyclic_subgroup(z6, 2);
   # The identity's coset IS the subgroup; no other coset is even closed.
@@ -235,37 +266,48 @@ def u:test_cosets() { "Cosets tile a group with congruent pieces, so |H| times t
 
 # Helpers for the coset test. `each` needs a one-argument function, so the group
 # under test is parked in a global rather than threaded through.
-def u:z6_add(x, y) { "Answer the sum modulo 6, the cyclic group of order six."; mod(x + y, 6) }
+def u:z6_add(x, y) {
+  "Answer the sum modulo 6, the cyclic group of order six.";
+  mod(x + y, 6)
+}
 
-def u:s3_table() { "Answer the Cayley table of S3, built by composing the six permutations of three things.";
+def u:s3_table() {
+  "Answer the Cayley table of S3, built by composing the six permutations of three things.";
   table(:u:s3_compose, u:elements(6), u:elements(6))
 }
 
-def u:s3_compose(i, j) { "Answer the index of permutation i composed after permutation j.";
+def u:s3_compose(i, j) {
+  "Answer the index of permutation i composed after permutation j.";
   ps = [[0,1,2],[0,2,1],[1,0,2],[1,2,0],[2,0,1],[2,1,0]];
   composed = flatten(gather_rows(reshape(take(ps, 0, i), [3, 1]), take(ps, 0, j)));
   argmax(reduce(:and, eq(ps, gather_rows(reshape(composed, [1, 3]), fill([6], 0))), 1))
 }
 
-def u:lagrange_failures(t) { "Answer how many subgroups of t violate |H| * index = |G|, which should always be none.";
+def u:lagrange_failures(t) {
+  "Answer how many subgroups of t violate |H| * index = |G|, which should always be none.";
   global_set("mlpl_test_coset_group", t);
   global_set("mlpl_test_coset_subs", u:all_subgroups(t));
   subs = u:all_subgroups(t);
   reduce_add(1 - each(:u:lagrange_holds_at, u:elements(tally(subs))))
 }
 
-def u:lagrange_holds_at(i) { "Answer 1 when subgroup i of the pending group satisfies Lagrange.";
+def u:lagrange_holds_at(i) {
+  "Answer 1 when subgroup i of the pending group satisfies Lagrange.";
   h = take(mlpl_test_coset_subs, 0, i);
   eq(u:subset_size(h) * u:coset_count(mlpl_test_coset_group, h), u:order(mlpl_test_coset_group))
 }
 
-def u:normal_subgroup_count(t) { "Answer how many subgroups of t have constant coset blocks, which is how many are normal.";
+def u:normal_subgroup_count(t) {
+  "Answer how many subgroups of t have constant coset blocks, which is how many are normal.";
   global_set("mlpl_test_coset_group", t);
   global_set("mlpl_test_coset_subs", u:all_subgroups(t));
   subs = u:all_subgroups(t);
   reduce_add(each(:u:normal_at, u:elements(tally(subs))))
 }
 
-def u:normal_at(i) { "Answer 1 when subgroup i of the pending group is normal."; u:coset_blocks_constant(mlpl_test_coset_group, take(mlpl_test_coset_subs, 0, i)) }
+def u:normal_at(i) {
+  "Answer 1 when subgroup i of the pending group is normal.";
+  u:coset_blocks_constant(mlpl_test_coset_group, take(mlpl_test_coset_subs, 0, i))
+}
 
 u:run_registered_tests()

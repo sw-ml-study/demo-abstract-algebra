@@ -33,13 +33,19 @@ include "../../lib/algebra.mlpl"
 include "../../lib/render.mlpl"
 
 u:prolog({
-  title: "LESSON 08 -- GROUPS, and the shape that gives them away",
-  intro: "A group is a monoid where everything can be undone. The definition says nothing about rows or columns, yet every group's table turns out to be a Latin square -- each element exactly once per row and per column. This lesson derives that shape, checks it against a monoid that fails it, and then shows two different groups wearing it."
-})
+    title: "LESSON 08 -- GROUPS, and the shape that gives them away",
+    intro: "A group is a monoid where everything can be undone. The definition says nothing about rows or columns, yet every group's table turns out to be a Latin square -- each element exactly once per row and per column. This lesson derives that shape, checks it against a monoid that fails it, and then shows two different groups wearing it."
+  })
 
 # --- Two groups of order 4 --------------------------------------------------
-def u:add_mod_4(x, y) { "Answer the sum modulo 4."; mod(x + y, 4) }
-def u:xor_of(x, y) { "Answer the bitwise exclusive-or, which realizes the Klein four-group on {0, 1, 2, 3}."; bxor(x, y) }
+def u:add_mod_4(x, y) {
+  "Answer the sum modulo 4.";
+  mod(x + y, 4)
+}
+def u:xor_of(x, y) {
+  "Answer the bitwise exclusive-or, which realizes the Klein four-group on {0, 1, 2, 3}.";
+  bxor(x, y)
+}
 
 z4 = {
   title: "Z4 under addition: a cyclic group",
@@ -70,7 +76,14 @@ print("Z4    -- is a Latin square:", u:yes_or_no(u:is_latin(z4.table)))
 print("Klein -- is a Latin square:", u:yes_or_no(u:is_latin(kl.table)))
 
 # --- A monoid that fails it -------------------------------------------------
-def u:larger_of(x, y) { "Answer whichever argument is larger. Associative and commutative, with the smallest element as its identity."; if lt(x, y) { y } else { x } }
+def u:larger_of(x, y) {
+  "Answer whichever argument is larger. Associative and commutative, with the smallest element as its identity.";
+  if lt(x, y) {
+    y
+  } else {
+    x
+  }
+}
 mx = {
   title: "max on {0, 1, 2, 3}: a monoid, not a Latin square",
   names: ["0", "1", "2", "3"],
@@ -79,7 +92,7 @@ mx = {
 cm = u:classify(mx.table)
 print("")
 print("max   -- monoid:", u:yes_or_no(cm.monoid), " group:", u:yes_or_no(cm.group),
-      " Latin square:", u:yes_or_no(u:is_latin(mx.table)))
+  " Latin square:", u:yes_or_no(u:is_latin(mx.table)))
 print("  Row 3 is 3, 3, 3, 3 -- one element four times and the others missing.")
 print("  A missing element in a row is an equation a * b = v with no solution,")
 print("  which is exactly what having no inverse means.")
@@ -87,13 +100,23 @@ print("  which is exactly what having no inverse means.")
 # The property tracks group-ness across the structures BUILT SO FAR -- and that
 # is a fact about these five tables, not a theorem. Lesson 11 breaks it with a
 # sixth.
-def u:winner_in_rps(x, y) { "Answer the winner of a Rock-Paper-Scissors matchup; a tie answers the shared choice."; if eq(mod(x - y + 3, 3), 1) { x } else { y } }
-def u:left_arg(x, y) { "Answer the first argument, ignoring the second. Left projection."; x }
+def u:winner_in_rps(x, y) {
+  "Answer the winner of a Rock-Paper-Scissors matchup; a tie answers the shared choice.";
+  if eq(mod(x - y + 3, 3), 1) {
+    x
+  } else {
+    y
+  }
+}
+def u:left_arg(x, y) {
+  "Answer the first argument, ignoring the second. Left projection.";
+  x
+}
 checked = [u:is_latin(z4.table), u:is_latin(kl.table), u:is_latin(mx.table),
-           u:is_latin(table(:u:winner_in_rps, u:elements(3), u:elements(3))),
-           u:is_latin(table(:u:left_arg, u:elements(3), u:elements(3)))]
+  u:is_latin(table(:u:winner_in_rps, u:elements(3), u:elements(3))),
+  u:is_latin(table(:u:left_arg, u:elements(3), u:elements(3)))]
 grouped = [u:classify(z4.table).group, u:classify(kl.table).group,
-           cm.group, 0, 0]
+  cm.group, 0, 0]
 print("")
 print("Latin square? Z4, Klein, max, rock-paper-scissors, left projection:")
 print("  latin: ", checked)

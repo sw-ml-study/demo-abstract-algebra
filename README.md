@@ -248,8 +248,16 @@ just render    # rebuild out/ and list exactly what was written
 just tests     # mlplunit conformance suite
 just web       # regenerate the paste-ready Web UI demos in web/
 just assets    # regenerate the diagrams this README embeds
+just fmt       # format every .mlpl file with sw-MLPL's own formatter
 just check     # the full local gate
 ```
+
+Style is not decided here. `just fmt` shells out to sw-MLPL's
+`scripts/mlpl-fmt.sh`, the `cargo fmt` of this language, and `just check` fails
+on any file that would be reformatted — the same dogfooding argument the rest
+of the repository makes. Where Emacs or the sibling checkout is missing the
+format check skips with a notice rather than failing, so a passing gate in a
+bare environment is not proof the tree is formatted.
 
 The interpreter is found at `../sw-mlpl/target/release/mlpl-repl`, or wherever
 `$MLPL` points. Nothing is installed and no stable binary is overwritten.
@@ -286,10 +294,10 @@ worked around silently. The findings are written up as a work order for the
 language team, with fix sites, proposed signatures and acceptance tests:
 **[docs/sw-mlpl-work-order.md](docs/sw-mlpl-work-order.md)**.
 
-**The loop closes.** Four findings have shipped upstream — `str_concat` /
-`str_join`, `to_string`, string lists as `u:` arguments, and the bare-filename
-CLI fix — and this repo adopted each the day it landed, **deleting the bridges
-they justified**. Text generation is ordinary code now rather than a byte
+**The loop closes.** Five findings have shipped upstream — `str_concat` /
+`str_join`, `to_string`, string lists as `u:` arguments, the bare-filename CLI
+fix, and `str_len` / `str_slice` / `str_find` / `str_split` — and this repo
+adopted each the day it landed, **deleting the bridges they justified**. Text generation is ordinary code now rather than a byte
 round-trip; `str_join` taking a whole fragment list in one call turned the
 worst code here into something readable; and the record wrapper that once
 existed only to smuggle a string list past an argument check now stays only

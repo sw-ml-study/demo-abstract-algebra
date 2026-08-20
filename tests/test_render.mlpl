@@ -10,7 +10,8 @@ include "lib/algebra.mlpl";
 include "lib/render.mlpl";
 
 @test {name: "the adopted string builtins", tags: ["render"]}
-def u:test_string_primitives() { "str_join and to_string replaced this repo's two worst bridges.";
+def u:test_string_primitives() {
+  "str_join and to_string replaced this repo's two worst bridges.";
   # Before work-order B1 and B2 landed, joining went through a byte round trip
   # and numbers leaned on to_json. Both bridges are deleted; these pin what
   # replaced them, because every diagram in the repo is built from them.
@@ -32,7 +33,8 @@ def u:test_string_primitives() { "str_join and to_string replaced this repo's tw
 }
 
 @test {name: "cayley svg is well formed", tags: ["render"]}
-def u:test_cayley_svg() { "Structure and highlights land in the emitted SVG.";
+def u:test_cayley_svg() {
+  "Structure and highlights land in the emitted SVG.";
   rps = {
     title: "rps",
     names: ["rock", "paper", "scissors"],
@@ -59,7 +61,10 @@ def u:test_cayley_svg() { "Structure and highlights land in the emitted SVG.";
   ok({test: "cayley-svg", cases: 7})
 }
 
-def u:z3_add(x, y) { "Answer the sum modulo 3, an associative operation to contrast against."; mod(x + y, 3) }
+def u:z3_add(x, y) {
+  "Answer the sum modulo 3, an associative operation to contrast against.";
+  mod(x + y, 3)
+}
 
 # Count occurrences of a needle.  sw-MLPL has no substring search, so this is
 # the array formulation: rotate the haystack once per needle byte and AND the
@@ -67,17 +72,21 @@ def u:z3_add(x, y) { "Answer the sum modulo 3, an associative operation to contr
 # a handful of frames deep regardless of document size -- walking the haystack
 # byte by byte instead overflows the interpreter's stack outright
 # (docs/upstream-asks.md #8).
-def u:count_substr(hay, needle) { "Answer how many times the needle occurs, or 0 when the haystack is shorter than it."; 
+def u:count_substr(hay, needle) {
+  "Answer how many times the needle occurs, or 0 when the haystack is shorter than it.";
   h = tokenize_bytes(hay);
   ndl = tokenize_bytes(needle);
   # A haystack shorter than the needle has no matches, and the rotate-and-mask
   # formulation below would build a zero-length array and fail on it.  The
   # empty document is a real case: assoc_walk_svg returns "" when the operation
   # IS associative.
-  if lt(size(h), size(ndl)) { 0 } else { u:count_found(h, ndl) }
+  if lt(size(h), size(ndl)) {
+    0
+  } else { u:count_found(h, ndl) }
 }
 
-def u:count_found(h, ndl) { "Answer the occurrence count by rotating the haystack once per needle byte."; 
+def u:count_found(h, ndl) {
+  "Answer the occurrence count by rotating the haystack once per needle byte.";
   n = size(h);
   k = size(ndl);
   hits = u:match_mask(h, ndl, 0, ones([n]));
@@ -85,14 +94,18 @@ def u:count_found(h, ndl) { "Answer the occurrence count by rotating the haystac
   reduce_add(hits * lt(range(n), n - k + 1))
 }
 
-def u:match_mask(h, ndl, j, acc) { "Answer the per-position mask of full needle matches, recursing over the NEEDLE so depth stays small."; 
+def u:match_mask(h, ndl, j, acc) {
+  "Answer the per-position mask of full needle matches, recursing over the NEEDLE so depth stays small.";
   if lt(j, size(ndl)) {
     u:match_mask(h, ndl, j + 1, acc * eq(rotate(h, j, 0), take(ndl, 0, j)))
-  } else { acc }
+  } else {
+    acc
+  }
 }
 
 @test {name: "structure json round trips", tags: ["render", "viewer"]}
-def u:test_structure_json() { "The viewer's transport must survive a round trip.";
+def u:test_structure_json() {
+  "The viewer's transport must survive a round trip.";
   rps = {
     title: "rps",
     names: ["rock", "paper", "scissors"],
@@ -111,7 +124,8 @@ def u:test_structure_json() { "The viewer's transport must survive a round trip.
 }
 
 @test {name: "animated associativity walk", tags: ["render", "animation"]}
-def u:test_assoc_walk() { "SMIL markers, and the constraint browsers enforce silently.";
+def u:test_assoc_walk() {
+  "SMIL markers, and the constraint browsers enforce silently.";
   rps = {
     title: "rps",
     names: ["rock", "paper", "scissors"],
@@ -141,7 +155,8 @@ def u:test_assoc_walk() { "SMIL markers, and the constraint browsers enforce sil
 }
 
 @test {name: "dominance digraph reads the table", tags: ["render"]}
-def u:test_dominance() { "The graph must agree with the algebra by construction.";
+def u:test_dominance() {
+  "The graph must agree with the algebra by construction.";
   # RPSLS, ordered so each element beats the next two around the circle.
   s = {
     title: "rpsls",
@@ -156,13 +171,26 @@ def u:test_dominance() { "The graph must agree with the algebra by construction.
   u:assert_eq(u:count_substr(doc, "<marker "), 1, "arrowhead defined once")?;
   # A commutative-but-not-winner table still draws: RPS has 3 wins.
   rps = {title: "rps", names: ["rock", "paper", "scissors"],
-         table: [[0, 1, 0], [1, 1, 2], [0, 2, 2]]};
+    table: [[0, 1, 0], [1, 1, 2], [0, 2, 2]]};
   u:assert_eq(u:count_substr(u:dominance_svg(rps), "<line "), 3, "rps edges")?;
   ok({test: "dominance", cases: 5})
 }
 
-def u:gap5(x, y) { "Answer how many steps forward from y to x around the circle of five."; mod(x - y + 5, 5) }
-def u:beats5(x, y) { "Answer 1 when x beats y in Rock-Paper-Scissors-Lizard-Spock."; lt(u:gap5(x, y) - 1, 2) * (1 - eq(u:gap5(x, y), 0)) }
-def u:fight5(x, y) { "Answer the winner of an RPSLS matchup."; if u:beats5(x, y) { x } else { y } }
+def u:gap5(x, y) {
+  "Answer how many steps forward from y to x around the circle of five.";
+  mod(x - y + 5, 5)
+}
+def u:beats5(x, y) {
+  "Answer 1 when x beats y in Rock-Paper-Scissors-Lizard-Spock.";
+  lt(u:gap5(x, y) - 1, 2) * (1 - eq(u:gap5(x, y), 0))
+}
+def u:fight5(x, y) {
+  "Answer the winner of an RPSLS matchup.";
+  if u:beats5(x, y) {
+    x
+  } else {
+    y
+  }
+}
 
 u:run_registered_tests()

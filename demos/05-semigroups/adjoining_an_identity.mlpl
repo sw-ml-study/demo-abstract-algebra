@@ -26,9 +26,9 @@ include "../../lib/algebra.mlpl"
 include "../../lib/render.mlpl"
 
 u:prolog({
-  title: "LESSON 05 -- SEMIGROUPS: associative, and that is all",
-  intro: "Add associativity to a magma and you have a semigroup. This lesson shows two operations that are associative with no identity anywhere, then performs the standard repair -- ADJOIN one -- and watches the classifier climb a rung on its own."
-})
+    title: "LESSON 05 -- SEMIGROUPS: associative, and that is all",
+    intro: "Add associativity to a magma and you have a semigroup. This lesson shows two operations that are associative with no identity anywhere, then performs the standard repair -- ADJOIN one -- and watches the classifier climb a rung on its own."
+  })
 
 # --- A semigroup with no identity -------------------------------------------
 # Left projection: a * b = a. Both bracketings of a * b * c give a, so it is
@@ -47,7 +47,10 @@ u:show_laws(lp)
 # --- A second one, to show it is not a quirk of projection ------------------
 # The constant operation: everything multiplies to z. Also associative, also
 # identity-free above one element.
-def u:constant_first_element(x, y) { "Answer element 0 whatever the arguments, which is associative and has no identity above one element."; 0 }
+def u:constant_first_element(x, y) {
+  "Answer element 0 whatever the arguments, which is associative and has no identity above one element.";
+  0
+}
 cz = {
   title: "The constant operation on {z, a}: also a semigroup",
   names: ["z", "a"],
@@ -68,8 +71,15 @@ u:show_laws(cz)
 #   rows/cols 0,1 -> the old left-projection table
 #   row 2        -> the header (e * x = x)
 #   col 2        -> the index   (x * e = x)
-def u:with_identity_adjoined(x, y) { "Answer left projection extended by a new element that acts as an identity, the S^1 construction."; 
-  if eq(x, 2) { y } else { if eq(y, 2) { x } else { u:left_arg(x, y) } }
+def u:with_identity_adjoined(x, y) {
+  "Answer left projection extended by a new element that acts as an identity, the S^1 construction.";
+  if eq(x, 2) {
+    y
+  } else {
+    if eq(y, 2) {
+      x
+    } else { u:left_arg(x, y) }
+  }
 }
 mon = {
   title: "Left projection with an identity adjoined: a monoid",

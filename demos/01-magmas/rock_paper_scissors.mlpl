@@ -27,16 +27,26 @@ include "../../lib/algebra.mlpl"
 include "../../lib/render.mlpl"
 
 u:prolog({
-  title: "LESSON 01 -- MAGMAS, via Rock-Paper-Scissors",
-  intro: "A magma is a set with one closed binary operation and nothing else. This lesson builds the Rock-Paper-Scissors 'who wins' operation, asks the machine which laws it obeys, and writes three diagrams: the beats-cycle you already know, the same operation as a colored Cayley table, and an animation of the moment associativity fails."
-})
+    title: "LESSON 01 -- MAGMAS, via Rock-Paper-Scissors",
+    intro: "A magma is a set with one closed binary operation and nothing else. This lesson builds the Rock-Paper-Scissors 'who wins' operation, asks the machine which laws it obeys, and writes three diagrams: the beats-cycle you already know, the same operation as a colored Cayley table, and an animation of the moment associativity fails."
+  })
 
 # --- View 1: the operation as a function -----------------------------------
 # rock 0 beats scissors 2, paper 1 beats rock 0, scissors 2 beats paper 1,
 # so x beats y exactly when (x - y) mod 3 is 1.  The winner of x and y is
 # whichever of them the other does not beat.
-def u:beats_in_rps(x, y) { "Answer 1 when x beats y in Rock-Paper-Scissors: true exactly when x is one step ahead of y around the circle."; eq(mod(x - y + 3, 3), 1) }
-def u:winner_in_rps(x, y) { "Answer the winner of a Rock-Paper-Scissors matchup; a tie answers the shared choice."; if u:beats_in_rps(x, y) { x } else { y } }
+def u:beats_in_rps(x, y) {
+  "Answer 1 when x beats y in Rock-Paper-Scissors: true exactly when x is one step ahead of y around the circle.";
+  eq(mod(x - y + 3, 3), 1)
+}
+def u:winner_in_rps(x, y) {
+  "Answer the winner of a Rock-Paper-Scissors matchup; a tie answers the shared choice.";
+  if u:beats_in_rps(x, y) {
+    x
+  } else {
+    y
+  }
+}
 
 # --- View 2: the same operation as a Cayley table ---------------------------
 # table() is the outer product: every pair of choices, evaluated at once.

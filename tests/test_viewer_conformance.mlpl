@@ -13,7 +13,8 @@
 include "lib/algebra.mlpl";
 
 # One fixture: a table and every verdict the page must match.
-def u:fixture(name, t) { "Answer the verdicts a viewer must reproduce for one table.";
+def u:fixture(name, t) {
+  "Answer the verdicts a viewer must reproduce for one table.";
   c = u:classify(t);
   x = u:assoc_counterexample(t);
   {
@@ -34,13 +35,30 @@ def u:fixture(name, t) { "Answer the verdicts a viewer must reproduce for one ta
   }
 }
 
-def u:add_mod_3(x, y) { "Answer the sum modulo 3."; mod(x + y, 3) }
-def u:add_mod_4(x, y) { "Answer the sum modulo 4."; mod(x + y, 4) }
-def u:xor_of(x, y) { "Answer the bitwise exclusive-or, which is the Klein four-group here."; bxor(x, y) }
-def u:larger_of(x, y) { "Answer whichever argument is larger."; if lt(x, y) { y } else { x } }
+def u:add_mod_3(x, y) {
+  "Answer the sum modulo 3.";
+  mod(x + y, 3)
+}
+def u:add_mod_4(x, y) {
+  "Answer the sum modulo 4.";
+  mod(x + y, 4)
+}
+def u:xor_of(x, y) {
+  "Answer the bitwise exclusive-or, which is the Klein four-group here.";
+  bxor(x, y)
+}
+def u:larger_of(x, y) {
+  "Answer whichever argument is larger.";
+  if lt(x, y) {
+    y
+  } else {
+    x
+  }
+}
 
 @test {name: "viewer fixtures match the library", tags: ["viewer"]}
-def u:test_viewer_fixtures() { "Write the fixtures the page is checked against, and assert the ones that carry the lesson.";
+def u:test_viewer_fixtures() {
+  "Write the fixtures the page is checked against, and assert the ones that carry the lesson.";
   rps = [[0, 1, 0], [1, 1, 2], [0, 2, 2]];
   z3 = table(:u:add_mod_3, u:elements(3), u:elements(3));
   z4 = table(:u:add_mod_4, u:elements(4), u:elements(4));

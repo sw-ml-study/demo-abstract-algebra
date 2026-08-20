@@ -25,16 +25,19 @@ include "../../lib/algebra.mlpl"
 include "../../lib/render.mlpl"
 
 u:prolog({
-  title: "LESSON 12 -- ISOMORPHISM: when two tables are the same structure",
-  intro: "Lesson 10 counted tables. This one counts STRUCTURES, which is a smaller and more honest number: two tables that differ only in what the elements are called are the same object twice. Quotienting the full enumeration by renaming turns 19,683 operations into 3,330 structures, and the three group tables into one group."
-})
+    title: "LESSON 12 -- ISOMORPHISM: when two tables are the same structure",
+    intro: "Lesson 10 counted tables. This one counts STRUCTURES, which is a smaller and more honest number: two tables that differ only in what the elements are called are the same object twice. Quotienting the full enumeration by renaming turns 19,683 operations into 3,330 structures, and the three group tables into one group."
+  })
 
 # The six ways to rename three elements. Renaming IS a permutation, so the
 # group from lesson 09 is doing double duty here as the thing we quotient by.
 perms = [[0, 1, 2], [0, 2, 1], [1, 0, 2], [1, 2, 0], [2, 0, 1], [2, 1, 0]]
 
 # --- Two tables that are the same structure ---------------------------------
-def u:add_mod_3(x, y) { "Answer the sum modulo 3."; mod(x + y, 3) }
+def u:add_mod_3(x, y) {
+  "Answer the sum modulo 3.";
+  mod(x + y, 3)
+}
 z3 = {
   title: "Z3 under addition",
   names: ["0", "1", "2"],
@@ -54,16 +57,17 @@ u:show_table(renamed)
 print("")
 print("the two tables are equal:", u:yes_or_no(equal(z3.table, renamed.table)))
 print("they are isomorphic under [1, 2, 0]:",
-      u:yes_or_no(u:is_isomorphic_under(z3.table, renamed.table, p)))
+  u:yes_or_no(u:is_isomorphic_under(z3.table, renamed.table, p)))
 print("  Different arrays, same structure. Every law agrees, because")
 print("  relabelling cannot create or destroy one:")
 print("    group:", u:classify(z3.table).group, u:classify(renamed.table).group,
-      "  abelian:", u:classify(z3.table).abelian_group, u:classify(renamed.table).abelian_group)
+  "  abelian:", u:classify(z3.table).abelian_group, u:classify(renamed.table).abelian_group)
 
 # --- Isomorphism is a search, and the witness is the permutation ------------
 # Two tables are isomorphic when SOME permutation works. Finding it is a
 # search over n! candidates, and the one that succeeds is the proof.
-def u:matches(i) { "Answer 1 when permutation i carries z3 onto the renamed table.";
+def u:matches(i) {
+  "Answer 1 when permutation i carries z3 onto the renamed table.";
   u:is_isomorphic_under(z3.table, renamed.table, take(perms, 0, i))
 }
 hits = each(:u:matches, u:elements(6))
@@ -102,7 +106,7 @@ print("  counted are it, written three ways -- one per choice of identity.")
 own = eq(canon, u:elements(19683))
 print("")
 print("tables that are their own canonical form:", reduce_add(own),
-      " -- matches the class count:", u:yes_or_no(eq(reduce_add(own), classes)))
+  " -- matches the class count:", u:yes_or_no(eq(reduce_add(own), classes)))
 
 # --- The diagrams -----------------------------------------------------------
 a = u:write_cayley_svg("out/12-z3.svg", z3)

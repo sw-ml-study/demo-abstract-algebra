@@ -26,9 +26,9 @@ include "../../lib/algebra.mlpl"
 include "../../lib/render.mlpl"
 
 u:prolog({
-  title: "LESSON 10 -- EVERY OPERATION THERE IS, CLASSIFIED",
-  intro: "Stop looking at one table and the count explodes: 16 operations on two elements, 19,683 on three. This lesson generates every one of them as a single array, runs the whole law ladder over the batch with no loop at anything, and reports how many of each structure exist. The rungs turn out to be very unequal in size."
-})
+    title: "LESSON 10 -- EVERY OPERATION THERE IS, CLASSIFIED",
+    intro: "Stop looking at one table and the count explodes: 16 operations on two elements, 19,683 on three. This lesson generates every one of them as a single array, runs the whole law ladder over the batch with no loop at anything, and reports how many of each structure exist. The rungs turn out to be very unequal in size."
+  })
 
 # --- Order 2: all sixteen ---------------------------------------------------
 u:set_base(2)
@@ -37,7 +37,8 @@ print("all 16 operations on {0, 1}, as one array of shape", shape(two))
 print(disp(take(two, 0, 6)))
 print("  (that is the seventh of them; every table is a slice of one array)")
 
-def u:census(b) { "Answer how many tables in the batch reach each rung.";
+def u:census(b) {
+  "Answer how many tables in the batch reach each rung.";
   assoc = u:batch_associative(b)
   ident = u:batch_has_identity(b)
   comm = u:batch_commutative(b)
@@ -55,19 +56,25 @@ def u:census(b) { "Answer how many tables in the batch reach each rung.";
 c2 = u:census(two)
 print("")
 print("order 2 -- magmas:", c2.magmas, " semigroups:", c2.semigroups,
-      " monoids:", c2.monoids, " groups:", c2.groups)
+  " monoids:", c2.monoids, " groups:", c2.groups)
 print("           commutative:", c2.commutative, " abelian groups:", c2.abelian_groups)
 
 # --- The batched check must agree with the one-at-a-time check --------------
 # The whole lesson rests on the batched formulation being the same question.
 # Check it against the single-table library on all 16, element by element.
-def u:solo_group(k) { "Answer 1 when table k of the batch is a group, checked the single-table way."; u:classify(take(two, 0, k)).group }
-def u:solo_assoc(k) { "Answer 1 when table k of the batch is associative, checked the single-table way."; u:is_associative(take(two, 0, k)) }
+def u:solo_group(k) {
+  "Answer 1 when table k of the batch is a group, checked the single-table way.";
+  u:classify(take(two, 0, k)).group
+}
+def u:solo_assoc(k) {
+  "Answer 1 when table k of the batch is associative, checked the single-table way.";
+  u:is_associative(take(two, 0, k))
+}
 agree_group = equal(u:batch_group(two), each(:u:solo_group, u:elements(16)))
 agree_assoc = equal(u:batch_associative(two), each(:u:solo_assoc, u:elements(16)))
 print("")
 print("batched answers match the per-table library:",
-      u:yes_or_no(agree_group * agree_assoc))
+  u:yes_or_no(agree_group * agree_assoc))
 
 # --- Order 3: all 19,683 ----------------------------------------------------
 u:set_base(3)
@@ -76,7 +83,7 @@ c3 = u:census(three)
 print("")
 print("all", c3.magmas, "operations on {0, 1, 2}, shape", shape(three))
 print("order 3 -- magmas:", c3.magmas, " semigroups:", c3.semigroups,
-      " monoids:", c3.monoids, " groups:", c3.groups)
+  " monoids:", c3.monoids, " groups:", c3.groups)
 print("           commutative:", c3.commutative, " abelian groups:", c3.abelian_groups)
 
 # --- What the numbers say ---------------------------------------------------

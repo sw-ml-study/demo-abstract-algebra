@@ -27,15 +27,25 @@ include "../../lib/algebra.mlpl"
 include "../../lib/render.mlpl"
 
 u:prolog({
-  title: "LESSON 04 -- ASSOCIATIVITY, and why a witness beats a boolean",
-  intro: "Brackets either matter or they do not. Checking that means visiting every triple of elements -- n^3 of them -- which this lesson does in three whole-array operations and no loop, then slices the result into square panels you can read, and finishes by exhibiting the exact triple where an operation goes wrong."
-})
+    title: "LESSON 04 -- ASSOCIATIVITY, and why a witness beats a boolean",
+    intro: "Brackets either matter or they do not. Checking that means visiting every triple of elements -- n^3 of them -- which this lesson does in three whole-array operations and no loop, then slices the result into square panels you can read, and finishes by exhibiting the exact triple where an operation goes wrong."
+  })
 
 names = ["rock", "paper", "scissors"]
 
 # --- The operation that fails -----------------------------------------------
-def u:beats_in_rps(x, y) { "Answer 1 when x beats y in Rock-Paper-Scissors: true exactly when x is one step ahead of y around the circle."; eq(mod(x - y + 3, 3), 1) }
-def u:winner_in_rps(x, y) { "Answer the winner of a Rock-Paper-Scissors matchup; a tie answers the shared choice."; if u:beats_in_rps(x, y) { x } else { y } }
+def u:beats_in_rps(x, y) {
+  "Answer 1 when x beats y in Rock-Paper-Scissors: true exactly when x is one step ahead of y around the circle.";
+  eq(mod(x - y + 3, 3), 1)
+}
+def u:winner_in_rps(x, y) {
+  "Answer the winner of a Rock-Paper-Scissors matchup; a tie answers the shared choice.";
+  if u:beats_in_rps(x, y) {
+    x
+  } else {
+    y
+  }
+}
 rps = {
   title: "Rock-Paper-Scissors: bracketing matters",
   names: names,
@@ -71,7 +81,10 @@ x = u:show_assoc_counterexample(rps)
 
 # --- An operation that passes -----------------------------------------------
 # Z3 under addition. Same shape, same check, twenty-seven agreements.
-def u:add_mod_3(x, y) { "Answer the sum modulo 3, which folds every escape back into the set."; mod(x + y, 3) }
+def u:add_mod_3(x, y) {
+  "Answer the sum modulo 3, which folds every escape back into the set.";
+  mod(x + y, 3)
+}
 z3 = {
   title: "Z3 under addition: brackets do not matter",
   names: ["0", "1", "2"],
@@ -93,7 +106,7 @@ lp = {
 clp = u:classify(lp.table)
 print("")
 print("Left projection -- associative:", u:yes_or_no(clp.associative),
-      " commutative:", u:yes_or_no(clp.commutative))
+  " commutative:", u:yes_or_no(clp.commutative))
 print("Rock-Paper-Scissors -- associative:", u:yes_or_no(0), " commutative:", u:yes_or_no(1))
 
 # --- The diagrams -----------------------------------------------------------

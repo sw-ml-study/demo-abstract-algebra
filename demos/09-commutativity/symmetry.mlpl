@@ -28,9 +28,9 @@ include "../../lib/algebra.mlpl"
 include "../../lib/render.mlpl"
 
 u:prolog({
-  title: "LESSON 09 -- COMMUTATIVITY: a property, not a rung",
-  intro: "Every law so far stacked: inverses needed an identity, an identity needed associativity to be worth having. Commutativity needs nothing and nothing needs it, so it decorates a rung rather than being one. This lesson shows it at four rungs at once, and builds the smallest group where it fails."
-})
+    title: "LESSON 09 -- COMMUTATIVITY: a property, not a rung",
+    intro: "Every law so far stacked: inverses needed an identity, an identity needed associativity to be worth having. Commutativity needs nothing and nothing needs it, so it decorates a rung rather than being one. This lesson shows it at four rungs at once, and builds the smallest group where it fails."
+  })
 
 # --- The six permutations of three things -----------------------------------
 # S_3 is the smallest non-abelian group, and it is not an abstract curiosity:
@@ -38,15 +38,18 @@ u:prolog({
 # Element i is the permutation sending slot k to perms[i][k].
 perms = [[0, 1, 2], [0, 2, 1], [1, 0, 2], [1, 2, 0], [2, 0, 1], [2, 1, 0]]
 
-def u:after(a, b) { "Answer the permutation a-after-b: apply b, then a.";
+def u:after(a, b) {
+  "Answer the permutation a-after-b: apply b, then a.";
   flatten(gather_rows(reshape(a, [3, 1]), b))
 }
 
-def u:which_perm(p) { "Answer which of the six permutations p is, by matching it against all of them at once.";
+def u:which_perm(p) {
+  "Answer which of the six permutations p is, by matching it against all of them at once.";
   argmax(reduce(:and, eq(perms, gather_rows(reshape(p, [1, 3]), fill([6], 0))), 1))
 }
 
-def u:compose(i, j) { "Answer the index of permutation i composed after permutation j.";
+def u:compose(i, j) {
+  "Answer the index of permutation i composed after permutation j.";
   u:which_perm(u:after(take(perms, 0, i), take(perms, 0, j)))
 }
 
@@ -72,13 +75,26 @@ print("  then rotate, and you do not land where rotating first would take you.")
 mismatch = 1 - eq(s3.table, transpose(s3.table))
 print("")
 print("cells that disagree with their mirror:", reduce_add(flatten(mismatch)),
-      "of", size(s3.table))
+  "of", size(s3.table))
 
 # --- The property is independent of the rung --------------------------------
 # Four structures, four different rungs, and commutativity varies freely.
-def u:add_mod_3(x, y) { "Answer the sum modulo 3."; mod(x + y, 3) }
-def u:larger_of(x, y) { "Answer whichever argument is larger."; if lt(x, y) { y } else { x } }
-def u:constant(x, y) { "Answer element 0 whatever the arguments."; 0 }
+def u:add_mod_3(x, y) {
+  "Answer the sum modulo 3.";
+  mod(x + y, 3)
+}
+def u:larger_of(x, y) {
+  "Answer whichever argument is larger.";
+  if lt(x, y) {
+    y
+  } else {
+    x
+  }
+}
+def u:constant(x, y) {
+  "Answer element 0 whatever the arguments.";
+  0
+}
 
 rungs = [
   u:structure_name(table(:u:constant, u:elements(3), u:elements(3))),

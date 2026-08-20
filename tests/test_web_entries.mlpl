@@ -30,27 +30,47 @@ include "lib/algebra.mlpl";
 # escaped -- not as the raw string (docs/upstream-asks.md #10). The browser
 # receives the raw value, so a leading quote byte is skipped here rather than
 # weakening the check.
-def u:starts_with_svg(s) { "Answer 1 when the value begins with an svg tag, the exact test the playground uses."; u:starts_with(s, "<svg") }
+def u:starts_with_svg(s) {
+  "Answer 1 when the value begins with an svg tag, the exact test the playground uses.";
+  u:starts_with(s, "<svg")
+}
 
-def u:starts_with(s, prefix) { "Answer 1 when the value begins with the prefix, skipping a leading quote from run_script."; 
+def u:starts_with(s, prefix) {
+  "Answer 1 when the value begins with the prefix, skipping a leading quote from run_script.";
   b = u:unquote(tokenize_bytes(s));
   k = size(tokenize_bytes(prefix));
-  if lt(size(b), k) { 0 } else { equal(u:head(b, k), tokenize_bytes(prefix)) }
+  if lt(size(b), k) {
+    0
+  } else {
+    equal(u:head(b, k), tokenize_bytes(prefix))
+  }
 }
 
-def u:unquote(b) { "Answer the bytes without a leading quote, because run_script reports a string as its repr."; 
-  if eq(take(b, 0, 0), 34) { compress(gt(range(size(b)), 0), b) } else { b }
+def u:unquote(b) {
+  "Answer the bytes without a leading quote, because run_script reports a string as its repr.";
+  if eq(take(b, 0, 0), 34) {
+    compress(gt(range(size(b)), 0), b)
+  } else {
+    b
+  }
 }
 
-def u:head(v, k) { "Answer the first k bytes."; compress(lt(range(size(v)), k), v) }
+def u:head(v, k) {
+  "Answer the first k bytes.";
+  compress(lt(range(size(v)), k), v)
+}
 
 # Run a generated bundle in a fresh environment, as the browser would.
 # source_dir roots the sandbox at the repository so relative paths resolve the
 # same way they do under scripts/run-all.
-def u:run_web(path) { "Run a generated web demo in a fresh environment, the way the browser would."; unwrap(run_script(path, {source_dir: "."})) }
+def u:run_web(path) {
+  "Run a generated web demo in a fresh environment, the way the browser would.";
+  unwrap(run_script(path, {source_dir: "."}))
+}
 
 @test {name: "narration is comments, not strings", tags: ["web"]}
-def u:test_web_narration() { "A string echoes twice; a comment renders once.";
+def u:test_web_narration() {
+  "A string echoes twice; a comment renders once.";
   # Narration lives in # comment blocks, so it contributes no VALUE at all --
   # which is the whole point. A demo's final value is therefore its last
   # picture, and the explanation around it is invisible to the evaluator.
@@ -79,7 +99,8 @@ def u:test_web_narration() { "A string echoes twice; a comment renders once.";
 }
 
 @test {name: "web demos are standalone and short", tags: ["web"]}
-def u:test_web_bundles_standalone() { "No include, no filesystem, no bulk.";
+def u:test_web_bundles_standalone() {
+  "No include, no filesystem, no bulk.";
   u:assert_eq(u:count_in_file("web/magma_rps.mlpl", "include \""), 0,
     "include survived into a web demo")?;
   u:assert_eq(u:count_in_file("web/latin_square.mlpl", "include \""), 0,
@@ -101,16 +122,18 @@ def u:test_web_bundles_standalone() { "No include, no filesystem, no bulk.";
 # so the CLI suite can gate on it. Asserting that keeps the two file kinds from
 # quietly converging, and documents WHY pasting a lesson shows text.
 @test {name: "lessons are not web entries, by design", tags: ["web"]}
-def u:test_lessons_are_cli() { "The distinction is intentional, so pin it.";
+def u:test_lessons_are_cli() {
+  "The distinction is intentional, so pin it.";
   lesson = unwrap(run_script("demos/01-magmas/rock_paper_scissors.mlpl",
-    {source_dir: ".", capture: 1}));
+      {source_dir: ".", capture: 1}));
   u:assert_eq(lesson.status, "ok", "lesson did not run under the CLI")?;
   u:assert_eq(u:starts_with_svg(lesson.value), 0,
     "a lesson's value should NOT be an SVG -- paste web/ instead")?;
   ok({test: "lessons-are-cli", cases: 2})
 }
 
-def u:count_in_file(path, needle) { "Answer how many times the needle occurs in the named file."; 
+def u:count_in_file(path, needle) {
+  "Answer how many times the needle occurs in the named file.";
   text = unwrap(read_text(path));
   u:count_substr(text, needle)
 }
@@ -118,23 +141,30 @@ def u:count_in_file(path, needle) { "Answer how many times the needle occurs in 
 # Occurrence count via the array formulation: rotate the haystack once per
 # needle byte and AND the per-position equalities.  Recursion is over the
 # NEEDLE, so depth stays small no matter how large the document is.
-def u:count_substr(hay, needle) { "Answer how many times the needle occurs, or 0 when the haystack is shorter than it."; 
+def u:count_substr(hay, needle) {
+  "Answer how many times the needle occurs, or 0 when the haystack is shorter than it.";
   h = tokenize_bytes(hay);
   ndl = tokenize_bytes(needle);
-  if lt(size(h), size(ndl)) { 0 } else { u:count_found(h, ndl) }
+  if lt(size(h), size(ndl)) {
+    0
+  } else { u:count_found(h, ndl) }
 }
 
-def u:count_found(h, ndl) { "Answer the occurrence count by rotating the haystack once per needle byte."; 
+def u:count_found(h, ndl) {
+  "Answer the occurrence count by rotating the haystack once per needle byte.";
   n = size(h);
   k = size(ndl);
   hits = u:match_mask(h, ndl, 0, ones([n]));
   reduce_add(hits * lt(range(n), n - k + 1))
 }
 
-def u:match_mask(h, ndl, j, acc) { "Answer the per-position mask of full needle matches, recursing over the NEEDLE so depth stays small."; 
+def u:match_mask(h, ndl, j, acc) {
+  "Answer the per-position mask of full needle matches, recursing over the NEEDLE so depth stays small.";
   if lt(j, size(ndl)) {
     u:match_mask(h, ndl, j + 1, acc * eq(rotate(h, j, 0), take(ndl, 0, j)))
-  } else { acc }
+  } else {
+    acc
+  }
 }
 
 u:run_registered_tests()

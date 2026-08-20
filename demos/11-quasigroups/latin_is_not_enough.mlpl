@@ -34,9 +34,9 @@ include "../../lib/algebra.mlpl"
 include "../../lib/render.mlpl"
 
 u:prolog({
-  title: "LESSON 11 -- QUASIGROUPS AND LOOPS: when a pattern is not a proof",
-  intro: "Four tables that look progressively more like a group, and are not one until the last. This lesson walks the OTHER branch up from magma -- unique division gives a quasigroup, an identity gives a loop, associativity gives a group -- and it exists because this repository once claimed the first of those was already the last."
-})
+    title: "LESSON 11 -- QUASIGROUPS AND LOOPS: when a pattern is not a proof",
+    intro: "Four tables that look progressively more like a group, and are not one until the last. This lesson walks the OTHER branch up from magma -- unique division gives a quasigroup, an identity gives a loop, associativity gives a group -- and it exists because this repository once claimed the first of those was already the last."
+  })
 
 # --- 1. Not even a quasigroup -----------------------------------------------
 # Rock-Paper-Scissors again. Ask "what beats rock to give rock?" and there are
@@ -51,9 +51,9 @@ u:show_table(rps)
 w = u:repeat_witness(rps.table)
 print("")
 print("  left cancellation fails: row", unwrap(list_get(rps.names, w.row)),
-      "contains", unwrap(list_get(rps.names, w.value)), "twice.")
+  "contains", unwrap(list_get(rps.names, w.value)), "twice.")
 print("  So", unwrap(list_get(rps.names, w.row)), "* x =",
-      unwrap(list_get(rps.names, w.value)), "has two solutions, not one,")
+  unwrap(list_get(rps.names, w.value)), "has two solutions, not one,")
 print("  and some other element is missing from that row entirely.")
 print("  quasigroup:", u:yes_or_no(u:is_quasigroup(rps.table)))
 
@@ -61,7 +61,10 @@ print("  quasigroup:", u:yes_or_no(u:is_quasigroup(rps.table)))
 # Subtraction modulo 3. Every row and every column is a permutation, so
 # division always works -- and there is still no identity and no
 # associativity. This is the counterexample that kills "Latin means group".
-def u:sub_mod_3(x, y) { "Answer x minus y modulo 3."; mod(x - y + 3, 3) }
+def u:sub_mod_3(x, y) {
+  "Answer x minus y modulo 3.";
+  mod(x - y + 3, 3)
+}
 quasi = {
   title: "Subtraction mod 3: a quasigroup, and no more",
   names: ["0", "1", "2"],
@@ -71,9 +74,9 @@ print("")
 u:show_table(quasi)
 print("")
 print("  quasigroup:", u:yes_or_no(u:is_quasigroup(quasi.table)),
-      "  identity:", u:yes_or_no(u:has_identity(quasi.table)),
-      "  loop:", u:yes_or_no(u:is_loop(quasi.table)),
-      "  group:", u:yes_or_no(u:classify(quasi.table).group))
+  "  identity:", u:yes_or_no(u:has_identity(quasi.table)),
+  "  loop:", u:yes_or_no(u:is_loop(quasi.table)),
+  "  group:", u:yes_or_no(u:classify(quasi.table).group))
 qx = u:show_assoc_counterexample(quasi)
 
 # --- 3. A loop that is not a group ------------------------------------------
@@ -85,22 +88,25 @@ loop5 = {
   title: "A loop of order 5: identity, division, and still not a group",
   names: ["e", "a", "b", "c", "d"],
   table: [[0, 1, 2, 3, 4],
-          [1, 0, 3, 4, 2],
-          [2, 3, 4, 0, 1],
-          [3, 4, 1, 2, 0],
-          [4, 2, 0, 1, 3]]
+    [1, 0, 3, 4, 2],
+    [2, 3, 4, 0, 1],
+    [3, 4, 1, 2, 0],
+    [4, 2, 0, 1, 3]]
 }
 print("")
 u:show_table(loop5)
 print("")
 print("  quasigroup:", u:yes_or_no(u:is_quasigroup(loop5.table)),
-      "  identity:", u:yes_or_no(u:has_identity(loop5.table)),
-      "  loop:", u:yes_or_no(u:is_loop(loop5.table)),
-      "  group:", u:yes_or_no(u:classify(loop5.table).group))
+  "  identity:", u:yes_or_no(u:has_identity(loop5.table)),
+  "  loop:", u:yes_or_no(u:is_loop(loop5.table)),
+  "  group:", u:yes_or_no(u:classify(loop5.table).group))
 lx = u:show_assoc_counterexample(loop5)
 
 # --- 4. A group -------------------------------------------------------------
-def u:add_mod_3(x, y) { "Answer the sum modulo 3."; mod(x + y, 3) }
+def u:add_mod_3(x, y) {
+  "Answer the sum modulo 3.";
+  mod(x + y, 3)
+}
 grp = {
   title: "Addition mod 3: quasigroup, loop, and group",
   names: ["0", "1", "2"],
@@ -116,13 +122,13 @@ tables = [rps.table, quasi.table, grp.table]
 print("")
 print("                       rps   sub3   add3")
 print("  quasigroup:        ", u:is_quasigroup(rps.table), "    ",
-      u:is_quasigroup(quasi.table), "    ", u:is_quasigroup(grp.table))
+  u:is_quasigroup(quasi.table), "    ", u:is_quasigroup(grp.table))
 print("  identity:          ", u:has_identity(rps.table), "    ",
-      u:has_identity(quasi.table), "    ", u:has_identity(grp.table))
+  u:has_identity(quasi.table), "    ", u:has_identity(grp.table))
 print("  associative:       ", u:is_associative(rps.table), "    ",
-      u:is_associative(quasi.table), "    ", u:is_associative(grp.table))
+  u:is_associative(quasi.table), "    ", u:is_associative(grp.table))
 print("  (order 5 loop: quasigroup 1, identity 1, associative",
-      u:is_associative(loop5.table), ")")
+  u:is_associative(loop5.table), ")")
 
 # --- The diagrams -----------------------------------------------------------
 a = u:write_cayley_svg("out/11-not-a-quasigroup.svg", rps)

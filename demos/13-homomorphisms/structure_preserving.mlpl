@@ -29,12 +29,18 @@ include "../../lib/algebra.mlpl"
 include "../../lib/render.mlpl"
 
 u:prolog({
-  title: "LESSON 13 -- HOMOMORPHISMS: the maps that respect the structure",
-  intro: "Twelve lessons asked what laws one operation obeys. This one asks what survives a map between two of them, which is a question about a pair rather than a thing -- and it is the last lesson here, because once you notice these maps compose you have left algebra for category theory."
-})
+    title: "LESSON 13 -- HOMOMORPHISMS: the maps that respect the structure",
+    intro: "Twelve lessons asked what laws one operation obeys. This one asks what survives a map between two of them, which is a question about a pair rather than a thing -- and it is the last lesson here, because once you notice these maps compose you have left algebra for category theory."
+  })
 
-def u:add_mod_4(x, y) { "Answer the sum modulo 4."; mod(x + y, 4) }
-def u:add_mod_2(x, y) { "Answer the sum modulo 2."; mod(x + y, 2) }
+def u:add_mod_4(x, y) {
+  "Answer the sum modulo 4.";
+  mod(x + y, 4)
+}
+def u:add_mod_2(x, y) {
+  "Answer the sum modulo 2.";
+  mod(x + y, 2)
+}
 
 z4 = table(:u:add_mod_4, u:elements(4), u:elements(4))
 z2 = table(:u:add_mod_2, u:elements(2), u:elements(2))
@@ -80,7 +86,7 @@ bx = u:hom_counterexample(bogus, z4, z2)
 print("")
 print("a map that is not a homomorphism: f =", bogus)
 print("  first failure at a =", unwrap(list_get(z4_names, bx.a)),
-      " b =", unwrap(list_get(z4_names, bx.b)))
+  " b =", unwrap(list_get(z4_names, bx.b)))
 print("    f(a * b)   =", unwrap(list_get(z2_names, bx.left)))
 print("    f(a) * f(b) =", unwrap(list_get(z2_names, bx.right)))
 print("  A failed map names the pair, as every failed law here does.")
@@ -98,7 +104,10 @@ print("the identity map Z4 -> Z4:       ", u:yes_or_no(u:is_homomorphism(identit
 # --- Composition: the door out ----------------------------------------------
 # Compose two homomorphisms and you get a homomorphism. That is the whole
 # reason categories exist as a subject: maps that compose, with identities.
-def u:add_mod_8(x, y) { "Answer the sum modulo 8."; mod(x + y, 8) }
+def u:add_mod_8(x, y) {
+  "Answer the sum modulo 8.";
+  mod(x + y, 8)
+}
 z8 = table(:u:add_mod_8, u:elements(8), u:elements(8))
 halve = [0, 1, 2, 3, 0, 1, 2, 3]          # Z8 -> Z4, reduce modulo 4
 composed = flatten(gather_rows(reshape(parity, [4, 1]), halve))   # then parity
@@ -108,7 +117,7 @@ print("g: Z8 -> Z4 is a homomorphism:", u:yes_or_no(u:is_homomorphism(halve, z8,
 print("f: Z4 -> Z2 is a homomorphism:", u:yes_or_no(u:is_homomorphism(parity, z4, z2)))
 print("f after g:", composed)
 print("f after g: Z8 -> Z2 is a homomorphism:",
-      u:yes_or_no(u:is_homomorphism(composed, z8, z2)))
+  u:yes_or_no(u:is_homomorphism(composed, z8, z2)))
 print("  Composition is closed, the identity map is a homomorphism, and")
 print("  composing is associative because composing functions always is.")
 print("  Closed, associative, identity -- that is a MONOID of maps, and the")

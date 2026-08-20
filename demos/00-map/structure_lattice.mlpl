@@ -29,31 +29,52 @@ include "../../lib/algebra.mlpl"
 include "../../lib/render.mlpl"
 
 u:prolog({
-  title: "LESSON 00 -- THE MAP: rungs are not a single ladder",
-  intro: "Six structures, two routes, and the laws that separate them. Everything in Stage 1 sits somewhere on this picture, and the picture is verified rather than drawn: each node carries a table, and the classifier must agree about where it belongs."
-})
+    title: "LESSON 00 -- THE MAP: rungs are not a single ladder",
+    intro: "Six structures, two routes, and the laws that separate them. Everything in Stage 1 sits somewhere on this picture, and the picture is verified rather than drawn: each node carries a table, and the classifier must agree about where it belongs."
+  })
 
 # --- The witnesses ----------------------------------------------------------
 # One real structure per node, drawn from the lessons that introduce them.
-def u:winner_of(x, y) { "Answer the winner of a Rock-Paper-Scissors matchup."; if eq(mod(x - y + 3, 3), 1) { x } else { y } }
-def u:add_mod_3(x, y) { "Answer the sum modulo 3."; mod(x + y, 3) }
-def u:sub_mod_3(x, y) { "Answer x minus y modulo 3."; mod(x - y + 3, 3) }
-def u:larger_of(x, y) { "Answer whichever argument is larger."; if lt(x, y) { y } else { x } }
+def u:winner_of(x, y) {
+  "Answer the winner of a Rock-Paper-Scissors matchup.";
+  if eq(mod(x - y + 3, 3), 1) {
+    x
+  } else {
+    y
+  }
+}
+def u:add_mod_3(x, y) {
+  "Answer the sum modulo 3.";
+  mod(x + y, 3)
+}
+def u:sub_mod_3(x, y) {
+  "Answer x minus y modulo 3.";
+  mod(x - y + 3, 3)
+}
+def u:larger_of(x, y) {
+  "Answer whichever argument is larger.";
+  if lt(x, y) {
+    y
+  } else {
+    x
+  }
+}
 
 magma = table(:u:winner_of, u:elements(3), u:elements(3))       # lesson 01
 semigroup = table(:u:left_arg, u:elements(3), u:elements(3))     # lesson 05
 monoid = table(:u:larger_of, u:elements(3), u:elements(3))       # lesson 06
 quasigroup = table(:u:sub_mod_3, u:elements(3), u:elements(3))   # lesson 11
 loop = [[0, 1, 2, 3, 4], [1, 0, 3, 4, 2], [2, 3, 4, 0, 1],
-        [3, 4, 1, 2, 0], [4, 2, 0, 1, 3]]                        # lesson 11
+  [3, 4, 1, 2, 0], [4, 2, 0, 1, 3]]                        # lesson 11
 group = table(:u:add_mod_3, u:elements(3), u:elements(3))        # lesson 08
 
 # --- Where the classifier says each one sits --------------------------------
 print("node          closed assoc ident inv  latin  ->  rung")
-def u:describe(name, t) { "Print one node's law verdicts and the rung the classifier assigns.";
+def u:describe(name, t) {
+  "Print one node's law verdicts and the rung the classifier assigns.";
   c = u:classify(t)
   print(name, "  ", c.closed, "     ", c.associative, "    ", c.identity, "    ",
-        c.inverses, "   ", u:is_latin(t), "   ->", u:structure_name(t))
+    c.inverses, "   ", u:is_latin(t), "   ->", u:structure_name(t))
 }
 u:describe("magma     ", magma)
 u:describe("semigroup ", semigroup)
@@ -80,7 +101,7 @@ lattice = {
   node_y: [56, 160, 256, 160, 256, 366],
   edges: [[0, 1], [1, 2], [2, 5], [0, 3], [3, 4], [4, 5]],
   edge_labels: ["associativity", "identity", "inverses",
-                "unique division", "identity", "associativity"]
+    "unique division", "identity", "associativity"]
 }
 a = u:write_lattice_svg("out/00-structure-lattice.svg", lattice)
 

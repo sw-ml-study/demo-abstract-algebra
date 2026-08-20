@@ -182,7 +182,18 @@ exists *only* to guard an undocumented dependency.
 
 ---
 
-## B3 — Strings have no length, no index, no search *(blocking)*
+## B3 — Strings have no length, no index, no search — **SHIPPED**
+
+All four builtins are live in the current binary and verified by
+`probes/text_capabilities.mlpl`. `str_len` counts CHARACTERS, not bytes:
+`str_len("héllo")` answers 5 where the string is 6 bytes. `lib/render.mlpl`'s
+`u:text_width_px` has dropped its byte-counting bridge accordingly.
+
+One bridge stays load-bearing: `str_find` answers the FIRST index only, so
+counting occurrences still needs the rotate-and-mask formulation in
+`u:count_substr` (`tests/test_render.mlpl`). The original report follows.
+
+### Original report *(blocking, now closed)*
 
 ### Symptom
 
@@ -406,12 +417,13 @@ The process exits 0 with a caught error rather than 134 with a runtime abort.
 | 2 | **B2** `to_string` | small | all numeric labels; removes a silent-drift dependency |
 | 3 | **B5** string-list arguments | trivial — looks like a one-line domain check | every renderer signature |
 | 4 | **B4** string-list construction | small | `str_join`'s input; generated labels |
-| 5 | **B3** `str_len` / `str_slice` / `str_find` / `str_split` | medium | lesson 05; honest text tests |
+| ~~5~~ | ~~**B3** `str_len` / `str_slice` / `str_find` / `str_split`~~ | **SHIPPED** | adopted; one bridge stays for occurrence counting |
 | 6 | **B6** recursion cap instead of abort | medium | robustness; stops crashing on ordinary code |
 
 **Minimum viable set: B1 + B2 + B5.** Those three make `lib/render.mlpl`
-ordinary code instead of a workaround, and they are collectively small. B3 and
-B4 make text lessons writable. B6 is a defect, independently.
+ordinary code instead of a workaround, and they are collectively small. B3 has
+since shipped as well; B4 alone is what still holds text lessons back. B6 is a
+defect, independently.
 
 ## Verifying a fix landed
 

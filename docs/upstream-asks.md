@@ -566,6 +566,30 @@ the improvement, and it makes #16 much less reachable.
 
 ---
 
+## 19. `each` cannot answer a string per element
+
+`each(:f, xs)` requires `f` to answer a scalar. A function that answers a
+string fails with `each: the function must return a scalar per element -- at
+index 0 it returned string`. There is therefore no way to map an index vector
+to a string list, and no way to permute an existing string list at all --
+`list_get` reads one out, but nothing puts one back.
+
+**Where it bit:** lesson 15 reorders a Cayley table so its cosets are
+contiguous, which permutes the row and column headings too. The heading names
+are a string list and the permutation is computed, so the two cannot meet.
+
+**Workaround:** `u:reorder_names` in `lib/render.mlpl` folds the permuted names
+into one bar-delimited string by recursion and calls `str_split` to get a list
+back. It works, it costs an `n`-deep recursion, and it silently corrupts any
+name containing the delimiter.
+
+**Severity:** low-medium. It is the string half of the same absence as #7 --
+arrays have `gather_rows`, string lists have nothing. Either `each` accepting a
+string-valued function, or a `list_gather(xs, indices)` builtin, removes the
+workaround entirely.
+
+---
+
 ## Bug or feature?
 
 Four findings concern the playground's handling of narration. They are not the
@@ -577,6 +601,7 @@ same kind of thing:
 | 18 | a blank line cannot separate a comment block | feature | one condition in the grouper |
 | 17 | no block comment syntax | feature | lexer: `#* ... *#` |
 | 15 | a pasted file cannot declare narration | feature | promote leading/trailing blocks, or `@intro` / `@takeaway` |
+| 19 | `each` cannot answer a string per element | feature | `list_gather`, or lift the scalar restriction |
 
 Only #16 produces visibly wrong output; the other three are absences with
 workarounds. Fixing #18 alone would remove the `;` wart and most of #16's

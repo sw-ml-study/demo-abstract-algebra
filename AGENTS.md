@@ -285,7 +285,7 @@ repository from a session working in this one.
 ## Project rules adapted from sw-MLPL
 
 - **Every step ends pushed.** The cycle is `agentrail next`, `agentrail begin`,
-  work, **run the full gate (`just check`)**, commit with a message that
+  work, **`just fmt` then run the full gate (`just check`)**, commit with a message that
   explains what changed and why, `agentrail complete`, commit the `.agentrail/`
   metadata, and **`git push`** — before starting the next step. Work that only
   exists locally is invisible: a reviewer looking at the remote sees nothing,
@@ -310,6 +310,23 @@ repository from a session working in this one.
 - Separate decisions from effects: `.mlpl` functions compute values; the thin
   runner performs process and filesystem effects.
 - Every commit must leave the scoped demo suite green.
+- **Every user-defined function in every `.mlpl` file carries a docstring**, in
+  every tree — `lib/`, `demos/`, `demos/web/`, `web/`, `tests/`, `probes/`. The
+  convention is sw-MLPL's own: a nonempty string as the first statement of the
+  body. These files are read by learners, so a function whose body must be read
+  before its purpose is clear has failed. `scripts/check-docstrings` blocks the
+  gate on a missing one, and additionally requires the `"SVG helper:"` prefix on
+  everything below the `RENDERING SUPPORT` banner in `lib/render.mlpl` so a
+  reader following the mathematics knows what to skip.
+- **Every `.mlpl` file is formatted before it is committed**, with
+  `just fmt` — which runs sw-MLPL's own `scripts/mlpl-fmt.sh`, the `cargo fmt`
+  of this language. Upstream owns the style and this repository consumes it;
+  hand-styling is not authoritative. `scripts/check-format` fails the gate on
+  drift, and *skips with a notice* where Emacs or the sibling `../sw-mlpl`
+  checkout is absent — so never take a passing gate in a bare environment as
+  proof the tree is formatted. Because the formatter explodes one-line bodies
+  onto separate lines, a docstring may sit on the `def` line or the line below
+  it; any check that parses `.mlpl` source must accept both.
 - **Update the docs in the same step as the code, not afterwards.** A lesson
   that ships flips its catalog row to `runnable` AND its `docs/plan.md` row to
   `**done**`; a new diagram is referenced from the README or a doc; a new doc is

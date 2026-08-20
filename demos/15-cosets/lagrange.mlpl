@@ -27,11 +27,14 @@ include "../../lib/algebra.mlpl"
 include "../../lib/render.mlpl"
 
 u:prolog({
-  title: "LESSON 15 -- COSETS AND LAGRANGE: why the sizes had to divide",
-  intro: "A subgroup shifts. Multiply every member of H by a fixed element and you get a set the same size as H, either identical to it or sharing nothing with it. Those shifted copies tile the group exactly, and this lesson permutes the Cayley table so the tiling becomes visible: equal blocks, no gaps, no overlaps. Lagrange's theorem is then the observation that a rectangle's area is its block count times its block size."
-})
+    title: "LESSON 15 -- COSETS AND LAGRANGE: why the sizes had to divide",
+    intro: "A subgroup shifts. Multiply every member of H by a fixed element and you get a set the same size as H, either identical to it or sharing nothing with it. Those shifted copies tile the group exactly, and this lesson permutes the Cayley table so the tiling becomes visible: equal blocks, no gaps, no overlaps. Lagrange's theorem is then the observation that a rectangle's area is its block count times its block size."
+  })
 
-def u:add_mod_6(x, y) { "Answer the sum modulo 6."; mod(x + y, 6) }
+def u:add_mod_6(x, y) {
+  "Answer the sum modulo 6.";
+  mod(x + y, 6)
+}
 z6 = {
   title: "Z6 under addition",
   names: ["0", "1", "2", "3", "4", "5"],
@@ -66,7 +69,10 @@ print("")
 print("element:      ", z6.names)
 print("its coset:    ", labels)
 
-def u:size_of_coset_at(a) { "Answer how many members the left coset containing a has."; reduce_add(u:left_coset(z6.table, a, evens)) }
+def u:size_of_coset_at(a) {
+  "Answer how many members the left coset containing a has.";
+  reduce_add(u:left_coset(z6.table, a, evens))
+}
 coset_sizes = each(:u:size_of_coset_at, u:elements(6))
 print("coset size:   ", coset_sizes)
 print("  Every element has exactly one label, so the cosets are DISJOINT and")
@@ -79,7 +85,7 @@ index_of_evens = u:coset_count(z6.table, evens)
 print("")
 print("index of H (how many cosets):", index_of_evens)
 print("|H| * index =", u:subset_size(evens), "*", index_of_evens, "=",
-      u:subset_size(evens) * index_of_evens, "   |G| =", u:order(z6.table))
+  u:subset_size(evens) * index_of_evens, "   |G| =", u:order(z6.table))
 print("  That is Lagrange's theorem. Not a deep fact once the partition is")
 print("  drawn -- equal pieces that tile a set with no overlap must divide it.")
 
@@ -105,9 +111,18 @@ print("  behave the same way, so the 6x6 table has collapsed into a 2x2 pattern.
 # does not care about commutativity. Something else differs, and lesson 16
 # is about that.
 perms = [[0, 1, 2], [0, 2, 1], [1, 0, 2], [1, 2, 0], [2, 0, 1], [2, 1, 0]]
-def u:after(a, b) { "Answer the permutation a-after-b: apply b, then a."; flatten(gather_rows(reshape(a, [3, 1]), b)) }
-def u:which_perm(p) { "Answer which of the six permutations p is."; argmax(reduce(:and, eq(perms, gather_rows(reshape(p, [1, 3]), fill([6], 0))), 1)) }
-def u:compose(i, j) { "Answer the index of permutation i composed after permutation j."; u:which_perm(u:after(take(perms, 0, i), take(perms, 0, j))) }
+def u:after(a, b) {
+  "Answer the permutation a-after-b: apply b, then a.";
+  flatten(gather_rows(reshape(a, [3, 1]), b))
+}
+def u:which_perm(p) {
+  "Answer which of the six permutations p is.";
+  argmax(reduce(:and, eq(perms, gather_rows(reshape(p, [1, 3]), fill([6], 0))), 1))
+}
+def u:compose(i, j) {
+  "Answer the index of permutation i composed after permutation j.";
+  u:which_perm(u:after(take(perms, 0, i), take(perms, 0, j)))
+}
 s3 = {
   title: "S3, the symmetries of a triangle",
   names: ["e", "s", "t", "r", "r2", "u"],
@@ -118,11 +133,11 @@ rotations = u:cyclic_subgroup(s3.table, 3)
 a_flip = u:cyclic_subgroup(s3.table, 1)
 print("")
 print("S3, H = <r> (the rotations):  size", u:subset_size(rotations),
-      " index", u:coset_count(s3.table, rotations),
-      " product", u:subset_size(rotations) * u:coset_count(s3.table, rotations))
+  " index", u:coset_count(s3.table, rotations),
+  " product", u:subset_size(rotations) * u:coset_count(s3.table, rotations))
 print("S3, H = <s> (one flip):       size", u:subset_size(a_flip),
-      " index", u:coset_count(s3.table, a_flip),
-      " product", u:subset_size(a_flip) * u:coset_count(s3.table, a_flip))
+  " index", u:coset_count(s3.table, a_flip),
+  " product", u:subset_size(a_flip) * u:coset_count(s3.table, a_flip))
 print("  Both partition S3 and both multiply out to 6. Lagrange holds either way.")
 
 # --- Where the two differ ---------------------------------------------------
@@ -139,8 +154,8 @@ print("")
 u:show_table(flip_blocked)
 print("")
 print("blocks constant --  Z6 by <2>:", u:yes_or_no(u:coset_blocks_constant(z6.table, evens)),
-      "  S3 by <r>:", u:yes_or_no(u:coset_blocks_constant(s3.table, rotations)),
-      "  S3 by <s>:", u:yes_or_no(u:coset_blocks_constant(s3.table, a_flip)))
+  "  S3 by <r>:", u:yes_or_no(u:coset_blocks_constant(s3.table, rotations)),
+  "  S3 by <s>:", u:yes_or_no(u:coset_blocks_constant(s3.table, a_flip)))
 print("  Same group, two subgroups, two different answers. The next lesson is")
 print("  about which subgroups give constant blocks and what that buys.")
 

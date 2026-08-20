@@ -1,0 +1,56 @@
+#!/bin/sh
+# Every .mlpl file is formatted by sw-MLPL's own formatter.
+#
+# ../sw-mlpl/scripts/mlpl-fmt.sh is the `cargo fmt` of this language: it
+# explodes one-line blocks onto their own lines and reindents by bracket depth.
+# Running it here rather than hand-styling is the same dogfooding argument the
+# rest of the repository makes -- upstream owns the style, and this repository
+# consumes it.
+#
+# The formatter needs Emacs and the sibling sw-mlpl checkout, neither of which
+# every environment has. When either is missing this SKIPS rather than fails,
+# because a contributor without Emacs should still be able to run the gate. The
+# authoritative enforcement is the same command run where the tools exist.
+#
+# Usage:
+#   scripts/check-format            report files that would be reformatted
+#   scripts/check-format --write    reformat them in place
+set -eu
+
+repo_root=$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)
+fmt=${MLPL_FMT:-"$repo_root/../sw-mlpl/scripts/mlpl-fmt.sh"}
+
+if [ ! -x "$fmt" ]; then
+  echo "format: skipped (no formatter at $fmt; set MLPL_FMT to override)"
+  exit 0
+fi
+
+if [ -z "${EMACS:-}" ] && ! command -v emacs >/dev/null 2>&1 \
+  && [ ! -x /Applications/Emacs.app/Contents/MacOS/Emacs ] \
+  && [ ! -x /opt/homebrew/bin/emacs ] && [ ! -x /usr/local/bin/emacs ]; then
+  echo "format: skipped (mlpl-fmt needs Emacs; set \$EMACS to its path)"
+  exit 0
+fi
+
+# git ls-files keeps this to tracked sources, so a scratch file in the working
+# tree is never reformatted behind the author's back.
+files=$(cd "$repo_root" && git ls-files '*.mlpl' | sed "s|^|$repo_root/|")
+if [ -z "$files" ]; then
+  echo "format: no .mlpl files"
+  exit 0
+fi
+
+if [ "${1:-}" = "--write" ]; then
+  # shellcheck disable=SC2086
+  "$fmt" $files
+  exit 0
+fi
+
+# shellcheck disable=SC2086
+if "$fmt" --check $files; then
+  exit 0
+fi
+
+echo "" >&2
+echo "Run 'just fmt' to fix. The formatter is authoritative; hand-styling is not." >&2
+exit 1

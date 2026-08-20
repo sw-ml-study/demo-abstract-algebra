@@ -23,12 +23,19 @@ include "../../lib/algebra.mlpl"
 include "../../lib/render.mlpl"
 
 u:prolog({
-  title: "LESSON 07 -- INVERSES: every action can be undone",
-  intro: "An inverse undoes an element. The question only makes sense once an identity exists to undo TO, so this lesson takes two monoids with the same identity and asks which of their elements can be undone -- one where all can, and one where almost none can."
-})
+    title: "LESSON 07 -- INVERSES: every action can be undone",
+    intro: "An inverse undoes an element. The question only makes sense once an identity exists to undo TO, so this lesson takes two monoids with the same identity and asks which of their elements can be undone -- one where all can, and one where almost none can."
+  })
 
 # --- A monoid where nothing much can be undone ------------------------------
-def u:larger_of(x, y) { "Answer whichever argument is larger. Associative and commutative, with the smallest element as its identity."; if lt(x, y) { y } else { x } }
+def u:larger_of(x, y) {
+  "Answer whichever argument is larger. Associative and commutative, with the smallest element as its identity.";
+  if lt(x, y) {
+    y
+  } else {
+    x
+  }
+}
 mx = {
   title: "max on {0, 1, 2}: only the identity is invertible",
   names: ["0", "1", "2"],
@@ -47,7 +54,10 @@ print("  has anything that undoes it. Raising a value is a one-way move.")
 # --- A monoid where everything can be undone --------------------------------
 # Z4: adding 1 is undone by adding 3, adding 2 by adding 2. Every element has
 # a partner, so this clears the last rung and becomes a group.
-def u:add_mod_4(x, y) { "Answer the sum modulo 4."; mod(x + y, 4) }
+def u:add_mod_4(x, y) {
+  "Answer the sum modulo 4.";
+  mod(x + y, 4)
+}
 z4 = {
   title: "Z4 under addition: every element is invertible",
   names: ["0", "1", "2", "3"],
@@ -80,7 +90,10 @@ print("  inverses per element:", per_row, " -- exactly one each:", u:yes_or_no(u
 # --- Self-inverse elements --------------------------------------------------
 # a * a = e says a undoes itself. In Z4 that is 0 and 2; in the Klein group it
 # is every element, which is what makes that group feel so different.
-def u:xor_of(x, y) { "Answer the bitwise exclusive-or, which realizes the Klein four-group on {0, 1, 2, 3}."; bxor(x, y) }
+def u:xor_of(x, y) {
+  "Answer the bitwise exclusive-or, which realizes the Klein four-group on {0, 1, 2, 3}.";
+  bxor(x, y)
+}
 kl = {
   title: "The Klein four-group: every element is its own inverse",
   names: ["e", "a", "b", "c"],

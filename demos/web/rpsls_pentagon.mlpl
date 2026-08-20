@@ -10,8 +10,22 @@
 # * table -- and the table itself is in latin_square.mlpl.
 # **************************************************************************
 ;
-def u:beats_in_game(x, y) { "Answer 1 when x beats y, which is the whole rulebook in one modular test."; lt(mod(x - y + 5, 5) - 1, 2) * (1 - eq(mod(x - y + 5, 5), 0)) }  # beats the next two around
-def u:winner_of(x, y) { "Answer the winner of a matchup; a tie answers the shared choice."; if u:beats_in_game(x, y) { x } else { y } }  # spock 0 .. rock 4
+# The whole rulebook: numbering runs spock 0 .. rock 4, and each choice beats
+# the next two around the cycle.
+def u:beats_in_game(x, y) {
+  "Answer 1 when x beats y, which is the whole rulebook in one modular test.";
+  lt(mod(x - y + 5, 5) - 1, 2) * (1 - eq(mod(x - y + 5, 5), 0))
+}
+# A tie answers the shared choice, so x * x = x for every x -- this magma is
+# idempotent, which is a property the pictures below will show on the diagonal.
+def u:winner_of(x, y) {
+  "Answer the winner of a matchup; a tie answers the shared choice.";
+  if u:beats_in_game(x, y) {
+    x
+  } else {
+    y
+  }
+}
 # ==========================================================================
 # RENDERING SUPPORT
 #
@@ -19,16 +33,55 @@ def u:winner_of(x, y) { "Answer the winner of a matchup; a tie answers the share
 # the operation into a picture, and it is here only because the browser
 # cannot load a shared library. Skip to the next block of narration.
 # ==========================================================================
-def u:element_color(i) { "SVG helper: the colour that stands for an element, shared by the graph and the table."; unwrap(list_get(["#7aa2f7", "#f7768e", "#9ece6a", "#e0af68", "#bb9af7"], mod(i, 5))) }  # same palette as the tables
-def u:node_x(element, element_count) { "SVG helper: the x position of a node on a circle, element 0 at the top."; 190 + 130 * cos(2 * pi() * element / element_count - pi() / 2) }
-def u:node_y(element, element_count) { "SVG helper: the y position of a node on a circle."; 190 + 130 * sin(2 * pi() * element / element_count - pi() / 2) }
-def u:along_x(from_element, to_element, element_count, fraction) { "SVG helper: the x coordinate a given fraction of the way from one node to another."; u:node_x(from_element, element_count) + (u:node_x(to_element, element_count) - u:node_x(from_element, element_count)) * fraction }
-def u:along_y(from_element, to_element, element_count, fraction) { "SVG helper: the y coordinate a given fraction of the way from one node to another."; u:node_y(from_element, element_count) + (u:node_y(to_element, element_count) - u:node_y(from_element, element_count)) * fraction }
-def u:arrow(from_element, to_element, element_count) { "SVG helper: one arrow between two nodes, stopped short so the head stays visible."; str_concat(str_concat(str_concat("<line x1=\"", to_string(u:along_x(from_element, to_element, element_count, 0.24))), str_concat("\" y1=\"", to_string(u:along_y(from_element, to_element, element_count, 0.24)))), str_concat(str_concat(str_concat("\" x2=\"", to_string(u:along_x(from_element, to_element, element_count, 0.76))), str_concat("\" y2=\"", to_string(u:along_y(from_element, to_element, element_count, 0.76)))), "\" stroke=\"#7aa2f7\" stroke-width=\"3\" marker-end=\"url(#from_element)\"/>")) }
-def u:node(element, element_count, names) { "SVG helper: one labelled coloured circle for an element."; str_concat(str_concat(str_concat("<circle cx=\"", to_string(u:node_x(element, element_count))), str_concat("\" cy=\"", to_string(u:node_y(element, element_count)))), str_concat(str_concat(str_concat("\" r=\"37\" fill=\"", u:element_color(element)), "\"/>"), str_concat(str_concat(str_concat("<text x=\"", to_string(u:node_x(element, element_count))), str_concat("\" y=\"", to_string(u:node_y(element, element_count)))), str_concat(str_concat("\" fill=\"#12131c\" text-anchor=\"middle\" dominant-baseline=\"central\" font-size=\"12\" font-family=\"monospace\">", unwrap(list_get(names, element))), "</text>")))) }
-def u:all_arrows(pair_index, element_count, svg_so_far) { "SVG helper: an arrow for every ordered pair where the first beats the second."; if lt(pair_index, element_count * element_count) { u:all_arrows(pair_index + 1, element_count, if u:beats_in_game(floor(pair_index / element_count), mod(pair_index, element_count)) { str_concat(svg_so_far, u:arrow(floor(pair_index / element_count), mod(pair_index, element_count), element_count)) } else { svg_so_far }) } else { svg_so_far } }
-def u:all_nodes(element, element_count, names, svg_so_far) { "SVG helper: a circle for every element."; if lt(element, element_count) { u:all_nodes(element + 1, element_count, names, str_concat(svg_so_far, u:node(element, element_count, names))) } else { svg_so_far } }
-def u:beats_graph(element_count, names) { "SVG helper: the whole beats relation drawn as a directed graph."; str_concat(str_concat("<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 380 380\" width=\"380\" height=\"380\"><rect width=\"100%\" height=\"100%\" fill=\"#1a1b26\"/><defs><marker id=\"a\" viewBox=\"0 0 10 10\" refX=\"9\" refY=\"5\" markerWidth=\"5\" markerHeight=\"5\" orient=\"auto-start-reverse\"><path d=\"M 0 0 L 10 5 L 0 10 z\" fill=\"#7aa2f7\"/></marker></defs>", u:all_arrows(0, element_count, "")), str_concat(u:all_nodes(0, element_count, names, ""), "</svg>")) }
+# same palette as the tables
+def u:element_color(i) {
+  "SVG helper: the colour that stands for an element, shared by the graph and the table.";
+  unwrap(list_get(["#7aa2f7", "#f7768e", "#9ece6a", "#e0af68", "#bb9af7"], mod(i, 5)))
+}
+def u:node_x(element, element_count) {
+  "SVG helper: the x position of a node on a circle, element 0 at the top.";
+  190 + 130 * cos(2 * pi() * element / element_count - pi() / 2)
+}
+def u:node_y(element, element_count) {
+  "SVG helper: the y position of a node on a circle.";
+  190 + 130 * sin(2 * pi() * element / element_count - pi() / 2)
+}
+def u:along_x(from_element, to_element, element_count, fraction) {
+  "SVG helper: the x coordinate a given fraction of the way from one node to another.";
+  u:node_x(from_element, element_count) + (u:node_x(to_element, element_count) - u:node_x(from_element, element_count)) * fraction
+}
+def u:along_y(from_element, to_element, element_count, fraction) {
+  "SVG helper: the y coordinate a given fraction of the way from one node to another.";
+  u:node_y(from_element, element_count) + (u:node_y(to_element, element_count) - u:node_y(from_element, element_count)) * fraction
+}
+def u:arrow(from_element, to_element, element_count) {
+  "SVG helper: one arrow between two nodes, stopped short so the head stays visible.";
+  str_concat(str_concat(str_concat("<line x1=\"", to_string(u:along_x(from_element, to_element, element_count, 0.24))), str_concat("\" y1=\"", to_string(u:along_y(from_element, to_element, element_count, 0.24)))), str_concat(str_concat(str_concat("\" x2=\"", to_string(u:along_x(from_element, to_element, element_count, 0.76))), str_concat("\" y2=\"", to_string(u:along_y(from_element, to_element, element_count, 0.76)))), "\" stroke=\"#7aa2f7\" stroke-width=\"3\" marker-end=\"url(#arrow)\"/>"))
+}
+def u:node(element, element_count, names) {
+  "SVG helper: one labelled coloured circle for an element.";
+  str_concat(str_concat(str_concat("<circle cx=\"", to_string(u:node_x(element, element_count))), str_concat("\" cy=\"", to_string(u:node_y(element, element_count)))), str_concat(str_concat(str_concat("\" r=\"37\" fill=\"", u:element_color(element)), "\"/>"), str_concat(str_concat(str_concat("<text x=\"", to_string(u:node_x(element, element_count))), str_concat("\" y=\"", to_string(u:node_y(element, element_count)))), str_concat(str_concat("\" fill=\"#12131c\" text-anchor=\"middle\" dominant-baseline=\"central\" font-size=\"12\" font-family=\"monospace\">", unwrap(list_get(names, element))), "</text>"))))
+}
+def u:all_arrows(pair_index, element_count, svg_so_far) {
+  "SVG helper: an arrow for every ordered pair where the first beats the second.";
+  if lt(pair_index, element_count * element_count) { u:all_arrows(pair_index + 1, element_count, if u:beats_in_game(floor(pair_index / element_count), mod(pair_index, element_count)) {
+        str_concat(svg_so_far, u:arrow(floor(pair_index / element_count), mod(pair_index, element_count), element_count))
+      } else {
+        svg_so_far
+      }) } else {
+    svg_so_far
+  }
+}
+def u:all_nodes(element, element_count, names, svg_so_far) {
+  "SVG helper: a circle for every element.";
+  if lt(element, element_count) { u:all_nodes(element + 1, element_count, names, str_concat(svg_so_far, u:node(element, element_count, names))) } else {
+    svg_so_far
+  }
+}
+def u:beats_graph(element_count, names) {
+  "SVG helper: the whole beats relation drawn as a directed graph.";
+  str_concat(str_concat("<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 380 380\" width=\"380\" height=\"380\"><rect width=\"100%\" height=\"100%\" fill=\"#1a1b26\"/><defs><marker id=\"arrow\" viewBox=\"0 0 10 10\" refX=\"9\" refY=\"5\" markerWidth=\"5\" markerHeight=\"5\" orient=\"auto-start-reverse\"><path d=\"M 0 0 L 10 5 L 0 10 z\" fill=\"#7aa2f7\"/></marker></defs>", u:all_arrows(0, element_count, "")), str_concat(u:all_nodes(0, element_count, names, ""), "</svg>"))
+}
 # **************************************************************************
 # * THE BEATS GRAPH
 # *

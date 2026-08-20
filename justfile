@@ -26,11 +26,16 @@ audit:
     ./scripts/validate-catalog catalog/tests.tsv
     ./scripts/check-docs
     ./scripts/check-docstrings
+    ./scripts/check-format
     ./scripts/check-generated
     ./scripts/check-web-size
     ./scripts/check-narration
     ./scripts/check-web-renders
     ./scripts/check-viewer-conformance
+
+# Format every tracked .mlpl file with sw-MLPL's own formatter.
+fmt:
+    ./scripts/check-format --write
 
 # Regenerate the standalone, paste-ready Web UI entries in web/.
 web:

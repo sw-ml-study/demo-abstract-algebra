@@ -85,6 +85,26 @@ for f in "$repo_root"/web/*.mlpl; do
     failures=$((failures + 1))
   fi
 
+  # An SVG may reference a fragment -- url(#arrow) for a marker, a gradient, a
+  # clip path -- and a reference with no matching id is silently ignored by
+  # every browser: the arrowheads just do not appear. This shipped once, when a
+  # parameter rename rewrote url(#a) into url(#from_element) inside a string
+  # literal, and nothing caught it because the document still parsed and still
+  # drew. Every fragment reference must resolve inside its own document.
+  dangling=0
+  for got in "$work"/svg/*.svg; do
+    [ -f "$got" ] || continue
+    for ref in $(grep -o 'url(#[A-Za-z0-9_-]*)' "$got" | sed 's/url(#//; s/)//' | sort -u); do
+      grep -q "id=\"$ref\"" "$got" || {
+        echo "$name: url(#$ref) refers to no id in the same document" >&2
+        dangling=$((dangling + 1))
+      }
+    done
+  done
+  if [ "$dangling" -gt 0 ]; then
+    failures=$((failures + 1))
+  fi
+
   if [ "$pictures" -eq 0 ]; then
     echo "$name: renders NO pictures -- a web demo that draws nothing is a bug" >&2
     failures=$((failures + 1))

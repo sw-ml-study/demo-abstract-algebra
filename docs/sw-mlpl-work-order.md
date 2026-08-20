@@ -28,7 +28,7 @@ Ranked by value per unit of effort, not by severity.
 | 7 | [A3](#a3) code renders inside the comment span | bug | small | Visibly wrong rendering |
 | 8 | [C1](#c1) labelled categorical grid renderer | feature | medium | Would delete ~400 lines of hand-written SVG downstream |
 | 9 | [A2](#a2) recursion aborts the process | bug | medium | Robustness; matters more while [B1](#b1) is open |
-| 10 | [B3](#b3) `str_len` / `str_slice` / `str_find` / `str_split` | missing | medium | Unblocks a blocked lesson |
+| ~~10~~ | ~~[B3](#b3) `str_len` / `str_slice` / `str_find` / `str_split`~~ | **SHIPPED** | — | All four verified live; `str_len` counts characters |
 | — | everything else | mixed | — | Has honest workarounds |
 
 **B1 and B2 have shipped** and are adopted downstream — `lib/render.mlpl` now
@@ -37,7 +37,13 @@ bridges are deleted. `str_join` taking the whole fragment list in one call
 turned the worst code in that repo into something readable, which was more
 than the ask expected.
 
-**Four have now shipped and been adopted downstream:** A1, B1, B2, B5. What
+**Five have now shipped and been adopted downstream:** A1, B1, B2, B3, B5.
+B3's four builtins were verified live against the current binary --
+`str_len("héllo")` answers 5, so it counts CHARACTERS, and `lib/render.mlpl`'s
+`u:text_width_px` has dropped its byte-counting bridge for an exact estimate.
+One B3 bridge is still load-bearing: `str_find` answers the first index only,
+so `u:count_substr` in `tests/test_render.mlpl` still counts occurrences by
+rotating the haystack. What
 remains, cheapest first: **A4** (documentation only, and the costliest
 omission — six undocumented `svg()` types), then **D1** (one condition in the
 statement grouper), then **A3** (the comment-span render bug), then **C1**

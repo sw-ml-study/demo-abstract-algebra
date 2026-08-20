@@ -23,16 +23,19 @@ include "../../lib/algebra.mlpl"
 include "../../lib/render.mlpl"
 
 u:prolog({
-  title: "LESSON 03 -- CLOSURE, taught by breaking it",
-  intro: "A magma needs exactly one thing: every result of the operation must land back in the set. This lesson builds an operation that does NOT, shows where it leaves, and applies the two repairs that fix it -- shrink the operation, or grow the set."
-})
+    title: "LESSON 03 -- CLOSURE, taught by breaking it",
+    intro: "A magma needs exactly one thing: every result of the operation must land back in the set. This lesson builds an operation that does NOT, shows where it leaves, and applies the two repairs that fix it -- shrink the operation, or grow the set."
+  })
 
 names = ["0", "1", "2"]
 
 # --- An operation that escapes ----------------------------------------------
 # Ordinary addition. Nothing is wrong with it as arithmetic; it is simply not
 # an operation ON this set, because it does not stay inside.
-def u:ordinary_add(x, y) { "Answer the ordinary sum, which is exactly why this escapes a finite set."; x + y }
+def u:ordinary_add(x, y) {
+  "Answer the ordinary sum, which is exactly why this escapes a finite set.";
+  x + y
+}
 open = {
   title: "Addition on {0, 1, 2}: NOT closed",
   names: names,
@@ -58,7 +61,10 @@ print("  cells that escape:", reduce_add(flatten(1 - u:inside_mask(open.table)))
 # Keep the set, change the operation so it cannot leave. Addition modulo 3
 # folds every escape back to a legal element -- and the result is not merely
 # closed, it is a group.
-def u:add_mod_3(x, y) { "Answer the sum modulo 3, which folds every escape back into the set."; mod(x + y, 3) }
+def u:add_mod_3(x, y) {
+  "Answer the sum modulo 3, which folds every escape back into the set.";
+  mod(x + y, 3)
+}
 fixed = {
   title: "Addition modulo 3: closed",
   names: names,
