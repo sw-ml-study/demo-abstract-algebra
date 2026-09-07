@@ -1,0 +1,9 @@
+number = 6
+slug = "pages-deploy"
+status = "completed"
+description = "Put something on a public URL. Saga A step 6 of docs/tutorial-plan.md, pulled..."
+role = "production"
+context_files = []
+created_at = "2026-09-07T14:57:07"
+completed_at = "2026-09-07T15:38:20"
+commits = ["f9851b95f4433e3bcd9023b9b4d779f12cb8d6ba"]
