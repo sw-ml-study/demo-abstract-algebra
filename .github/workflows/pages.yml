@@ -1,0 +1,65 @@
+# Publish the site composed by scripts/build-site to GitHub Pages.
+#
+# The sw-MLPL playground bundle is 8 MB of WebAssembly and is deliberately NOT
+# committed to this repository. It is checked out here from a pinned ref of
+# sw-ml-study/mlpl-live, recorded in site/BUNDLE_REF, and served from our own
+# origin -- which is what makes the runtime bridge same-origin and therefore
+# possible at all. See docs/mlpl-blockers.md B7.
+name: Pages
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Never cancel a deploy midway; queue instead.
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Read the pinned bundle ref
+        id: pin
+        run: |
+          repo=$(sed -n 's/^repo=//p' site/BUNDLE_REF)
+          ref=$(sed -n 's/^ref=//p' site/BUNDLE_REF)
+          test -n "$repo" && test -n "$ref"
+          echo "repo=$repo" >> "$GITHUB_OUTPUT"
+          echo "ref=$ref" >> "$GITHUB_OUTPUT"
+          echo "pinned to $repo@$ref"
+
+      - name: Fetch the sw-MLPL bundle at that ref
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ steps.pin.outputs.repo }}
+          ref: ${{ steps.pin.outputs.ref }}
+          path: .mlpl-bundle
+
+      - name: Compose the site
+        env:
+          MLPL_BUNDLE: ${{ github.workspace }}/.mlpl-bundle
+        run: ./scripts/build-site "${{ github.workspace }}/out/site"
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: out/site
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
+    steps:
+      - id: deploy
+        uses: actions/deploy-pages@v4

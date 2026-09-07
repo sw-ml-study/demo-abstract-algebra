@@ -49,9 +49,13 @@ assets:
 render:
     ./scripts/render-all
 
-# Serve the Saga A runtime spike, with the sw-MLPL playground at the same origin.
-spike port="8137":
-    ./scripts/serve-spike {{port}}
+# Compose the public site into out/site/ from what already exists.
+site:
+    ./scripts/build-site
+
+# Build the site and serve it locally under a GitHub Pages-like path prefix.
+serve port="8137":
+    ./scripts/serve-site {{port}}
 
 # Run the complete local validation gate.
 check: demos tests audit

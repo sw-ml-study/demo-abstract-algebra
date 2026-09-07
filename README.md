@@ -5,6 +5,13 @@ semigroups, monoids, groups, and the structure-preserving maps between them —
 written as standalone `.mlpl` scripts for the
 [sw-MLPL](https://sw-ml-study.github.io/sw-mlpl/) interpreter.
 
+**[Open the site](https://sw-ml-study.github.io/demo-abstract-algebra/)** — the
+[Cayley table explorer](https://sw-ml-study.github.io/demo-abstract-algebra/lab/)
+runs in your browser with no install, and a
+[runtime spike](https://sw-ml-study.github.io/demo-abstract-algebra/spike/)
+shows the sw-MLPL interpreter itself executing and grading MLPL on the page.
+The guided course is planned, not built: `docs/tutorial-plan.md`.
+
 The premise is small and does a lot of work:
 
 > A finite binary operation on `n` elements **is** an `n x n` array.
@@ -326,6 +333,9 @@ not boilerplate.
 
 ## Documents
 
+- **[The site](https://sw-ml-study.github.io/demo-abstract-algebra/)** — the Lab
+  and the runtime spike, live; built by `scripts/build-site`, deployed by
+  `.github/workflows/pages.yml`. Run it locally with `just serve`.
 - [docs/viewing.md](docs/viewing.md) — every way to see a visualization
 - [docs/plan.md](docs/plan.md) — the twelve-lesson sequence and delivery order
 - [docs/scope-boundary.md](docs/scope-boundary.md) — the contract with

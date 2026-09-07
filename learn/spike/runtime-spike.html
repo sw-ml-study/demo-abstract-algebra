@@ -28,7 +28,7 @@
 <div id="cases"></div>
 <div id="verdict">booting the interpreter…</div>
 
-<iframe id="mlpl" src="/index.html"></iframe>
+<iframe id="mlpl" src="../mlpl/index.html"></iframe>
 
 <script type="module">
 const casesEl = document.getElementById('cases');
@@ -129,7 +129,7 @@ record('to_json round-trips a grader record',
 
 // 4. A real law check from lib/algebra.mlpl, pasted in as source -- proof the
 //    library loads into the session rather than needing a rewrite.
-const libSrc = await (await fetch('/lib-algebra.mlpl')).text();
+const libSrc = await (await fetch('lib-algebra.mlpl')).text();
 run(libSrc);
 let cls = null, clsErr = '';
 try { cls = evalJson('to_json(u:classify(t))'); } catch (e) { clsErr = String(e); }

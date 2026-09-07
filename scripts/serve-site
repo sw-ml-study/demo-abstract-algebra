@@ -1,0 +1,15 @@
+#!/bin/sh
+# Build the site and serve it locally, at a path prefix that mimics GitHub
+# Pages -- so a link that works here works deployed.
+#
+# Usage: scripts/serve-site [port]        (default 8137)
+set -eu
+repo_root=$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)
+port=${1:-8137}
+root=$repo_root/out/serve
+prefix=demo-abstract-algebra
+
+"$repo_root/scripts/build-site" "$root/$prefix"
+echo
+echo "  http://localhost:$port/$prefix/"
+exec python3 -m http.server "$port" --directory "$root"

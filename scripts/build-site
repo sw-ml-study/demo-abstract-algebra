@@ -1,0 +1,63 @@
+#!/bin/sh
+# Compose the public site into out/site/.
+#
+# Everything here already exists and already works; this script only arranges
+# it. It does not generate lessons, and it must not present the course as
+# though it had any -- site/index.html says what is built and what is not.
+#
+# The sw-MLPL playground bundle is 8 MB and is never committed. It comes from
+# a pinned ref of sw-ml-study/mlpl-live (site/BUNDLE_REF), fetched by CI and
+# symlinked from an adjacent checkout locally.
+#
+# Its index.html imports its glue from ABSOLUTE paths, which cannot work under
+# a GitHub Pages project prefix (/demo-abstract-algebra/). Three references are
+# rewritten to relative ones; there are no others.
+#
+# Usage: scripts/build-site [outdir]
+set -eu
+
+repo_root=$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)
+out=${1:-$repo_root/out/site}
+bundle=${MLPL_BUNDLE:-$repo_root/../mlpl-live}
+
+rm -rf "$out"
+mkdir -p "$out/lab" "$out/spike" "$out/mlpl"
+
+# The four doors, and the one diagram the index embeds.
+cp "$repo_root/site/index.html" "$out/index.html"
+cp "$repo_root/assets/structure-lattice.svg" "$out/structure-lattice.svg"
+
+# The Lab: viewer/cayley.html, unchanged. It is dependency-free by contract,
+# so it is copied rather than composed.
+cp "$repo_root/viewer/cayley.html" "$out/lab/index.html"
+
+# The spike, and the library it loads into the session. The browser has no
+# `include` (docs/upstream-asks.md #21), so the library is fetched as source.
+cp "$repo_root/learn/spike/runtime-spike.html" "$out/spike/index.html"
+cp "$repo_root/lib/algebra.mlpl" "$out/spike/lib-algebra.mlpl"
+
+# The interpreter.
+if [ ! -f "$bundle/index.html" ]; then
+  echo "no sw-MLPL bundle at $bundle" >&2
+  echo "clone sw-ml-study/mlpl-live beside this repo, or set MLPL_BUNDLE" >&2
+  exit 1
+fi
+for f in "$bundle"/*; do
+  name=$(basename "$f")
+  [ "$name" = "index.html" ] && continue
+  cp -R "$f" "$out/mlpl/$name"
+done
+sed -e "s|'/mlpl-web-|'./mlpl-web-|g" \
+    -e 's|"/mlpl-web-|"./mlpl-web-|g' \
+    -e 's|"/favicon-|"./favicon-|g' \
+    "$bundle/index.html" > "$out/mlpl/index.html"
+
+remaining=$(grep -c '"/mlpl-web-\|./mlpl-web-' "$out/mlpl/index.html" || true)
+grep -q "'/mlpl-web-\|\"/mlpl-web-" "$out/mlpl/index.html" \
+  && { echo "absolute bundle path survived the rewrite" >&2; exit 1; }
+
+echo "site composed at $out"
+echo "  index      $(wc -c < "$out/index.html") bytes"
+echo "  lab        $(wc -c < "$out/lab/index.html") bytes"
+echo "  spike      $(wc -c < "$out/spike/index.html") bytes"
+echo "  bundle     $(du -sh "$out/mlpl" | cut -f1)  ($remaining glue refs rewritten)"

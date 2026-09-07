@@ -413,7 +413,7 @@ end to end.*
 | 3 | `grade-library` — `lib/grade.mlpl` with the six checkers of §4.1, all returning `{pass, why, witness}`. `tests/test_grade.mlpl` asserts each against a good and a bad submission. Docstrings on every function. | `just tests` green; every checker has both cases. |
 | 4 | `lesson-format` — the record schema of §7, `scripts/build-learn`, `learn/lessons.json` emitted from MLPL, wired into `scripts/check-generated`. | A stale `learn/lessons.json` fails `just audit`. |
 | 5 | `lesson-runner` — the page: prompt, editor, Run, result, Cayley render, grade, hints, next. Textbook margin and REPL, per the brief's UI sketch. No dashboards, no badges, no progress rings. | One `modify` exercise is completable start to finish. |
-| 6 | `pages-deploy` — `.github/workflows/pages.yml`, the pinned bundle fetch, `just serve`, `.gitignore` for the vendored WASM. | The single exercise is live at a public URL. |
+| 6 | `pages-deploy` — **DONE, pulled forward.** `.github/workflows/pages.yml`, `scripts/build-site`, `scripts/serve-site`, the bundle pinned in `site/BUNDLE_REF`. Deployed ahead of the lessons because nothing in the repo was clickable. | The Lab and the spike are live; the index names what is not built. Steps 2-5 land their content on it. |
 
 ### Saga B — `learn-first-path`
 *The brief's explicit first milestone: about twelve interactions, then stop and

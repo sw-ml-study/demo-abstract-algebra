@@ -1,0 +1,13 @@
+# The sw-MLPL playground build this site serves, pinned by commit.
+#
+# The bundle is 8 MB of WebAssembly and is NEVER committed here -- the deploy
+# fetches it from sw-ml-study/mlpl-live at this ref, and scripts/build-site
+# symlinks a local ../mlpl-live checkout for development.
+#
+# Serving it from our own origin is not incidental: the runtime bridge reaches
+# window.wasmBindings inside a hidden iframe, which only works same-origin.
+# See docs/sw-mlpl-bug-report.md and docs/mlpl-blockers.md B7.
+repo=sw-ml-study/mlpl-live
+ref=25a79f75f7ce1250cee1312237b790b221b846cb
+built=2026-09-02
+channel=stable
