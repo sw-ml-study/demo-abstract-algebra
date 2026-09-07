@@ -333,6 +333,10 @@ not boilerplate.
 - [docs/sw-mlpl-work-order.md](docs/sw-mlpl-work-order.md) — **the handoff for
   the sw-MLPL agent**: every finding, with fix sites, proposed signatures,
   acceptance tests and a recommended order
+- [docs/sw-mlpl-bug-report.md](docs/sw-mlpl-bug-report.md) — **defects only**,
+  each re-run against the interpreter version named at the top: a rank-collapse
+  regression, two standing bugs, and what has been fixed since it was last
+  checked
 - [docs/mlpl-blockers.md](docs/mlpl-blockers.md) — the sw-MLPL capabilities
   that block this work, specified for implementation
 - [docs/upstream-asks.md](docs/upstream-asks.md) — the full friction record

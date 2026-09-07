@@ -644,7 +644,7 @@ lesson boundary rather than once.
 
 ---
 
-## 22. A 1 x 1 array collapses to rank 0 under scalar broadcasting — **REGRESSION, BUG**
+## 22. An all-unit shape collapses to rank 0 under scalar broadcasting — **REGRESSION, BUG**
 
 Found by `just check` going red against **mlpl-repl 0.20.0** on a tree whose
 last commit was green. The binary is two weeks newer than the commit; nothing
@@ -660,8 +660,15 @@ shape(eq([[0]], 0))               # []       -- WRONG
 shape(reshape([0], [1, 1]) * 1)   # []       -- WRONG, so it is not the literal
 ```
 
-Any 1 x 1 array degenerates to rank 0 the moment a scalar is broadcast against
-it. It is specific to the all-unit shape — neighbouring shapes are fine:
+Any array **every one of whose axes has extent 1** degenerates to rank 0 the
+moment a scalar is broadcast against it — at any rank, not only 1 x 1:
+
+```mlpl
+shape([0] * 1)          # []   was [1]
+shape([[[0]]] * 1)      # []   was [1, 1, 1]
+```
+
+Neighbouring shapes are fine, including ones that contain unit axes:
 
 ```mlpl
 shape(eq([[0, 1], [1, 0]], 0))    # [2, 2]   correct
@@ -701,11 +708,14 @@ A no-op at every order above 1. Named at the fix site in `lib/algebra.mlpl`.
 **High.** It is a silent rank change on a legal value, not an error, so it
 surfaces far from its cause — here as an out-of-bounds axis index two calls
 later. Any array-oriented program that reaches an all-unit shape at a boundary
-(a one-element set, a single sample, a 1 x 1 minor) is exposed, and the failure
-does not name the operation that caused it.
+(a one-element set, a single sample, a batch of one, a 1 x 1 minor) is exposed, and the failure
+does not name the operation that caused it. Fully characterised, with the
+operation matrix and the acceptance cases, in `docs/sw-mlpl-bug-report.md`.
 
 **Suspected cause:** a shape-normalisation path that drops unit dimensions and
-does not stop at rank 0. The correct behaviour is that scalar broadcasting
+does not stop at rank 0. One further clue: `shape([[0]] * [1])` is `[1]`, so the
+result appears to lose unit axes *down to the rank of the other operand* rather
+than losing all of them unconditionally. The correct behaviour is that scalar broadcasting
 preserves the rank and shape of its array operand, which is what the other
 shapes above already do.
 
