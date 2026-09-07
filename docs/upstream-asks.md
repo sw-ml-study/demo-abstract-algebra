@@ -590,6 +590,127 @@ workaround entirely.
 
 ---
 
+## 20. `WasmSession` exposes `eval` but not `eval_with_values`
+
+Found while spiking the browser course (`docs/tutorial-plan.md`, Saga A step 1).
+
+`mlpl-wasm`'s `WasmSession` carries a Rust method `eval_with_values(&self,
+input) -> EvalResult` returning `{display, values, shape, string_list,
+viz_node}` — the structured value, not its rendering. It has no
+`#[wasm_bindgen]` attribute, and it is absent from the published JS glue, which
+exports only `eval(input) -> String`. So the browser boundary is display text in
+both directions.
+
+**Where it bit:** grading. A checker's verdict crosses as `to_json(...)`, and
+because `to_json` answers a **Result**, the display form arrives wrapped:
+
+```
+to_json({pass: 1, why: "closed"})
+  ->  Ok({"pass":1,"why":"closed"})
+```
+
+The page must strip `Ok(` and `)` before `JSON.parse`. That is the same root
+cause as #10 — a Result's *rendering* reaching the caller instead of its
+payload — met at a second boundary, which suggests the pattern rather than the
+site is the problem.
+
+**Workaround:** one regex, confined to a single function at the grading
+boundary. Honest and small.
+
+**Severity:** low-medium. Not blocking; `to_json` works. But every Run in the
+course pays a serialize-and-reparse, and a `values`/`shape` pair would let the
+page render a Cayley table from numbers rather than from parsed text.
+
+---
+
+## 21. A browser session cannot `include` a source file
+
+Also from the Saga A spike.
+
+`include "../../lib/algebra.mlpl"` is how every CLI lesson reaches the library.
+The browser session has no filesystem and no `include`, so a page must `fetch`
+the library and `eval` its 810 lines as one source string, and must do it again
+after every `clear()`.
+
+**It works** — the spike loads the whole of `lib/algebra.mlpl` into a
+`WasmSession` and classifies a learner-built table correctly, which is the
+result that makes the course possible at all. The ask is only about cost and
+ergonomics: there is no way to say "this environment already has the library",
+so the parse is repeated per reset.
+
+**Severity:** low. A host-provided preload hook, or a session-clone that keeps
+definitions, would remove it. Recorded because the course will hit it on every
+lesson boundary rather than once.
+
+---
+
+## 22. A 1 x 1 array collapses to rank 0 under scalar broadcasting — **REGRESSION, BUG**
+
+Found by `just check` going red against **mlpl-repl 0.20.0** on a tree whose
+last commit was green. The binary is two weeks newer than the commit; nothing
+in this repository changed.
+
+### Symptom
+
+```mlpl
+shape([[0]])                      # [1, 1]   -- correct, the literal is rank 2
+shape([[0]] * 1)                  # []       -- WRONG, collapsed to a scalar
+shape([[0]] + 0)                  # []       -- WRONG
+shape(eq([[0]], 0))               # []       -- WRONG
+shape(reshape([0], [1, 1]) * 1)   # []       -- WRONG, so it is not the literal
+```
+
+Any 1 x 1 array degenerates to rank 0 the moment a scalar is broadcast against
+it. It is specific to the all-unit shape — neighbouring shapes are fine:
+
+```mlpl
+shape(eq([[0, 1], [1, 0]], 0))    # [2, 2]   correct
+shape(eq([[0, 1]], 0))            # [1, 2]   correct
+shape(eq([[0], [1]], 0))          # [2, 1]   correct
+```
+
+### Where it bit
+
+`u:invertible_mask` in `lib/algebra.mlpl`. It reduces the inverse mask along
+each axis, and for the **trivial group** — one element, its own identity and its
+own inverse, a perfectly ordinary algebraic object — the mask arrives as a
+scalar with no axes:
+
+```
+u:classify([[0]])
+  error: array error: index 1 out of bounds for axis 1 with size 0
+```
+
+`tests/test_algebra_laws.mlpl :: trivial and edge-case orders` exists precisely
+to cover order 1, and it caught this on the first run after the upgrade. That is
+the repository's second job working as designed.
+
+### Workaround (a bridge, to be deleted)
+
+Reshape the mask back to the rank its docstring promises:
+
+```mlpl
+n = u:order(t)
+mask = reshape(u:inverse_mask(t), [n, n])
+```
+
+A no-op at every order above 1. Named at the fix site in `lib/algebra.mlpl`.
+
+### Severity
+
+**High.** It is a silent rank change on a legal value, not an error, so it
+surfaces far from its cause — here as an out-of-bounds axis index two calls
+later. Any array-oriented program that reaches an all-unit shape at a boundary
+(a one-element set, a single sample, a 1 x 1 minor) is exposed, and the failure
+does not name the operation that caused it.
+
+**Suspected cause:** a shape-normalisation path that drops unit dimensions and
+does not stop at rank 0. The correct behaviour is that scalar broadcasting
+preserves the rank and shape of its array operand, which is what the other
+shapes above already do.
+
+---
+
 ## Bug or feature?
 
 Four findings concern the playground's handling of narration. They are not the

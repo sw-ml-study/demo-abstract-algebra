@@ -49,5 +49,9 @@ assets:
 render:
     ./scripts/render-all
 
+# Serve the Saga A runtime spike, with the sw-MLPL playground at the same origin.
+spike port="8137":
+    ./scripts/serve-spike {{port}}
+
 # Run the complete local validation gate.
 check: demos tests audit

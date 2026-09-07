@@ -440,6 +440,85 @@ It exits `ok` while blockers remain open — this repository must stay green
 against the *current* interpreter — and prints the open list. When all six
 close, it says so and the bridges listed above get deleted in the same step.
 
+## B7 — No headless WASM build is published *(blocking the browser course)*
+
+### Symptom
+
+The browser course (`docs/tutorial-plan.md`) needs the sw-MLPL interpreter in
+the page, because the learner writes MLPL and MLPL must grade it. The
+interpreter compiles to WASM already, and the crate is exactly the right
+shape:
+
+```
+sw-mlpl/components/wasm/crates/mlpl-wasm   crate-type = ["cdylib", "rlib"]
+    eval_line(src) -> String
+    WasmSession { new(), eval(src) -> String, clear() }
+```
+
+But the only **published** artifact is `mlpl-live/mlpl-web-*.wasm` (8.0 MB),
+which is the whole Yew/Trunk playground application. It re-exports those
+bindings, and it also mounts a UI on `init()`. Loading it as a library fails
+before any `eval` is reachable:
+
+```
+$ node -e "import('.../mlpl-web-*.js').then(m => m.default({module_or_path: bytes}))"
+Error: Can't find the global Window
+    at wasm://wasm/01e8173e:wasm-function[3611]
+```
+
+### Why it blocks
+
+There is no way to put the interpreter on a page we control without also
+mounting an application we do not want. Everything the course does — preload
+`lib/algebra.mlpl`, run the learner's edit, run an MLPL checker — needs a bare
+`WasmSession`, not a playground.
+
+### Current bridge (to be deleted)
+
+Serve the playground bundle from our own origin, load it in a **hidden
+iframe**, and reach through: `mlpl-live/index.html:13` assigns
+`window.wasmBindings = bindings`, so a same-origin parent gets the class
+directly.
+
+**This works.** `learn/spike/runtime-spike.html` proves all seven cases in
+Chrome — bindings reachable in ~100 ms, a `def` with a docstring evaluates, the
+session persists across `eval` calls, all 810 lines of `lib/algebra.mlpl` load
+as source and classify a learner-built table, an MLPL checker grades a good and
+a bad submission, a syntax error is returned rather than thrown, and `clear()`
+drops the environment.
+
+It also costs an 8 MB download and a mounted application nobody looks at,
+before the learner's first exercise.
+
+### Required
+
+A versioned `--target web` build of `mlpl-wasm` alone, published beside the
+playground:
+
+```sh
+wasm-pack build components/wasm/crates/mlpl-wasm --target web --out-dir dist/embed
+```
+
+No Yew, no Trunk, no mount, no `Window` requirement. The crate already compiles;
+it is simply never built on its own.
+
+### Acceptance
+
+```js
+import init, { WasmSession } from './mlpl_wasm.js';
+await init();                      // succeeds with no DOM
+new WasmSession().eval('1 + 1');   // "2"
+```
+
+and the same two lines succeed under Node with no `document` and no `window`.
+
+### Deletes here
+
+The iframe implementation inside `learn/runtime.js`, entire — the
+`MlplRuntime` interface it sits behind exists so that this is a one-file swap.
+`scripts/serve-spike`'s bundle composition goes with it.
+
+
 ## Documentation drift
 
 Found while verifying the above; worth an upstream fix on its own.

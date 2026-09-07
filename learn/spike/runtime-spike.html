@@ -1,0 +1,179 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>Runtime spike — can a page drive sw-MLPL?</title>
+<style>
+  body { margin: 0; padding: 24px; background: #1a1b26; color: #c0caf5;
+         font: 14px/1.55 ui-monospace, Menlo, monospace; }
+  h1 { font-size: 18px; margin: 0 0 4px; }
+  p.sub { color: #565f89; margin: 0 0 18px; max-width: 70ch; }
+  .case { border: 1px solid #414868; border-radius: 6px; padding: 12px;
+          margin-bottom: 10px; background: #1f2130; }
+  .name { color: #e0af68; }
+  .pass { color: #9ece6a; } .fail { color: #f7768e; }
+  pre { margin: 6px 0 0; white-space: pre-wrap; color: #c0caf5; }
+  #verdict { font-size: 17px; margin-top: 18px; }
+  iframe { display: none; }
+</style>
+
+<h1>Runtime spike</h1>
+<p class="sub">
+  Does a hidden, same-origin iframe of the sw-MLPL playground hand this page a
+  working interpreter? The playground's <code>index.html</code> assigns
+  <code>window.wasmBindings</code>, so a same-origin parent should be able to
+  construct a <code>WasmSession</code> and evaluate learner-written MLPL
+  without touching the playground's own UI. Saga A step 1 of
+  <code>docs/tutorial-plan.md</code>.
+</p>
+
+<div id="cases"></div>
+<div id="verdict">booting the interpreter…</div>
+
+<iframe id="mlpl" src="/index.html"></iframe>
+
+<script type="module">
+const casesEl = document.getElementById('cases');
+const verdictEl = document.getElementById('verdict');
+let failures = 0;
+
+// Report one spike case, and count the failures.
+function record(name, passed, detail) {
+  failures += passed ? 0 : 1;
+  const el = document.createElement('div');
+  el.className = 'case';
+  el.innerHTML =
+    `<span class="name">${name}</span> ` +
+    `<span class="${passed ? 'pass' : 'fail'}">${passed ? 'PASS' : 'FAIL'}</span>` +
+    `<pre>${detail.replace(/[&<>]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]))}</pre>`;
+  casesEl.appendChild(el);
+  console.log(`[spike] ${passed ? 'PASS' : 'FAIL'} ${name}: ${detail.split('\n')[0]}`);
+}
+
+// Resolve once the hidden playground frame has published its wasm bindings.
+function bindings(frame, timeoutMs) {
+  const deadline = Date.now() + timeoutMs;
+  return new Promise((resolve, reject) => {
+    const poll = () => {
+      let b = null;
+      try { b = frame.contentWindow && frame.contentWindow.wasmBindings; }
+      catch (e) { return reject(new Error('cross-origin: ' + e.message)); }
+      if (b && b.WasmSession) return resolve(b);
+      if (Date.now() > deadline) return reject(new Error('timed out waiting for wasmBindings'));
+      setTimeout(poll, 100);
+    };
+    poll();
+  });
+}
+
+const started = Date.now();
+let b;
+try {
+  b = await bindings(document.getElementById('mlpl'), 30000);
+} catch (e) {
+  record('reach the interpreter from the parent page', false, String(e));
+  verdictEl.innerHTML = '<span class="fail">SPIKE FAILED — the bridge does not work.</span>';
+  throw e;
+}
+record('reach the interpreter from the parent page', true,
+  `window.wasmBindings.WasmSession available after ${Date.now() - started} ms`);
+
+const session = new b.WasmSession();
+// Evaluate MLPL in the shared session and hand back the display string.
+const run = src => session.eval(src);
+
+// Evaluate MLPL that ends in `to_json(...)` and parse the record out.
+//
+// `to_json` answers a Result, and the session hands back that value's DISPLAY
+// form -- so the JSON arrives wrapped as `Ok({...})` rather than as the string
+// itself. This is upstream ask #10 seen from the browser side. Unwrapping is
+// one regex and it is the whole grading boundary, so it lives here rather than
+// leaking into every checker.
+function evalJson(src) {
+  const out = run(src).trim();
+  const m = /^Ok\((.*)\)$/s.exec(out);
+  if (!m) throw new Error('not an Ok(...) result: ' + out);
+  return JSON.parse(m[1]);
+}
+
+// 1. A multi-statement program with a def and a docstring -- the shape every
+//    lesson's starter code has.
+const defOut = run(
+  'def u:f(x, y) {\n' +
+  '  "Addition modulo three."\n' +
+  '  mod(x + y, 3)\n' +
+  '}\n' +
+  'def u:plus(x, y) {\n' +
+  '  "Ordinary addition -- escapes {0, 1, 2}."\n' +
+  '  x + y\n' +
+  '}\n' +
+  'u:f(2, 2)'
+);
+record('def with a docstring, then call it', defOut.trim() === '1',
+  `u:f(2, 2) => ${JSON.stringify(defOut)}`);
+
+// 2. The session persists across evals, which is what lets a lesson preload
+//    lib/algebra.mlpl once and then run the learner's code against it.
+const tableOut = run('t = table(:u:f, range(3), range(3))\nt');
+record('session persists; table() builds the Cayley table',
+  tableOut.includes('0 1 2') && tableOut.includes('1 2 0'),
+  `t =>\n${tableOut}`);
+
+// 3. to_json is the grading boundary: an MLPL checker returns a record and
+//    the page parses it.
+let parsed = null, parseErr = '';
+try {
+  parsed = evalJson('to_json({pass: 1, why: "closed", witness: {a: 0, b: 0}})');
+} catch (e) { parseErr = String(e); }
+record('to_json round-trips a grader record',
+  parsed !== null && parsed.pass === 1 && parsed.why === 'closed' && parsed.witness.a === 0,
+  `parsed: ${JSON.stringify(parsed)} ${parseErr}`);
+
+// 4. A real law check from lib/algebra.mlpl, pasted in as source -- proof the
+//    library loads into the session rather than needing a rewrite.
+const libSrc = await (await fetch('/lib-algebra.mlpl')).text();
+run(libSrc);
+let cls = null, clsErr = '';
+try { cls = evalJson('to_json(u:classify(t))'); } catch (e) { clsErr = String(e); }
+record('lib/algebra.mlpl loads into the session and classifies',
+  cls !== null && cls.group === 1 && cls.abelian_group === 1,
+  `${libSrc.split('\n').length} lines of library evaluated as source\n` +
+  `u:classify(t) => ${JSON.stringify(cls)} ${clsErr}`);
+
+// 5b. The grading shape of docs/tutorial-plan.md §4.1, hand-written here: a
+//     checker is an MLPL expression returning {pass, why, witness}. Saga A
+//     step 3 moves it into lib/grade.mlpl; the spike only proves it crosses.
+run(
+  'def u:grade_closed(t) {\n' +
+  '  "Grade a table for closure, naming a witness when it escapes."\n' +
+  '  inside = u:inside_mask(t)\n' +
+  '  bad = argmax(flatten(1 - inside))\n' +
+  '  {pass: u:is_closed(t), why: "every entry must name an element",\n' +
+  '   witness: {a: floor(bad / u:order(t)), b: mod(bad, u:order(t))}}\n' +
+  '}'
+);
+const good = evalJson('to_json(u:grade_closed(t))');
+const bad = evalJson(
+  'e = table(:u:plus, range(3), range(3))\nto_json(u:grade_closed(e))'
+);
+record('an MLPL checker grades a good and a bad submission',
+  good.pass === 1 && bad.pass === 0,
+  `closed table  => ${JSON.stringify(good)}\n` +
+  `escaping table => ${JSON.stringify(bad)}`);
+
+// 5. Errors come back as text rather than throwing, so the runner can show
+//    them to the learner instead of dying.
+let errOut, threw = false;
+try { errOut = run('nope('); } catch (e) { threw = true; errOut = String(e); }
+record('a syntax error is returned, not thrown',
+  !threw && /error/i.test(errOut), `${JSON.stringify(errOut)}`);
+
+// 6. reset() clears the environment, so one lesson cannot leak into the next.
+session.clear();
+const afterClear = run('t');
+record('clear() drops the session environment',
+  /error|undefined/i.test(afterClear), `t after clear => ${JSON.stringify(afterClear)}`);
+
+verdictEl.innerHTML = failures === 0
+  ? '<span class="pass">SPIKE PASSED — the bridge works. Saga A can proceed.</span>'
+  : `<span class="fail">SPIKE FAILED — ${failures} case(s) failed.</span>`;
+console.log(`[spike] verdict: ${failures === 0 ? 'PASSED' : 'FAILED (' + failures + ')'}`);
+</script>

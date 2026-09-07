@@ -203,10 +203,19 @@ def u:inverse_mask(t) {
 }
 
 # [n] mask: 1 at each element with a two-sided inverse.
+#
+# BRIDGE (docs/upstream-asks.md #22, a regression in mlpl-repl 0.20.0): scalar
+# broadcasting collapses a 1 x 1 array to rank 0, so u:inverse_mask answers a
+# SCALAR for the trivial group instead of the [1, 1] matrix its docstring
+# promises, and reduce then has no axis 1 to work on. Reshaping restores the
+# promised rank; it is a no-op at every other order. Delete when the collapse
+# is fixed upstream.
 def u:invertible_mask(t) {
   "Answer the [n] mask marking elements that can be undone from both sides.";
-  right = reduce(:or, u:inverse_mask(t), 1)
-  left = reduce(:or, u:inverse_mask(t), 0)
+  n = u:order(t)
+  mask = reshape(u:inverse_mask(t), [n, n])
+  right = reduce(:or, mask, 1)
+  left = reduce(:or, mask, 0)
   right * left
 }
 

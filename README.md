@@ -339,4 +339,9 @@ not boilerplate.
 - [docs/terminology.md](docs/terminology.md) — the word-collision register
 - [docs/research.txt](docs/research.txt) — the source brief
 - [docs/research2.txt](docs/research2.txt) — an external review of the web demos, which caught a real error; acted on in `docs/plan.md`
+- [docs/research3.txt](docs/research3.txt) — the SQLZoo + Diátaxis brief: how a
+  learner should meet this material
+- [docs/tutorial-plan.md](docs/tutorial-plan.md) — **the plan for the live
+  in-browser course**: the WASM runtime decision, MLPL-authored grading, the
+  animation policy, and the sagas that build it
 - [AGENTS.md](AGENTS.md) — agent instructions and the AgentRail protocol

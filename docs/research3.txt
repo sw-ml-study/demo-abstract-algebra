@@ -1,0 +1,1555 @@
+Consider https://www.sqlzoo.net/wiki/SQL_Tutorial as a model for learning things.  How can we apply this technique to the sw-mlpl and demo- repos here: 
+https://github.com/orgs/sw-ml-study/repositories -- if you had to pick one to demonstrate first, I'd like it to be demo-abstract-algebra
+
+You want to take the pedagogical mechanism of SQLZoo, not necessarily its visual design, and apply it first to demo-abstract-algebra, then generalize the pattern across the sw-ml-study demos.
+
+I think this is an unusually good match for what you are already building.
+
+SQLZoo’s core strength is that it does not say:
+
+Here is a chapter about SELECT. Read it, then perhaps experiment.
+
+Instead it repeatedly does something closer to:
+
+tiny explanation → runnable starting point → one concrete task → execute → inspect → modify → succeed → slightly harder task
+
+It separates the tutorial sequence, quizzes, reference material, and eventually larger assessments. Its interactive questions even contain default code and a known answer whose result can be compared with the learner's result.
+
+That is exactly the missing educational layer between your .mlpl demos and the learner.
+
+The key architectural change
+
+I would not replace the existing demos.
+
+Instead, introduce three distinct layers:
+
+                sw-MLPL Abstract Algebra
+                         │
+          ┌──────────────┼──────────────┐
+          │              │              │
+       LEARN           EXPLORE        REFERENCE
+          │              │              │
+   guided exercises   current demos    concepts/API
+   SQLZoo-style       visualizations   definitions
+   short steps        experiments      terminology
+          │
+          └───────► CHALLENGES ◄────────┘
+                    larger tasks
+
+Your existing repository is already remarkably close to supplying the raw material.
+
+The README describes the central insight as:
+
+a finite binary operation on n elements is an n × n array
+
+and consequently laws become array predicates, counterexamples become indices, and the same object is directly visualizable.
+
+That should become the central interactive teaching mechanism.
+
+Not:
+
+Learn abstract algebra by reading definitions.
+
+But:
+
+Manipulate a table until it acquires algebraic properties.
+
+That could be distinctive.
+
+Start with demo-abstract-algebra
+
+You already have essentially a syllabus:
+
+00 map
+01 magmas
+02 RPSLS
+03 closure
+04 associativity
+05 semigroups
+06 monoids
+07 inverses
+08 groups
+09 commutativity
+10 enumeration
+11 quasigroups
+12 isomorphism
+13 homomorphisms
+14 subgroups
+...
+
+That existing progression is much more valuable than manufacturing another hierarchy.
+
+I would turn that into an Abstract Algebra Zoo learning route.
+
+Not necessarily call it AlgebraZoo, but conceptually:
+
+0. Operations and Tables
+1. Closure
+2. Magmas
+3. Associativity
+4. Semigroups
+5. Identity
+6. Monoids
+7. Inverses
+8. Groups
+9. Commutativity
+10. Exploring finite structures
+11. Isomorphism
+12. Homomorphisms
+...
+
+There is one change I'd make to the current ordering for teaching purposes:
+
+Put closure before the word "magma."
+
+A beginner can understand:
+
+Does every input pair produce another member of the set?
+
+before learning:
+
+Such a thing is called a magma.
+
+That's very SQLZoo-like: operation first, terminology second.
+
+Lesson 0: don't teach algebra yet
+
+The first exercise should teach the interaction model.
+
+Something like:
+
+Operations as tables
+
+Given:
+
+def u:add3(x, y) {
+    mod(x + y, 3)
+}
+
+elements = range(3)
+
+table(:u:add3, elements, elements)
+
+And immediately show:
+
+    0 1 2
+  ┌──────
+0 │ 0 1 2
+1 │ 1 2 0
+2 │ 2 0 1
+
+Then:
+
+Exercise 0.1
+
+Change 3 to 4.
+What shape does the resulting table have?
+
+Run.
+
+Success isn't primarily about syntax. It establishes:
+
+function
+   ↓
+all input pairs
+   ↓
+array
+   ↓
+picture
+
+That is the mental model for the entire course.
+
+Then use RPS as the first real problem
+
+Your existing RPS lesson is already very good source material. It explains that the winner function is a closed binary operation, renders it as a Cayley table and graph, checks laws, and produces an explicit associativity counterexample rather than just false.
+
+But I would explode this one finished lesson into perhaps 8–12 interactions.
+
+That is the major SQLZoo transformation.
+
+Example: SQLZoo-style RPS sequence
+1.1 What is the operation?
+
+Show this, but with a hole:
+
+def u:beats(x, y) {
+    eq(mod(x - y + 3, 3), ____)
+}
+
+Task:
+
+Rock is 0, paper is 1, scissors is 2.
+Fill in the missing number so beats(x,y) is true when x beats y.
+
+Learner edits:
+
+1
+
+Run
+
+Result:
+
+✓ Correct
+
+rock beats scissors
+paper beats rock
+scissors beats paper
+
+And show the three-cycle.
+
+1.2 Build every matchup
+
+Starting code:
+
+choices = range(3)
+
+table(:u:winner, _____, _____)
+
+Goal:
+
+Evaluate winner for every pair of choices.
+
+They discover/use:
+
+table(:u:winner, choices, choices)
+
+Run.
+
+Now show the Cayley table.
+
+This simultaneously teaches:
+
+sw-MLPL table
+outer-product thinking
+array programming
+binary operations
+Cayley tables
+
+That is exactly where your dual purpose—teaching algebra while dogfooding MLPL—becomes an advantage rather than a distraction.
+
+1.3 Predict before executing
+
+This is important.
+
+SQLZoo mostly asks users to produce results. You can go one better because algebra is visual.
+
+Before running:
+
+What do you expect the rock × scissors cell to contain?
+
+○ rock
+○ paper
+○ scissors
+
+Then run the table.
+
+This turns visualization into feedback, rather than decoration.
+
+1.4 Closure
+
+Now deliberately break it.
+
+elements = [0, 1, 2]
+
+def u:operation(x, y) {
+    x + y
+}
+
+Question:
+
+Is this an operation on {0,1,2}?
+
+Learner might predict yes/no.
+
+Then:
+
+table(:u:operation, elements, elements)
+
+And the renderer shows the escaped 3 and 4 values.
+
+Your repository already has precisely this visualization: addition on {0,1,2} marks results that escape the set.
+
+Then the task becomes:
+
+Change one expression so all results stay inside the set.
+
+Solution:
+
+mod(x + y, 3)
+
+And immediately:
+
+✓ Closed
+Now introduce the vocabulary:
+
+A set together with one closed binary operation is called a magma.
+
+The learner has discovered the need for the definition before being handed the term.
+
+That is much better pedagogy.
+
+1.5 Ask the machine
+
+Now introduce your classifier:
+
+u:classify(rps)
+
+Perhaps show:
+
+closed       yes
+associative  no
+commutative  yes
+identity     no
+inverses     no
+
+classification: magma
+
+The existing lesson already generates essentially this analysis.
+
+But instead of a report, turn each line into the next question.
+
+1.6 Associativity: prediction
+
+Ask:
+
+Which expression does associativity claim is always equal?
+
+Possible choices:
+
+A. a * b == b * a
+B. (a * b) * c == a * (b * c)
+C. a * a == a
+D. a * e == a
+
+Then move to executable code.
+
+1.7 Find the counterexample
+
+Rather than simply displaying the known witness:
+
+u:assoc_counterexample(rps)
+
+Challenge the learner:
+
+Find a, b, and c for which moving the parentheses changes the answer.
+
+Give:
+
+a = __
+b = __
+c = __
+
+left  = winner(winner(a, b), c)
+right = winner(a, winner(b, c))
+
+eq(left, right)
+
+When successful:
+
+✓ Counterexample found
+
+(rock * paper) * scissors = scissors
+rock * (paper * scissors) = rock
+
+Then animate your existing two paths through the Cayley table.
+
+Your current demo already has exactly this witness/animation machinery.
+
+That makes the animation an answer explanation, which is far more valuable than having it permanently displayed.
+
+1.8 Generalize it
+
+Now ask:
+
+Instead of testing one triple, test all 27 triples.
+
+Start:
+
+...
+
+The learner eventually gets to the sw-MLPL array-oriented implementation.
+
+Then render the associativity cube you already have.
+
+You already visualize the n³ associativity test as n two-dimensional slices.
+
+This is where a lesson stops being elementary algebra and starts teaching an ML-relevant computational idea:
+
+A universal mathematical statement becomes an array computation over a Cartesian product.
+
+That's a core pattern worth emphasizing throughout the sw-MLPL curriculum.
+
+A lesson should therefore have five kinds of step
+
+I would standardize these across all demo repositories.
+
+Step	Purpose	Example
+Observe	establish phenomenon	run RPS table
+Predict	force mental model	which cell contains rock?
+Modify	manipulate code	repair closure
+Discover	infer property	find associativity counterexample
+Generalize	turn example into abstraction	check all n³ triples
+
+And occasionally:
+
+Step	Purpose
+Explain	learner chooses/interprets why
+Challenge	less scaffolding
+Explore	no single correct answer
+
+SQLZoo gives you the model, but I'd make your implementation more experimental and visual than SQLZoo.
+
+The UI should stay extremely simple
+
+Given your earlier concern about AI-slop UIs, I would resist dashboards, cards, gradients, analytics, achievement badges, animated progress rings, etc.
+
+Think textbook margin + REPL + result.
+
+Something like:
+
+ABSTRACT ALGEBRA                    03 / 42
+
+Closure
+─────────────────────────────────────────────────────
+
+Addition on {0,1,2} produces some values outside
+the set.
+
+Change the operation so every result remains in
+{0,1,2}.
+
+┌─ EDIT ─────────────────────────────────────────────┐
+│ def u:op(x, y) {                                   │
+│     x + y                                          │
+│ }                                                  │
+└────────────────────────────────────────────────────┘
+
+                  [ Run ]
+
+┌─ RESULT ───────────────────────────────────────────┐
+│       0   1   2                                    │
+│   0   0   1   2                                    │
+│   1   1   2  !3                                    │
+│   2   2  !3  !4                                    │
+│                                                    │
+│ ✗ Not closed                                       │
+│ Counterexample: 1 * 2 = 3                          │
+└────────────────────────────────────────────────────┘
+
+Hint     Concept     Previous                     Next
+
+The visualization can sit alongside/below it where useful.
+
+No site chrome competing with the exercise.
+
+Crucially: evaluate semantics, not source text
+
+SQLZoo executes the submitted SQL and compares its result to the answer's result rather than merely checking that the text matches.
+
+You should take the same approach.
+
+For example, don't require:
+
+mod(x + y, 3)
+
+because the learner might validly write an equivalent implementation.
+
+Each exercise should define a checker such as:
+
+closure:
+    result table contains only 0,1,2
+
+associativity witness:
+    left != right
+
+identity:
+    candidate satisfies both identity equations
+
+group construction:
+    classifier.group == true
+
+This is actually better suited to MLPL than SQL, because your lessons already have invariants and classifiers.
+
+Your current RPS lesson literally ends by computing classification properties, validating a witness, validating the rung, and returning ok(...) or err(...).
+
+So much of the grading infrastructure already exists conceptually.
+
+I would make lesson definitions data-driven
+
+Don't hand-code 40 separate web pages.
+
+Something along these lines:
+
+lessons/
+  00-operations/
+    01-table.lesson
+    02-read-table.lesson
+
+  01-closure/
+    01-escape.lesson
+    02-repair.lesson
+    03-magma.lesson
+
+  02-associativity/
+    01-parentheses.lesson
+    02-rps-counterexample.lesson
+    03-all-triples.lesson
+
+A lesson record might conceptually contain:
+
+id
+title
+concept
+prompt
+starter_code
+checker
+hint_1
+hint_2
+solution
+visualizer
+explanation
+next
+
+I would not necessarily invent a complicated JSON/YAML lesson DSL yet.
+
+Since this is sw-MLPL dogfooding, it may be more interesting if much of the lesson specification itself can eventually be expressed in MLPL records.
+
+For example, conceptually:
+
+{
+  id: "closure-02",
+  title: "Keep the answers inside",
+  prompt: "...",
+  starter: "...",
+  check: :u:check_closed,
+  visual: "cayley",
+  hints: [...]
+}
+
+Then the same material could drive:
+
+GitHub Pages interactive tutorial
+CLI tutorial
+eventual notebook export
+Org-mode export
+automated regression tests
+
+That aligns nicely with your broader idea of one source producing web, Jupyter, and Org-mode learning material.
+
+Three modes per topic
+
+This is where I think the system could substantially outperform conventional tutorial sites.
+
+Learn
+
+Highly guided.
+
+Read → predict → edit → run → feedback
+Explore
+
+Drop the learner into the existing demo machinery.
+
+For example:
+
+Change any cells in this 3×3 operation table.
+
+Current classification:
+
+✓ closed
+✗ associative
+✗ identity
+✗ inverses
+
+magma
+
+As the learner edits cells, classification changes live.
+
+This is essentially a finite-algebra microscope.
+
+Challenge
+
+Give a goal, not instructions:
+
+Construct a 4-element monoid that is not a group.
+
+Or:
+
+Construct a noncommutative group.
+
+Or:
+
+Find two different-looking tables that are isomorphic.
+
+That's the equivalent of SQLZoo's more involved assessments. SQLZoo explicitly separates guided tutorials from larger assessments graded at different levels.
+
+And this leads to an exceptional abstract-algebra game
+
+Probably the strongest feature you could build is:
+
+Earn the next law
+
+Start here:
+
+MAGMA
+
+[ editable Cayley table ]
+
+✓ closure
+✗ associativity
+✗ identity
+✗ inverses
+
+Challenge:
+
+Change as few cells as possible to make this a semigroup.
+
+Then:
+
+SEMIGROUP
+
+✓ closure
+✓ associativity
+✗ identity
+✗ inverses
+
+Then:
+
+Make it a monoid without losing associativity.
+
+Then:
+
+Make it a group.
+
+The structure lattice becomes a map of achievable transformations, rather than merely a diagram.
+
+Your existing README already uses a structure lattice showing the laws that move structures between classifications and notes that the diagram is checked against real tables rather than merely drawn.
+
+So turn the lattice into navigation:
+
+                    GROUP
+                   /     \
+          +inverse         +assoc
+             ↑               ↑
+           MONOID           LOOP
+             ↑               ↑
+         +identity       +identity
+             ↑               ↑
+         SEMIGROUP       QUASIGROUP
+             ↑               ↑
+        +associative     +division
+              \             /
+                   MAGMA
+
+Clicking an edge means:
+
+earn this law
+
+That would make the mathematics memorable.
+
+The tests become pedagogical explanations
+
+Another opportunity comes from your insistence on counterexamples.
+
+Instead of:
+
+✗ Associativity test failed
+
+show:
+
+✗ Not associative
+
+Try:
+    rock * paper * scissors
+
+Left grouping:
+    (rock * paper) * scissors
+    paper * scissors
+    scissors
+
+Right grouping:
+    rock * (paper * scissors)
+    rock * scissors
+    rock
+
+scissors ≠ rock
+
+Then:
+
+[Show on table]
+
+The existing code is already designed around returning a witness rather than merely returning false.
+
+That's an excellent tutorial architecture decision.
+
+Make it universal:
+
+law result = either
+
+    Holds
+
+or
+
+    Counterexample(...)
+
+not Boolean.
+
+This pattern would later be useful well beyond algebra.
+
+And connect it explicitly to ML
+
+I wouldn't force an ML analogy into every screen.
+
+But after each major section, add a very short Why ML people should care step.
+
+For instance:
+
+Tables and products
+Algebra:
+evaluate f(x,y) over every pair
+
+sw-MLPL:
+table(f, xs, ys)
+
+ML connection:
+batch evaluation / pairwise matrices / kernels
+Associativity
+Algebra:
+does regrouping change the result?
+
+ML/programming:
+reduction trees, parallel evaluation,
+numerical reproducibility
+Monoids
+Associative operation + identity
+
+Why useful computationally:
+parallel reductions and folds
+Groups / symmetry
+Transformations that preserve structure
+
+ML connection:
+equivariance, invariant representations,
+augmentation, symmetry-aware models
+Homomorphisms
+Structure-preserving maps
+
+ML connection:
+representations and mappings that retain
+selected relationships
+
+Keep these short and accurate. They provide the motivation behind a repo being inside sw-ml-study rather than looking like an unrelated undergraduate-math diversion.
+
+Use demo-abstract-algebra as the template repo
+
+I would explicitly treat this as an experiment in developing a reusable tutorial protocol.
+
+Something like:
+
+demo-abstract-algebra
+        │
+        │ proves the pattern
+        ▼
+sw-mlpl-learning-components
+        │
+        ├─ lesson runner
+        ├─ code editor
+        ├─ evaluator
+        ├─ semantic checker
+        ├─ hints
+        ├─ progression
+        ├─ visual output
+        └─ challenge mode
+                │
+                ▼
+       reused by demo repos
+
+The lesson content remains with each demo repo.
+
+The engine should eventually belong with sw-mlpl, not be copied into every repo.
+
+Then every demo repo gets the same grammar
+
+For example:
+
+demo-linear-algebra
+vector → dot product → matrix → transformations
+→ eigenvectors → projections → decompositions
+
+Exercises:
+
+Change this matrix so the vector doesn't move.
+
+Find the vector whose direction is unchanged.
+
+demo-category-theory
+objects/arrows → composition → identity
+→ functors → natural transformations
+
+Exercise:
+
+Which proposed composition violates associativity?
+
+Then show the diagram.
+
+demo-combinators
+
+Instead of showing combinators:
+
+Remove the explicit argument using composition.
+
+Run equivalent expressions against tests.
+
+demo-algorithms
+
+Fill in one missing operation.
+
+Predict complexity.
+
+Change the data so the worst case occurs.
+
+demo-ml-utils
+
+This gets even closer to SQLZoo:
+
+tensor
+→ normalization
+→ activation
+→ loss
+→ gradient
+→ optimization
+
+Each one can have small executable transformations with visible arrays.
+
+Eventually the top-level learning path becomes much clearer
+
+This also connects strongly to the learn-ML-visually idea we discussed.
+
+Instead of that project containing its own lessons, it becomes primarily an index and learning graph over exercises exported by the demo repos.
+
+Conceptually:
+
+                    Learn ML with sw-MLPL
+
+FOUNDATIONS
+───────────
+Arrays
+ │
+ ├── Linear Algebra
+ │      │
+ │      └── transformations
+ │
+ ├── Abstract Algebra
+ │      │
+ │      └── structure / symmetry
+ │
+ └── Probability
+        │
+        ▼
+      ML BASICS
+        │
+        ├── regression
+        ├── loss
+        ├── gradient descent
+        └── neural networks
+
+A learner doesn't need to know which GitHub repository owns the material.
+
+The repo boundary becomes an implementation concern.
+
+A concrete first implementation
+
+I would not begin by building the generic framework.
+
+Start with about 12 exercises in demo-abstract-algebra.
+
+Module 0 — Operations
+Run a binary function.
+Generate all pairs using table.
+Read a Cayley table.
+Module 1 — Closure
+Run ordinary addition over {0,1,2}.
+Identify escaping values.
+Repair it using modulo.
+Learn that this gives a magma.
+Module 2 — Rock-Paper-Scissors
+Complete beats.
+Generate the RPS table.
+Predict/classify properties.
+Find an associativity counterexample.
+Visualize that witness.
+
+At that point, stop.
+
+Evaluate whether it feels good.
+
+Don't implement groups, rings, 40 lessons, persistence, achievements, user accounts, etc.
+
+I would also deliberately reuse existing code
+
+The first version should mostly be a new presentation of existing assets, not a rewrite.
+
+You already have:
+
+algebra classifiers,
+property checks,
+counterexample machinery,
+table generation,
+Cayley rendering,
+RPS,
+associativity visualization,
+structure lattice,
+browser-compatible MLPL examples,
+tests,
+generated web material.
+
+So the prototype is really:
+
+existing executable knowledge
+            +
+small-step lesson metadata
+            +
+browser editor
+            +
+semantic grading
+            =
+SQLZoo-like learning experience
+
+That is comparatively inexpensive.
+
+One important distinction from SQLZoo
+
+I would not clone SQLZoo too literally.
+
+SQLZoo is fundamentally:
+
+question
+    ↓
+type query
+    ↓
+result rows
+    ↓
+correct / incorrect
+
+The sw-MLPL version can be:
+
+question
+    ↓
+predict
+    ↓
+modify executable model
+    ↓
+run
+    ↓
+inspect array
+    ↓
+inspect visualization
+    ↓
+inspect properties
+    ↓
+counterexample / explanation
+    ↓
+modify again
+
+That is a much richer learning loop.
+
+I'd summarize the design philosophy as:
+
+Don't show the learner abstract algebra. Give them a tiny algebraic object they can break, repair, classify, and visualize.
+
+And demo-abstract-algebra is probably the best repo in your collection to prove this approach, because its subject matter is discrete, finite, visualizable, automatically checkable, and already structured as a progressive sequence of executable lessons.
+
+What I would build first
+
+The most compelling first milestone isn't a new homepage. It is one polished interactive path:
+
+Operation
+   ↓
+all pairs
+   ↓
+Cayley table
+   ↓
+closure
+   ↓
+magma
+   ↓
+Rock-Paper-Scissors
+   ↓
+associativity
+   ↓
+find the counterexample
+   ↓
+watch the counterexample
+
+If those ~12 interactions feel satisfying, then extract their common machinery into the reusable tutorial engine. Only then convert the remaining abstract-algebra lessons and, after that, other demo repos.
+
+That avoids prematurely designing a generalized learning platform while using demo-abstract-algebra as exactly the kind of forcing function you use the demos for already.
+
+Also, strongly consider this approach: https://diataxis.fr/ - can it improve your recommendations?
+
+Yes. Diátaxis changes my recommendation in an important way. SQLZoo should be the model for the tutorial experience, while Diátaxis should be the model for the information architecture of each repo and eventually the whole sw-MLPL learning ecosystem.
+
+Diátaxis distinguishes four different user needs—tutorials, how-to guides, reference, and explanation—rather than treating all documentation as one continuum. The especially important distinction here is that a tutorial serves someone studying, while a how-to serves someone working toward a particular result.
+
+That exposes a weakness in my previous proposal: my Learn / Explore / Reference / Challenge split was useful, but it was mixing pedagogical mode with documentation purpose.
+
+I would now use this architecture
+                         demo-abstract-algebra
+
+                   What does the visitor need?
+                              │
+       ┌──────────────────────┼──────────────────────┐
+       │                      │                      │
+   LEARNING                SOLVING              UNDERSTANDING
+       │                      │                      │
+   Tutorial                How-to             Explanation
+       │                      │                      │
+ SQLZoo-style            task recipes        concepts / why
+ exercises
+       │
+       └──────────────────────┬──────────────────────┘
+                              │
+                          Reference
+                              │
+                    precise facts / APIs
+
+Or in strict Diátaxis terms:
+
+	Practical	Theoretical
+Learning	Tutorial	Explanation
+Working	How-to	Reference
+
+Diátaxis documentation framework
+
+The existing demo-abstract-algebra material actually contains pieces of all four, but they're often assembled together in one README or .mlpl lesson. Separating them would make the repository much easier to approach.
+
+1. Tutorial: this is where SQLZoo belongs
+
+This becomes the primary entry point for a learner.
+
+Not:
+
+Here's everything we know about magmas.
+
+Instead:
+
+Do this.
+
+Then:
+
+Observe what happened.
+
+Then:
+
+Change this.
+
+Then:
+
+Why did it change?
+
+So my proposed progression remains, but I'd now explicitly call it the Tutorial:
+
+Tutorial: Discovering finite algebra
+
+  0. Operations
+     0.1 Run your first operation
+     0.2 Apply it to every pair
+     0.3 Read the table
+
+  1. Closure
+     1.1 Watch addition escape the set
+     1.2 Repair the operation
+     1.3 You just made a magma
+
+  2. Rock-Paper-Scissors
+     2.1 Define who beats whom
+     2.2 Build its table
+     2.3 Predict its properties
+     2.4 Break associativity
+     2.5 Find a witness
+     2.6 Watch the witness
+
+  3. Associativity
+     ...
+
+  4. Semigroups
+     ...
+
+  5. Identity
+
+  6. Monoids
+
+  7. Inverses
+
+  8. Groups
+
+SQLZoo supplies the interaction pattern. Diátaxis tells us that this material should remain relentlessly tutorial-like.
+
+That's significant.
+
+For example, I previously suggested adding little "Why ML people should care" sections to lessons. Under Diátaxis, I'd largely remove those from the tutorial.
+
+They're explanation.
+
+Put a small link there:
+
+Want to understand why associativity matters computationally?
+→ Associativity, reduction trees, and parallel computation
+
+Don't interrupt the exercise with a mini-essay.
+
+2. Explanation: this is where much of your excellent existing prose belongs
+
+You already have substantial explanatory material such as why the RPS cycle suggests non-associativity, why the identity produces a cross in a Cayley table, why groups produce Latin squares, and how the visual pattern of Z₄ differs from the Klein four-group.
+
+That material is valuable.
+
+But it's serving a different user need.
+
+I'd give it a home like:
+
+Explanation
+
+  What is an algebraic structure?
+
+  Why represent finite operations as arrays?
+
+  Closure: what does "on a set" really mean?
+
+  Why associativity matters
+
+  Identity and the identity cross
+
+  Why groups produce Latin squares
+
+  Cyclic groups and visual banding
+
+  Z4 versus the Klein four-group
+
+  Why isomorphism means "same structure"
+
+  Structure-preserving maps
+
+  Abstract algebra and array programming
+
+  Abstract algebra and machine learning
+      symmetry
+      invariance
+      equivariance
+      reductions
+      representations
+
+Now you can actually go deeper than the existing README because you're no longer afraid that the explanation will derail the learning path.
+
+That is a major benefit of Diátaxis.
+
+3. How-to: this becomes a surprisingly useful part of the demo repo
+
+This was underdeveloped in my earlier proposal.
+
+Someone who has already done the lessons may return six months later because they want to accomplish something.
+
+They don't want Lesson 1 again.
+
+They want:
+
+How do I determine whether this operation forms a group?
+
+That's a how-to.
+
+Examples:
+
+How-to
+
+  How to define a finite operation
+
+  How to generate a Cayley table
+
+  How to classify an operation
+
+  How to test closure
+
+  How to find an associativity counterexample
+
+  How to find an identity
+
+  How to find inverses
+
+  How to determine whether a structure is a group
+
+  How to test two structures for isomorphism
+
+  How to find homomorphisms
+
+  How to render a Cayley table
+
+  How to create an animated visualization
+
+  How to add a new algebra demo
+
+  How to run all algebra demos
+
+  How to export SVG artifacts
+
+Notice the difference.
+
+Tutorial
+
+Let's discover what closure means.
+
+How-to
+
+Test an operation for closure.
+
+Same underlying MLPL functions.
+
+Completely different presentation.
+
+This distinction is one of the central points Diátaxis makes: tutorials and how-tos can look superficially similar because both contain steps, but the tutorial's obligation is a successful learning experience, while the how-to's obligation is accomplishing a task.
+
+4. Reference: make it boring—and excellent
+
+This should contain no teaching narrative.
+
+For example:
+
+Reference
+
+Algebra structures
+──────────────────
+magma
+semigroup
+monoid
+group
+abelian group
+quasigroup
+loop
+
+Laws
+────
+closure
+associativity
+identity
+inverse
+commutativity
+idempotence
+
+sw-MLPL algebra API
+───────────────────
+u:elements
+u:classify
+u:...
+table
+...
+
+Structure record
+────────────────
+{
+    title:
+    names:
+    table:
+}
+
+Classifier result
+─────────────────
+{
+    closed:
+    associative:
+    commutative:
+    identity:
+    inverses:
+    magma:
+    semigroup:
+    monoid:
+    group:
+    ...
+}
+
+This is where exact signatures, complexity, accepted shapes, return values, and edge cases belong.
+
+A programmer should be able to arrive from a search engine, look something up in 20 seconds, and leave.
+
+This changes what the README should do
+
+Your current README is doing too many jobs.
+
+It is:
+
+introduction,
+explanation,
+gallery,
+tutorial-ish material,
+status report,
+quick-start guide,
+architecture description,
+development documentation,
+sw-MLPL dogfooding report,
+project roadmap.
+
+That's understandable because those destinations didn't previously exist.
+
+With Diátaxis, the README can become much smaller.
+
+Something approximately like:
+
+# Abstract Algebra with sw-MLPL
+
+Learn abstract algebra by constructing, breaking,
+classifying and visualizing finite algebraic structures.
+
+[ Start the tutorial ]
+
+────────────────────────────────────────────────────
+
+Learn
+Guided interactive course from operations to groups.
+
+How-to
+Use sw-MLPL to classify and visualize finite structures.
+
+Reference
+Definitions, structures and sw-MLPL algebra functions.
+
+Explanation
+Why the mathematics and visualizations work.
+
+────────────────────────────────────────────────────
+
+Developer / contributor information
+Project status
+Repository layout
+
+That would make the repo feel dramatically less like "here is a giant README describing my project."
+
+More importantly, every existing demo gets classified
+
+I would audit the repo by putting every existing artifact into one of the four buckets.
+
+For example, your current RPS .mlpl lesson contains several things at once:
+
+rock_paper_scissors.mlpl
+
+    definition of magma              → Explanation
+    implementation of RPS            → How-to / example
+    Cayley-table generation          → How-to
+    commentary about what to notice  → Tutorial/Explanation
+    counterexample                   → Tutorial
+    renderer API usage               → Reference/example
+    invariant tests                  → implementation
+
+That doesn't mean the file is bad.
+
+Quite the contrary: it is a source artifact containing material from which multiple user-facing views can be generated.
+
+I would avoid forcing the source tree itself to mirror Diátaxis too rigidly.
+
+That's an important architectural distinction.
+
+One source, four presentations
+
+This gets especially interesting with the direction you're already taking.
+
+Imagine an underlying lesson/concept definition:
+
+             finite operation / closure
+                         │
+        ┌────────────────┼─────────────────┐
+        │                │                 │
+     Tutorial          How-to          Reference
+        │                │                 │
+ "repair this"     "test closure"     is_closed(...)
+        │
+        └────────────────┼─────────────────┘
+                         │
+                    Explanation
+                         │
+              "What closure means"
+
+The executable MLPL code and tests need not be duplicated.
+
+For example:
+
+lib/algebra.mlpl
+        ↑
+        │
+   shared truth
+        │
+ ┌──────┼──────────┐
+ │      │          │
+tutorial how-to  reference
+ │      │          │
+ └──────┼──────────┘
+        │
+   explanation
+
+This is particularly compatible with literate programming.
+
+And I'd modify the proposed lesson metadata
+
+Previously I suggested something like:
+
+prompt
+starter_code
+checker
+hint
+solution
+visualizer
+explanation
+
+I'd now remove explanation as a blob inside the lesson.
+
+Instead:
+
+concept: closure
+
+tutorial:
+    prompt
+    starter
+    checker
+    hints
+
+links:
+    explanation: concepts/closure
+    reference: reference/is_closed
+    how_to: howto/test-closure
+
+This prevents the tutorial engine from gradually becoming another giant documentation system.
+
+"Explore" still belongs—but it isn't a Diátaxis quadrant
+
+This is one place where I would retain something from my previous answer.
+
+The Cayley-table microscope:
+
+          EDIT TABLE
+
+       a   b   c
+    ┌────────────
+ a  │ a   b   c
+ b  │ b   ?   a
+ c  │ c   a   ?
+
+─────────────────────
+
+✓ closed
+✗ associative
+✓ commutative
+✗ identity
+✗ inverses
+
+MAGMA
+
+is neither really reference nor explanation nor how-to nor a conventional tutorial.
+
+It's a laboratory.
+
+So I'd treat it as a tool available from all four modes:
+
+              DIÁTAXIS
+
+ Tutorial ─────────────── Explanation
+     │                         │
+     │       LAB / EXPLORE     │
+     │        ┌───────┐        │
+     └───────►│       │◄───────┘
+              └───────┘
+     ┌────────►       ◄────────┐
+     │                         │
+ How-to ───────────────── Reference
+
+That distinction matters because your demos are fundamentally about executable exploration, not merely documentation.
+
+Diátaxis shouldn't constrain that strength.
+
+I'd also reconsider the top-level learning project
+
+This makes the proposed learn-ML-visually concept cleaner.
+
+It should not own all four quadrants.
+
+It primarily owns:
+
+Tutorial navigation
+Learn ML
+  │
+  ├── Arrays
+  │
+  ├── Linear algebra
+  │
+  ├── Functions
+  │
+  ├── Abstract algebra
+  │
+  ├── Probability
+  │
+  ├── Optimization
+  │
+  └── ML
+
+Individual repos remain authoritative for:
+
+demo-abstract-algebra
+    ├── tutorial content
+    ├── how-to
+    ├── reference
+    └── explanation
+
+demo-linear-algebra
+    ├── tutorial content
+    ├── how-to
+    ├── reference
+    └── explanation
+
+The learning application stitches their tutorials together into a larger curriculum.
+
+That's much cleaner than creating a second monolithic documentation site.
+
+So I would revise the overall model to three orthogonal ideas
+
+This is the architecture I think we should pursue:
+
+                    sw-MLPL learning ecosystem
+
+                            CONTENT
+                               │
+                         Diátaxis model
+                               │
+             ┌────────┬────────┼─────────┐
+             │        │        │         │
+          Tutorial  How-to  Reference Explanation
+
+
+                         INTERACTION
+                               │
+                         SQLZoo model
+                               │
+             explain → edit → run → inspect
+                    → feedback → retry
+
+
+                         EXPERIMENT
+                               │
+                      sw-MLPL's advantage
+                               │
+                executable + visual + mutable
+                               │
+                  ┌────────────┴───────────┐
+                  │                        │
+              playground              microscope
+
+These aren't competing ideas.
+
+They solve three different problems:
+
+Diátaxis answers:
+What kind of information does this person need?
+
+SQLZoo answers:
+How should a tutorial teach through interaction?
+
+Your sw-MLPL demos answer:
+What can executable array-oriented visualizations let the learner actually manipulate?
+
+That combination is substantially stronger than my first recommendation.
+
+And it makes me even more confident that demo-abstract-algebra should be the prototype, because it already contains enough tutorial, explanation, reference-worthy API, how-to material, tests, counterexamples, and visual experimentation to expose whether the architecture actually works before imposing it on the rest of the organization.
+
