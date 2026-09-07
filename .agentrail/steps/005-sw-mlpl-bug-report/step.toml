@@ -1,0 +1,9 @@
+number = 5
+slug = "sw-mlpl-bug-report"
+status = "completed"
+description = "Write docs/sw-mlpl-bug-report.md: a standalone, reproducible defect report fo..."
+role = "production"
+context_files = []
+created_at = "2026-09-07T13:37:31"
+completed_at = "2026-09-07T14:53:37"
+commits = ["265f179174b4de8671e21f27122f2b6505580ed5"]
