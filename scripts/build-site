@@ -36,6 +36,10 @@ cp "$repo_root/viewer/cayley.html" "$out/lab/index.html"
 cp "$repo_root/learn/spike/runtime-spike.html" "$out/spike/index.html"
 cp "$repo_root/lib/algebra.mlpl" "$out/spike/lib-algebra.mlpl"
 
+# The runtime interface, one level up from the pages that import it. Every
+# page reaches MLPL through this and none of them knows how. See B7.
+cp "$repo_root/learn/runtime.js" "$out/runtime.js"
+
 # The interpreter.
 if [ ! -f "$bundle/index.html" ]; then
   echo "no sw-MLPL bundle at $bundle" >&2
