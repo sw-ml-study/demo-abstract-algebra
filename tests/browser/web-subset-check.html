@@ -1,0 +1,91 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>web subset check</title>
+<!--
+  Runs each candidate .mlpl file through the REAL playground interpreter, the
+  way a learner does: paste the whole file, press Run.
+
+  This exists because tests/test_web_entries.mlpl cannot do it. That test uses
+  run_script, which is the CLI, so it passes on constructs the browser session
+  has never supported -- which is exactly how a broken web demo shipped.
+
+  Two failure shapes, and the second is the one that hides:
+
+    include      -> "error: ... include is a script-mode construct"
+    write_text   -> "Err(write_text: no filesystem sandbox on this surface)"
+    read_text    -> "Err(read_text: no filesystem sandbox on this surface)"
+    run_script   -> "Err(run_script: no script execution on this surface)"
+
+  Only the first is an eval error. The rest are ordinary Result values, so a
+  check that greps for "error" reports success on a demo that shows the reader
+  nothing but Err. Both are failures here.
+
+  Driven by scripts/check-web-runs via headless Chrome --dump-dom; the verdict
+  is the JSON in <pre id="out">.
+-->
+<pre id="out">running</pre>
+<iframe id="mlpl" src="mlpl/index.html" style="display:none"></iframe>
+
+<script type="module">
+const FILES = JSON.parse(new URLSearchParams(location.search).get('files') || '[]');
+const frame = document.getElementById('mlpl');
+
+// The playground publishes its bindings on the frame's window once the wasm
+// module has booted. Poll rather than guess at a fixed delay.
+async function bindings(timeoutMs) {
+  const deadline = Date.now() + timeoutMs;
+  while (Date.now() < deadline) {
+    const b = frame.contentWindow && frame.contentWindow.wasmBindings;
+    if (b && b.WasmSession) return b;
+    await new Promise(r => setTimeout(r, 100));
+  }
+  return null;
+}
+
+// A statement group is complete when brackets are balanced and the line is not
+// blank or a comment -- the same shape the playground's transcript shows.
+function groups(src) {
+  const out = [];
+  let buf = '', depth = 0, start = 1;
+  src.split('\n').forEach((line, i) => {
+    if (buf === '') start = i + 1;
+    buf += line + '\n';
+    depth += (line.match(/\{/g) || []).length - (line.match(/\}/g) || []).length;
+    const bare = line.trim();
+    if (depth > 0 || bare === '' || bare.startsWith('#')) return;
+    out.push({ line: start, src: buf.trim() });
+    buf = '';
+  });
+  if (buf.trim() !== '') out.push({ line: start, src: buf.trim() });
+  return out;
+}
+
+// A group fails if evaluation errored, or if it surfaced an Err to the reader.
+function verdict(output) {
+  const o = output.trim();
+  if (/^error/i.test(o)) return { kind: 'error', detail: o.slice(0, 200) };
+  if (/^Err\(/.test(o)) return { kind: 'Err', detail: o.slice(0, 200) };
+  return null;
+}
+
+const report = { ok: null, files: [], note: '' };
+const b = await bindings(30000);
+if (!b) {
+  report.ok = false;
+  report.note = 'the interpreter never published wasmBindings';
+} else {
+  for (const file of FILES) {
+    const src = await (await fetch('files/' + file)).text();
+    const session = new b.WasmSession();
+    const gs = groups(src);
+    let bad = null;
+    for (const g of gs) {
+      const v = verdict(session.eval(g.src));
+      if (v) { bad = { line: g.line, kind: v.kind, src: g.src.split('\n')[0].slice(0, 70), detail: v.detail }; break; }
+    }
+    report.files.push({ file, groups: gs.length, bad });
+  }
+  report.ok = report.files.every(f => f.bad === null);
+}
+document.getElementById('out').textContent = JSON.stringify(report, null, 1);
+</script>

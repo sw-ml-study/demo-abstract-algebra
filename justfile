@@ -31,6 +31,7 @@ audit:
     ./scripts/check-web-size
     ./scripts/check-narration
     ./scripts/check-web-renders
+    ./scripts/check-web-runs
     ./scripts/check-viewer-conformance
 
 # Format every tracked .mlpl file with sw-MLPL's own formatter.

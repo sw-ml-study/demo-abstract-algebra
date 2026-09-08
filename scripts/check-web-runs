@@ -1,0 +1,115 @@
+#!/bin/sh
+# Every file advertised as paste-into-the-playground actually runs there.
+#
+# web/ and demos/web/ exist for exactly the subset of MLPL the browser session
+# supports: no include, no filesystem, no script execution. Nothing checked
+# that. tests/test_web_entries.mlpl runs these files through run_script -- the
+# CLI -- so it passes on constructs the browser has never had, and a demo that
+# shows a reader nothing but Err looks green.
+#
+# Two guards:
+#   1. static  -- no script-mode construct appears in a web file. Always runs.
+#   2. runtime -- each file is evaluated by the REAL interpreter in a real
+#                 browser, and no statement group may answer `error:` or Err(.
+#                 Skips with a notice when Chrome or the bundle is absent, the
+#                 same way scripts/check-format skips without Emacs.
+set -eu
+
+repo_root=$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)
+bundle=${MLPL_BUNDLE:-$repo_root/../mlpl-live}
+work=$repo_root/out/web-runs
+failures=0
+
+note() { echo "$1" >&2; failures=$((failures + 1)); }
+
+files=$(cd "$repo_root" && ls web/*.mlpl demos/web/*.mlpl 2>/dev/null || true)
+[ -n "$files" ] || { echo "check-web-runs: no web files found" >&2; exit 1; }
+
+# ---------------------------------------------------------------------------
+# 1. Static: script-mode constructs must not appear.
+#
+# `include` is the only one that errors outright. write_text, read_text and
+# run_script answer Err(... on this surface), which is worse -- the demo runs,
+# looks fine to a grep, and shows the reader a failure.
+# ---------------------------------------------------------------------------
+for f in $files; do
+  for construct in 'include ' 'write_text(' 'read_text(' 'run_script(' 'env('; do
+    if grep -qF "$construct" "$repo_root/$f"; then
+      note "$f uses '$construct' -- not supported in the playground session"
+    fi
+  done
+done
+
+# ---------------------------------------------------------------------------
+# 2. Runtime: run them in a browser.
+# ---------------------------------------------------------------------------
+chrome=${CHROME:-}
+if [ -z "$chrome" ]; then
+  for c in "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome" \
+           /usr/bin/google-chrome /usr/bin/chromium /usr/bin/chromium-browser; do
+    [ -x "$c" ] && { chrome=$c; break; }
+  done
+fi
+
+if [ -z "$chrome" ] || [ ! -f "$bundle/index.html" ] || ! command -v node >/dev/null 2>&1; then
+  echo "check-web-runs: static guard passed for $(echo "$files" | wc -w | tr -d ' ') file(s)"
+  echo "check-web-runs: SKIPPING the browser run (needs Chrome, node, and a bundle at $bundle)."
+  echo "  A pass here does NOT mean these files run in the playground."
+  [ "$failures" -eq 0 ] || exit 1
+  exit 0
+fi
+
+# build-site clears its output directory, so compose first and add to it after.
+rm -rf "$work"
+"$repo_root/scripts/build-site" "$work" >/dev/null
+mkdir -p "$work/files"
+cp "$repo_root/tests/browser/web-subset-check.html" "$work/index.html"
+for f in $files; do
+  cp "$repo_root/$f" "$work/files/$(echo "$f" | tr '/' '_')"
+done
+
+names=$(for f in $files; do echo "$f" | tr '/' '_'; done \
+  | python3 -c 'import sys, json; print(json.dumps([l.strip() for l in sys.stdin if l.strip()]))')
+port=$(python3 -c 'import socket; s=socket.socket(); s.bind(("127.0.0.1",0)); print(s.getsockname()[1]); s.close()')
+
+python3 -m http.server "$port" --directory "$work" >/dev/null 2>&1 &
+server=$!
+trap 'kill $server 2>/dev/null || true' EXIT
+sleep 1
+
+url="http://localhost:$port/index.html?files=$(printf '%s' "$names" | python3 -c 'import sys,urllib.parse; print(urllib.parse.quote(sys.stdin.read()))')"
+cdp=$(python3 -c 'import socket; s=socket.socket(); s.bind(("127.0.0.1",0)); print(s.getsockname()[1]); s.close()')
+"$chrome" --headless=new --disable-gpu --no-sandbox --no-first-run \
+  --no-default-browser-check --disable-background-networking \
+  --disable-component-update --disable-features=MediaRouter \
+  --user-data-dir="$work/chrome" --remote-debugging-port="$cdp" \
+  about:blank >/dev/null 2>&1 &
+browser=$!
+trap 'kill $server $browser 2>/dev/null || true' EXIT
+until curl -s -o /dev/null "http://localhost:$cdp/json/version"; do sleep 1; done
+
+node "$repo_root/tests/browser/drive-web-subset.mjs" "$cdp" "$url" > "$work/verdict.json" 2>/dev/null || true
+
+python3 - "$work/verdict.json" <<'PYEOF' || failures=$((failures + 1))
+import json, sys
+
+raw = open(sys.argv[1]).read().strip()
+if not raw or raw == "running":
+    print("check-web-runs: the harness never finished", file=sys.stderr)
+    raise SystemExit(1)
+
+report = json.loads(raw)
+if report.get("note"):
+    print(f"check-web-runs: {report['note']}", file=sys.stderr)
+for f in report["files"]:
+    bad = f["bad"]
+    if bad is None:
+        print(f"  ok   {f['file']}  ({f['groups']} groups)")
+    else:
+        print(f"  FAIL {f['file']}  line {bad['line']}: {bad['src']}", file=sys.stderr)
+        print(f"       answered {bad['kind']}: {bad['detail']}", file=sys.stderr)
+raise SystemExit(0 if report.get("ok") else 1)
+PYEOF
+
+[ "$failures" -eq 0 ] || exit 1
+echo "check-web-runs: every web file runs in the playground session"

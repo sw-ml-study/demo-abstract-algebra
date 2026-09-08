@@ -644,10 +644,14 @@ lesson boundary rather than once.
 
 ---
 
-## 22. An all-unit shape collapses to rank 0 under scalar broadcasting — **REGRESSION, BUG**
+## 22. An all-unit shape collapses to rank 0 under scalar broadcasting — **FIXED**
+
+**Closed 2026-09-07, fixed upstream in `sw-mlpl@7b4545f2` and adopted here the
+same day — the `reshape` bridge is deleted.** Full repro matrix and acceptance
+cases in `docs/sw-mlpl-bug-report.md`.
 
 Found by `just check` going red against **mlpl-repl 0.20.0** on a tree whose
-last commit was green. The binary is two weeks newer than the commit; nothing
+last commit was green. The binary was two weeks newer than the commit; nothing
 in this repository changed.
 
 ### Symptom

@@ -293,6 +293,14 @@ out/                  scratch artifacts, gitignored
 `web/` and `assets/` are generated and committed; `just check` fails if either
 is stale, so they cannot drift from `lib/`.
 
+The files in `web/` are the subset the **playground session** supports — no
+`include`, no filesystem, no script execution. `scripts/check-web-runs` proves
+it by evaluating each one in a real browser against the real interpreter, and
+fails on a statement that answers `error:` **or** `Err(...)`. The second half
+matters: `write_text` and `run_script` do not error in the browser, they answer
+`Err(... on this surface)`, so a demo can be visibly broken and still look
+green to anything that only greps for "error".
+
 ## The second job: dogfooding sw-MLPL
 
 When a law check, an enumeration, or a rendering turns out to be awkward or

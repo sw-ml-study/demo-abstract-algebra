@@ -3,7 +3,9 @@
 Filed from `demo-abstract-algebra`, which exists partly to be a forcing
 function for the language (see `AGENTS.md`, "the second job").
 
-**Binary under test:** `mlpl-repl 0.20.0`, built 2026-09-02.
+**Binary under test:** `mlpl-repl 0.20.0`, rebuilt 2026-09-07 from `sw-mlpl@7b4545f2`.
+*(Originally filed against the 2026-09-02 build. **BUG 1 has since been fixed
+upstream and re-verified here** — see its status line below.)*
 **Reporting tree:** `demo-abstract-algebra` at `a9ee78f`, whose gate was green
 when committed on 2026-08-19 against the previous build.
 
@@ -26,14 +28,20 @@ A missing feature is not a bug and is not here.
 
 ## BUG 1 — An all-unit shape collapses to rank 0 under scalar broadcasting
 
-**New. A regression.** Severity: **high**.
+**FIXED upstream in `sw-mlpl@7b4545f2` ("scalar-broadcast fix"), re-verified
+here 2026-09-07.** Every acceptance case below now passes, and the `reshape`
+bridge in `lib/algebra.mlpl` has been deleted. Kept on file because the repro
+matrix is the regression test this class of bug needs.
+
+*Originally: new, a regression, severity high.*
 
 ### Repro
 
 ```mlpl
-shape([0])          # [1]        shape([0] * 1)          # []   WRONG
-shape([[0]])        # [1, 1]     shape([[0]] * 1)        # []   WRONG
-shape([[[0]]])      # [1, 1, 1]  shape([[[0]]] * 1)      # []   WRONG
+                    # was          is now
+shape([0] * 1)      # []   WRONG   [1]        correct
+shape([[0]] * 1)    # []   WRONG   [1, 1]     correct
+shape([[[0]]] * 1)  # []   WRONG   [1, 1, 1]  correct
 ```
 
 An array **every one of whose axes has extent 1** loses all of its axes the
@@ -70,16 +78,17 @@ Every scalar-broadcast binary operation collapses; nothing else does.
 | `reshape([[0]], [1, 1])` | `[1, 1]` | ✓ |
 | `flatten([[0]])` | `[1]` | ✓ |
 
-One further data point that may localise it: a `[1, 1]` array against a
-**rank-1** operand drops to rank 1 rather than to rank 0.
+One further data point that localised it: a `[1, 1]` array against a **rank-1**
+operand dropped to rank 1 rather than to rank 0.
 
 ```mlpl
-shape([[0]] * [1])   # [1]
+shape([[0]] * [1])   # was [1];  is now [1, 1]
 ```
 
-So the result does not simply lose every unit axis — it appears to lose them
-*down to the rank of the other operand*. With a scalar, the other operand has
-rank 0, and everything goes.
+So the result was not simply losing every unit axis — it lost them *down to the
+rank of the other operand*. With a scalar, the other operand has rank 0, and
+everything went. The fix corrected both cases together, which is consistent
+with the shape computation on the broadcast path being the single cause.
 
 ### Expected
 
@@ -126,17 +135,11 @@ calls downstream. Any array-oriented program that can reach an all-unit shape
 at a boundary is exposed: a one-element set, a single sample, a batch of one, a
 1 x 1 minor, the last slice of a reduction.
 
-### Workaround in use
+### Workaround, now removed
 
-Reshape back to the rank the value is supposed to have. Named at the fix site
-in `lib/algebra.mlpl` and deleted when this is fixed:
-
-```mlpl
-n = u:order(t)
-mask = reshape(u:inverse_mask(t), [n, n])
-```
-
-A no-op at every order above 1.
+A `reshape` back to the promised rank stood at the fix site in
+`lib/algebra.mlpl` from 2026-09-07 until the fix landed the same day. It is
+**deleted**; `u:invertible_mask` reduces `u:inverse_mask(t)` directly again.
 
 ### Acceptance
 
@@ -148,7 +151,8 @@ shape(eq([[0]], 0))   # [1, 1]
 ```
 
 and `u:classify([[0]])` answers the trivial group's classification rather than
-an array error.
+an array error. **All five confirmed passing on 2026-09-07**, with the bridge
+removed.
 
 ---
 
@@ -220,7 +224,7 @@ build and `AGENTS.md` requires claims be verified against the interpreter.
 
 | Item | Recorded as | Status now |
 |---|---|---|
-| all-unit shape collapse | *(new)* | **reproduces — regression** |
+| all-unit shape collapse | *(new)* | **FIXED** in `7b4545f2`, bridge deleted |
 | `run_script` string rendering | ask #10 | **reproduces** |
 | deep recursion aborts | blocker B6 | **reproduces** |
 | string lists cannot be built | blocker B4 | **reproduces** — see below |
@@ -246,9 +250,9 @@ Recorded because it is an easy false positive for the next person who checks.
 
 ## Suggested order
 
-1. **BUG 1.** A regression, silent, on a legal value, in the most-used code
-   path in the language. It also has the smallest blast radius to fix.
+1. ~~**BUG 1.**~~ **Done** — fixed in `7b4545f2` and verified here the same day.
 2. **BUG 3.** Cheap (a depth counter), and it becomes user-facing the moment
-   anyone runs learner-written MLPL in a browser.
+   anyone runs learner-written MLPL in a browser. Still reproduces: exit 134,
+   no diagnostic.
 3. **BUG 2.** Real but worked around, and the fix is a design decision about
-   what crosses a boundary rather than a defect to patch.
+   what crosses a boundary rather than a defect to patch. Still reproduces.
