@@ -1,0 +1,9 @@
+number = 7
+slug = "web-files-run-in-browser"
+status = "completed"
+description = "The web/*.mlpl files are advertised as paste-into-the-playground demos and at..."
+role = "production"
+context_files = []
+created_at = "2026-09-07T15:38:42"
+completed_at = "2026-09-07T19:54:11"
+commits = ["cd64c3f9796fdc47a89e26ecef3c2f035116d5b1"]
