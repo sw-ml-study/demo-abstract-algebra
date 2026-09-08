@@ -725,6 +725,99 @@ shapes above already do.
 
 ---
 
+## 23. No string equality, and `str_find` is a trap in its place — **FIXED**
+
+**Closed 2026-09-08: `str_eq(a, b) -> 1 | 0` shipped upstream in `f569defa`.**
+Verified here — `str_eq("group", "group")` is 1, `str_eq("semigroup", "group")`
+is 0, so the substring trap is gone, and empty strings compare equal.
+
+The four single-purpose graders written while this was open **stay**: they are
+better code than a name dispatch regardless of whether the comparison exists
+(`AGENTS.md`: small, single-purpose functions). `str_eq` earns its place in the
+lesson records instead, which match on string fields — `docs/tutorial-plan.md`
+§7.
+
+Found writing `lib/grade.mlpl` for the browser course.
+
+There is no way to ask whether two strings are the same.
+
+```mlpl
+eq("a", "a")        # error: expected an array value, got a string
+str_eq("a", "a")    # error: expected an array value, got a string
+```
+
+`eq` is an array operation and rejects strings outright, and no string
+predicate exists beside it. The only tool that inspects string content is
+`str_find`, which is **substring** search — so the obvious workaround is
+silently wrong on exactly the data this repository uses:
+
+```mlpl
+str_find("semigroup", "group")   # 4   -- not -1
+str_find("magma", "group")       # -1
+```
+
+A rung named "semigroup" would test positive for "group". The comparison can be
+rescued with `str_len` on both sides plus a `str_find(...) == 0`, but that is
+three calls and a subtle argument order to express `a == b`.
+
+**Where it bit:** a `u:grade_rung(t, name)` that dispatched on a rung name.
+Rewritten as four single-purpose graders — `u:grade_is_magma`,
+`u:grade_is_semigroup`, `u:grade_is_monoid`, `u:grade_is_group` — which is
+better code regardless, so the workaround here cost nothing. It will cost
+something the first time a lesson record needs to match on a string field, and
+lesson records are the plan (`docs/tutorial-plan.md` §7).
+
+**Required:**
+
+```
+str_eq(a, b)   -> 1 | 0
+```
+
+Or let `eq` accept two strings, which is the smaller surface and the name a
+reader would guess first.
+
+**Severity:** medium. It is not blocking — the four-grader rewrite is honest —
+but the natural workaround is *wrong in a way that passes tests written by
+whoever chose it*, which is worse than an absence.
+
+---
+
+## 24. A test file with no runner call passes, having run nothing — **BUG**
+
+Not sw-MLPL proper: `mlplunit`. Recorded here because it is the same failure
+class as #10 and #20 and it cost real time.
+
+`mlplunit` prepends a prelude defining `u:run_registered_tests`, and every test
+file must **call it on its last line**. A file that declares `@test` functions
+and omits that call does not fail. It runs as an ordinary script, defines some
+functions, evaluates to nothing in particular, and is reported as:
+
+```
+TEST tests/test_grade.mlpl
+PASS tests/test_grade.mlpl
+Ran 1 test(s): 1 passed, 0 failed.
+```
+
+One passing "test" — the file — where six were written. The suite total goes
+**up**, so the omission looks like progress.
+
+**Where it bit:** `tests/test_grade.mlpl` in this repository, whose six cases
+and forty assertions did not run for several commits' worth of work while
+reporting green.
+
+**Required:** a file matching the configured `pattern` that contains at least
+one `@test` annotation and never calls `u:run_registered_tests()` should be an
+**error**, naming the file. The information is already there — mlplunit builds
+the combined source itself, so it can see both the annotations and the absent
+call.
+
+**Severity:** high for a test runner. A test framework that silently runs
+nothing and reports success defeats the only thing it is for, and the failure
+is invisible in exactly the situation it matters — a new test file, written by
+someone who has not yet learned the convention.
+
+---
+
 ## Bug or feature?
 
 Four findings concern the playground's handling of narration. They are not the

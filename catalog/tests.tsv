@@ -3,3 +3,4 @@ test-algebra-laws	tests/test_algebra_laws.mlpl	lib	law-predicates	0	0	none	curre
 test-render	tests/test_render.mlpl	lib	string-and-svg-primitives	0	0	none	current	runnable
 test-web-entries	tests/test_web_entries.mlpl	web	web-ui-svg-contract	0	0	none	current	runnable
 test-viewer-conformance	tests/test_viewer_conformance.mlpl	viewer	law-verdict-fixtures	0	0	none	current	runnable
+test-grade	tests/test_grade.mlpl	lib	course-graders	0	0	none	current	runnable

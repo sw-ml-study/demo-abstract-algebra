@@ -1,0 +1,145 @@
+# Conformance for lib/grade.mlpl: every checker the browser course grades with,
+# asserted against a known-good AND a known-bad submission.
+#
+# This file is why the course cannot rot silently. The page runs these same
+# functions in a WASM session, so a grader that starts lying here starts lying
+# to a learner -- and unlike viewer/cayley.html, there is no second
+# implementation to keep in step, because the browser runs the real one.
+#
+# Every verdict has the same shape, {pass, why, a, b, got}, and a FAILING
+# verdict must name a witness. "not closed" teaches nothing; "1 * 2 = 3, which
+# is not in the set" teaches the idea. So the negative cases assert the witness
+# indices, not merely that pass is 0.
+#
+# loops: 0
+
+include "lib/algebra.mlpl";
+include "lib/grade.mlpl";
+
+def u:add3(x, y) {
+  "Answer the sum modulo 3 -- a group, and the positive case throughout.";
+  mod(x + y, 3)
+}
+
+def u:sub3(x, y) {
+  "Answer the difference modulo 3 -- a Latin square that is not a group.";
+  mod(x - y + 3, 3)
+}
+
+@test {name: "closure grades, and names the escaping pair", tags: ["grade"]}
+def u:test_grade_closed() {
+  "Closure passes on a closed table and names the first escape on an open one.";
+  z3 = table(:u:add3, u:elements(3), u:elements(3));
+  good = u:grade_closed(z3);
+  u:assert_eq(good.pass, 1, "Z3 should be closed")?;
+
+  # Ordinary addition on {0,1,2}: 1 + 2 = 3 is the first cell to escape, and
+  # it is the counterexample the README's closure lesson prints.
+  esc = [[0, 1, 2], [1, 2, 3], [2, 3, 4]];
+  bad = u:grade_closed(esc);
+  u:assert_eq(bad.pass, 0, "escaping table graded as closed")?;
+  u:assert_eq(bad.a, 1, "witness row should be 1")?;
+  u:assert_eq(bad.b, 2, "witness column should be 2")?;
+  u:assert_eq(bad.got, 3, "witness value should be 3")?;
+  ok({test: "grade_closed", cases: 5})
+}
+
+@test {name: "associativity grades, and names a disagreeing triple", tags: ["grade"]}
+def u:test_grade_associative() {
+  "Associativity passes on Z3 and names a triple on rock-paper-scissors.";
+  z3 = table(:u:add3, u:elements(3), u:elements(3));
+  u:assert_eq(u:grade_associative(z3).pass, 1, "Z3 should be associative")?;
+
+  rps = [[0, 1, 0], [1, 1, 2], [0, 2, 2]];
+  bad = u:grade_associative(rps);
+  u:assert_eq(bad.pass, 0, "RPS graded as associative")?;
+  # The witness must be a real one: the two bracketings genuinely differ.
+  w = u:assoc_counterexample(rps);
+  u:assert_eq(bad.a, w.a, "witness should match the library's")?;
+  u:assert_eq(eq(w.left, w.right), 0, "the named triple must actually disagree")?;
+  ok({test: "grade_associative", cases: 4})
+}
+
+@test {name: "commutativity grades, and names a mirrored pair", tags: ["grade"]}
+def u:test_grade_commutative() {
+  "Commutativity passes on Z3 and names a pair on subtraction.";
+  z3 = table(:u:add3, u:elements(3), u:elements(3));
+  u:assert_eq(u:grade_commutative(z3).pass, 1, "Z3 should commute")?;
+
+  s3 = table(:u:sub3, u:elements(3), u:elements(3));
+  bad = u:grade_commutative(s3);
+  u:assert_eq(bad.pass, 0, "subtraction graded as commutative")?;
+  # a * b and b * a must really differ at the named pair.
+  left = u:cell(s3, bad.a, bad.b);
+  right = u:cell(s3, bad.b, bad.a);
+  u:assert_eq(eq(left, right), 0, "the named pair must actually differ")?;
+  ok({test: "grade_commutative", cases: 3})
+}
+
+@test {name: "each rung grades, and only its own", tags: ["grade"]}
+def u:test_grade_rungs() {
+  "A group passes every rung; a magma passes only magma.";
+  z3 = table(:u:add3, u:elements(3), u:elements(3));
+  u:assert_eq(u:grade_is_magma(z3).pass, 1, "Z3 is a magma")?;
+  u:assert_eq(u:grade_is_semigroup(z3).pass, 1, "Z3 is a semigroup")?;
+  u:assert_eq(u:grade_is_monoid(z3).pass, 1, "Z3 is a monoid")?;
+  u:assert_eq(u:grade_is_group(z3).pass, 1, "Z3 is a group")?;
+
+  # Rock-paper-scissors stops at the bottom rung, and the graders must agree
+  # with lib/algebra.mlpl's classifier rather than with each other.
+  rps = [[0, 1, 0], [1, 1, 2], [0, 2, 2]];
+  u:assert_eq(u:grade_is_magma(rps).pass, 1, "RPS is a magma")?;
+  u:assert_eq(u:grade_is_semigroup(rps).pass, 0, "RPS is not a semigroup")?;
+  u:assert_eq(u:grade_is_monoid(rps).pass, 0, "RPS is not a monoid")?;
+  u:assert_eq(u:grade_is_group(rps).pass, 0, "RPS is not a group")?;
+
+  # Subtraction mod 3 is a Latin square and still not a group -- the trap
+  # lesson 11 exists for, and the one a grader must not fall into.
+  s3 = table(:u:sub3, u:elements(3), u:elements(3));
+  u:assert_eq(u:is_latin(s3), 1, "subtraction should be a Latin square")?;
+  u:assert_eq(u:grade_is_group(s3).pass, 0, "a Latin square is not a group")?;
+  ok({test: "grade_rungs", cases: 10})
+}
+
+@test {name: "shape and equality grade, with the offending cell", tags: ["grade"]}
+def u:test_grade_shape_and_equality() {
+  "The table check rejects a single result; equality names the first bad cell.";
+  z3 = table(:u:add3, u:elements(3), u:elements(3));
+  u:assert_eq(u:grade_is_table(z3, 3).pass, 1, "Z3 is a 3x3 table")?;
+  # Calling the operation once instead of over every pair: the commonest
+  # first mistake, and it must not be graded as a table.
+  u:assert_eq(u:grade_is_table([0, 1, 2], 3).pass, 0, "a row is not a table")?;
+
+  u:assert_eq(u:grade_equals(z3, z3).pass, 1, "a table equals itself")?;
+  # One cell changed: the verdict must point AT that cell.
+  wrong = [[0, 1, 2], [1, 2, 0], [2, 0, 2]];
+  bad = u:grade_equals(wrong, z3);
+  u:assert_eq(bad.pass, 0, "a changed cell graded as equal")?;
+  u:assert_eq(bad.a, 2, "witness row should be 2")?;
+  u:assert_eq(bad.b, 2, "witness column should be 2")?;
+  u:assert_eq(bad.got, 2, "witness should carry what the learner wrote")?;
+  ok({test: "grade_shape_and_equality", cases: 8})
+}
+
+@test {name: "every verdict has the same shape", tags: ["grade"]}
+def u:test_verdict_shape() {
+  "The page renders any verdict without knowing which checker ran.";
+  rps = [[0, 1, 0], [1, 1, 2], [0, 2, 2]];
+  esc = [[0, 1, 2], [1, 2, 3], [2, 3, 4]];
+  verdicts = [
+    u:grade_closed(esc).pass,
+    u:grade_associative(rps).pass,
+    u:grade_is_magma(rps).pass,
+    u:grade_is_table(rps, 3).pass
+  ];
+  # Each answered a `pass` field, which is what the uniformity buys.
+  u:assert_eq(size(verdicts), 4, "every checker answers a pass field")?;
+  # A passing verdict carries no witness; a failing one must.
+  pass_v = u:grade_closed(rps);
+  u:assert_eq(pass_v.a, -1, "a passing verdict should carry no witness")?;
+  fail_v = u:grade_closed(esc);
+  u:assert_eq(1 - lt(fail_v.a, 0), 1, "a failing verdict must name a witness")?;
+  ok({test: "verdict_shape", cases: 3})
+}
+
+u:run_registered_tests()

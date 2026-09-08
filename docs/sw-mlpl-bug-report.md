@@ -3,9 +3,9 @@
 Filed from `demo-abstract-algebra`, which exists partly to be a forcing
 function for the language (see `AGENTS.md`, "the second job").
 
-**Binary under test:** `mlpl-repl 0.20.0`, rebuilt 2026-09-07 from `sw-mlpl@7b4545f2`.
-*(Originally filed against the 2026-09-02 build. **BUG 1 has since been fixed
-upstream and re-verified here** — see its status line below.)*
+**Binary under test:** `mlpl-repl 0.20.0`, rebuilt 2026-09-08 from `sw-mlpl@f569defa`.
+*(Originally filed against the 2026-09-02 build. **BUG 1 and BUG 2 have since
+been fixed upstream and re-verified here.** BUG 3 still reproduces.)*
 **Reporting tree:** `demo-abstract-algebra` at `a9ee78f`, whose gate was green
 when committed on 2026-08-19 against the previous build.
 
@@ -158,7 +158,12 @@ removed.
 
 ## BUG 2 — `run_script` returns a string result's rendering, not the string
 
-**Still reproduces.** Recorded as `docs/upstream-asks.md` #10. Severity: medium.
+**FIXED upstream in `f569defa`, re-verified here 2026-09-08.** A new
+`value_raw` field carries the child's actual value: `type_of(r.value_raw)` is
+`string` and it begins `<svg ` with no leading quote byte. `value` is unchanged
+and still the lossy rendering, so nothing that read it breaks — callers opt in.
+
+*Originally: recorded as `docs/upstream-asks.md` #10, severity medium.*
 
 ```mlpl
 r = unwrap(run_script("web/magma_rps.mlpl", {source_dir: "."}))
@@ -225,7 +230,7 @@ build and `AGENTS.md` requires claims be verified against the interpreter.
 | Item | Recorded as | Status now |
 |---|---|---|
 | all-unit shape collapse | *(new)* | **FIXED** in `7b4545f2`, bridge deleted |
-| `run_script` string rendering | ask #10 | **reproduces** |
+| `run_script` string rendering | ask #10 | **FIXED** in `f569defa` (`value_raw`) |
 | deep recursion aborts | blocker B6 | **reproduces** |
 | string lists cannot be built | blocker B4 | **reproduces** — see below |
 | broadcasting is scalar-only | ask #2 | reproduces *(a limitation, not a bug)* |
@@ -254,5 +259,6 @@ Recorded because it is an easy false positive for the next person who checks.
 2. **BUG 3.** Cheap (a depth counter), and it becomes user-facing the moment
    anyone runs learner-written MLPL in a browser. Still reproduces: exit 134,
    no diagnostic.
-3. **BUG 2.** Real but worked around, and the fix is a design decision about
-   what crosses a boundary rather than a defect to patch. Still reproduces.
+3. ~~**BUG 2.**~~ **Done** — fixed in `f569defa` via a `value_raw` field.
+   Its browser half (ask #20, `eval_with_values` unexported) is still open, and
+   `learn/runtime.js` still unwraps `Ok(...)` at the grading boundary.

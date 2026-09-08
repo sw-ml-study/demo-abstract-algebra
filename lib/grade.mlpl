@@ -1,0 +1,192 @@
+# lib/grade.mlpl -- graders for the browser course.
+#
+# A checker answers a RECORD, never a boolean:
+#
+#   {pass: 0|1, why: <static message>, a: <index>, b: <index>, got: <value>}
+#
+# The shape is uniform so the page can render any verdict without knowing which
+# checker ran, and `a`, `b` and `got` name a WITNESS -- the specific pair that
+# broke the law -- because "not closed" teaches nothing and "1 * 2 = 3, which is
+# not in the set" teaches the whole idea.  This is the same discipline
+# lib/algebra.mlpl already applies to its counterexamples, made uniform so the
+# course can lean on it.
+#
+# These run in the browser, so nothing here may touch the filesystem and
+# nothing may `include`.  The page evaluates `to_json(u:grade_*(...))` and
+# parses the result.
+#
+# loops: 0
+
+# A passing verdict.  The indices are -1 to say "no witness applies".
+def u:grade_ok(message) {
+  "Answer a passing verdict carrying an explanatory message and no witness.";
+  {pass: 1, why: message, a: -1, b: -1, got: -1}
+}
+
+# A failing verdict naming the pair that broke it.
+def u:grade_fail(message, a, b, got) {
+  "Answer a failing verdict naming the pair (a, b) and the value it produced.";
+  {pass: 0, why: message, a: a, b: b, got: got}
+}
+
+# ---------------------------------------------------------------------------
+# Shape -- the first thing a learner gets wrong
+# ---------------------------------------------------------------------------
+
+# Did the learner build an n x n table at all?  A rank-1 answer means they
+# called the operation once instead of over every pair.
+def u:grade_is_table(t, n) {
+  "Grade whether the value is the n x n Cayley table, not a single result.";
+  s = shape(t)
+  right_rank = eq(size(s), 2)
+  right_size = eq(size(flatten(t)), n * n)
+  if right_rank * right_size {
+    u:grade_ok("every pair of elements has a cell")
+  } else {
+    u:grade_fail("expected an n by n table -- one cell for every PAIR", -1, -1, size(flatten(t)))
+  }
+}
+
+# ---------------------------------------------------------------------------
+# Reading one cell, and one flat mask
+# ---------------------------------------------------------------------------
+
+# The value at (a, b).  There is no scalar indexing builtin, so a cell is two
+# takes -- the idiom lib/algebra.mlpl uses throughout.
+def u:cell(t, a, b) {
+  "Answer the single value a * b, given its row and column.";
+  take(take(t, 0, a), 0, b)
+}
+
+# The closure mask, flattened, so a witness search can sort it.
+def u:inside_mask_flat(t) {
+  "Answer the flattened closure mask, 1 where the entry names a real element.";
+  flatten(u:inside_mask(t))
+}
+
+# ---------------------------------------------------------------------------
+# The laws
+# ---------------------------------------------------------------------------
+
+# Closure, with the first escaping cell as the witness.
+def u:grade_closed(t) {
+  "Grade closure, naming the first pair whose result escapes the set.";
+  if u:is_closed(t) {
+    u:grade_ok("every result names an element of the set")
+  } else {
+    n = u:order(t)
+    # grade_up is a STABLE ascending argsort, so entry 0 is the FIRST escaping
+    # cell -- the same idiom lib/algebra.mlpl uses for its witnesses.
+    i = take(grade_up(u:inside_mask_flat(t)), 0, 0)
+    a = floor(i / n)
+    b = mod(i, n)
+    u:grade_fail("this result is not in the set", a, b, u:cell(t, a, b))
+  }
+}
+
+# Associativity, reusing the library's own witness search.
+def u:grade_associative(t) {
+  "Grade associativity, naming a triple whose two bracketings disagree.";
+  w = u:assoc_counterexample(t)
+  if u:is_associative(t) {
+    u:grade_ok("every triple agrees, whichever way it is bracketed")
+  } else {
+    u:grade_fail("these disagree: (a*b)*c is not a*(b*c)", w.a, w.b, w.c)
+  }
+}
+
+# Commutativity, naming a mirrored pair that differs.
+def u:grade_commutative(t) {
+  "Grade commutativity, naming a pair for which a * b differs from b * a.";
+  if u:is_commutative(t) {
+    u:grade_ok("the table equals its own mirror image")
+  } else {
+    w = u:comm_counterexample(t)
+    u:grade_fail("a * b and b * a differ here", w.a, w.b, w.left)
+  }
+}
+
+# An identity, reported by index so the page can ring its row and column.
+def u:grade_identity(t) {
+  "Grade whether some element leaves every other unchanged from both sides.";
+  e = u:identity_of(t)
+  if u:has_identity(t) {
+    u:grade_fail("found it -- this element's row and column echo the headings", e, e, e)
+  } else {
+    u:grade_fail("no row and column pair reproduces the headings", -1, -1, -1)
+  }
+}
+
+# ---------------------------------------------------------------------------
+# The ladder
+# ---------------------------------------------------------------------------
+
+# One grader per rung rather than one that takes a rung NAME. sw-MLPL has no
+# string equality -- `eq` is an array operation and rejects strings, and the
+# only tool is `str_find`, which is substring-based and would answer 4 rather
+# than "no" for str_find("semigroup", "group"). See docs/upstream-asks.md #23.
+# Four small functions are clearer than a dispatch chain anyway.
+
+# A magma: closed, and nothing more is required.
+def u:grade_is_magma(t) {
+  "Grade whether the table is a magma -- a closed operation on the set.";
+  u:grade_rung_flag(u:classify(t).magma, "it is closed, so it is a magma")
+}
+
+# A semigroup: a magma that is also associative.
+def u:grade_is_semigroup(t) {
+  "Grade whether the table is a semigroup -- closed and associative.";
+  u:grade_rung_flag(u:classify(t).semigroup, "closed and associative: a semigroup")
+}
+
+# A monoid: a semigroup with an identity.
+def u:grade_is_monoid(t) {
+  "Grade whether the table is a monoid -- a semigroup with an identity.";
+  u:grade_rung_flag(u:classify(t).monoid, "associative with an identity: a monoid")
+}
+
+# A group: a monoid in which everything can be undone.
+def u:grade_is_group(t) {
+  "Grade whether the table is a group -- a monoid where every element inverts.";
+  u:grade_rung_flag(u:classify(t).group, "every element can be undone: a group")
+}
+
+# Turn a classifier flag into a verdict.  No witness: a rung is a conjunction
+# of laws, so the useful witness belongs to whichever law failed, and the
+# lesson asks about that law directly.
+def u:grade_rung_flag(flag, message) {
+  "Answer a verdict for a classifier flag, with no witness.";
+  if flag {
+    u:grade_ok(message)
+  } else {
+    u:grade_fail("the laws that hold do not add up to that", -1, -1, -1)
+  }
+}
+
+# ---------------------------------------------------------------------------
+# Direct comparison, for exercises with one right answer
+# ---------------------------------------------------------------------------
+
+# Do two tables agree everywhere?  The witness is the first differing cell.
+def u:grade_equals(got, want) {
+  "Grade a table against a reference, naming the first cell that differs.";
+  if eq(size(flatten(got)), size(flatten(want))) {
+    u:grade_equal_cells(got, want)
+  } else {
+    u:grade_fail("the answer is not the right shape", -1, -1, size(flatten(got)))
+  }
+}
+
+def u:grade_equal_cells(got, want) {
+  "Compare two tables of equal size cell by cell.";
+  same = eq(flatten(got), flatten(want))
+  if reduce(:and, same) {
+    u:grade_ok("every cell matches")
+  } else {
+    n = u:order(want)
+    i = take(grade_up(same), 0, 0)
+    a = floor(i / n)
+    b = mod(i, n)
+    u:grade_fail("this cell is wrong", a, b, u:cell(got, a, b))
+  }
+}
