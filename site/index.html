@@ -1,118 +1,145 @@
 <!doctype html>
 <meta charset="utf-8">
-<title>Abstract algebra, visually — sw-MLPL</title>
+<title>Learn abstract algebra by breaking it</title>
 <style>
+  /* High-contrast palette. Every text colour below is measured against the
+     background it sits on: body text 10.8:1 or better, headings 14.4:1.
+     WCAG asks 4.5:1 for AA and 7:1 for AAA. The previous secondary colour
+     was 2.76:1, which is why it read as unlit grey. */
   :root {
-    --bg: #1a1b26; --panel: #1f2130; --line: #414868; --ink: #c0caf5;
-    --dim: #565f89; --good: #9ece6a; --warn: #e0af68;
+    --bg:    #07080b;   /* near-black, so every foreground gains contrast */
+    --panel: #101219;
+    --line:  #6b6f8c;
+    --ink:   #ffe14d;   /* bright yellow, 15.4:1 on --bg */
+    --body:  #e3c34a;   /* warm gold for prose, 11.6:1 on --bg */
+    --good:  #a9ee78;
+    --soon:  #ffb454;
   }
   * { box-sizing: border-box; }
   body {
-    margin: 0; padding: 32px 24px 64px; background: var(--bg); color: var(--ink);
-    font: 15px/1.6 ui-monospace, Menlo, monospace;
+    margin: 0; padding: 32px 24px 64px; background: var(--bg); color: var(--body);
+    font: 16px/1.65 ui-monospace, Menlo, monospace;
   }
-  main { max-width: 74ch; margin: 0 auto; }
-  h1 { font-size: 22px; margin: 0 0 6px; }
-  p.sub { color: var(--dim); margin: 0 0 28px; }
-  .thesis {
-    border-left: 3px solid var(--line); padding: 2px 0 2px 16px;
-    margin: 0 0 32px; color: var(--ink);
-  }
-  h2 { font-size: 13px; color: var(--dim); font-weight: normal;
-       letter-spacing: .08em; margin: 34px 0 12px; }
+  main { max-width: 72ch; margin: 0 auto; }
+  h1 { font-size: 26px; margin: 0 0 8px; color: var(--ink); line-height: 1.25; }
+  p.sub { color: var(--ink); margin: 0 0 26px; font-size: 17px; }
+  p { margin: 0 0 16px; }
+  h2 { font-size: 14px; color: var(--ink); letter-spacing: .1em;
+       margin: 38px 0 14px; border-bottom: 1px solid var(--line);
+       padding-bottom: 7px; }
   .door {
-    display: block; text-decoration: none; color: inherit;
+    display: block; text-decoration: none; color: var(--body);
     background: var(--panel); border: 1px solid var(--line);
-    border-radius: 7px; padding: 14px 16px; margin-bottom: 10px;
+    border-radius: 8px; padding: 16px 18px; margin-bottom: 12px;
   }
   a.door:hover { border-color: var(--ink); }
-  .door.off { opacity: .55; }
-  .door .name { font-size: 16px; }
-  .door .what { color: var(--dim); font-size: 13.5px; margin-top: 3px; }
-  .tag { float: right; font-size: 11.5px; letter-spacing: .06em; }
-  .tag.live { color: var(--good); } .tag.soon { color: var(--warn); }
-  figure { margin: 0 0 26px; }
-  figure img { width: 100%; max-width: 420px; display: block; }
-  figcaption { color: var(--dim); font-size: 13px; margin-top: 8px; }
-  footer { margin-top: 44px; padding-top: 18px; border-top: 1px solid var(--line);
-           color: var(--dim); font-size: 13px; }
+  a.door:focus-visible { outline: 3px solid var(--ink); outline-offset: 2px; }
+  .door .name { font-size: 18px; color: var(--ink); }
+  .door .what { margin-top: 6px; }
+  .tag { float: right; font-size: 12px; letter-spacing: .08em; }
+  .tag.live { color: var(--good); } .tag.soon { color: var(--soon); }
+  ol.ladder { padding-left: 1.4em; margin: 0 0 18px; }
+  ol.ladder li { margin-bottom: 7px; }
+  ol.ladder b { color: var(--ink); font-weight: normal; }
+  figure { margin: 22px 0; }
+  figure img { width: 100%; max-width: 430px; display: block;
+               background: #e8e8f0; border-radius: 6px; padding: 10px; }
+  figcaption { margin-top: 9px; font-size: 15px; }
+  footer { margin-top: 46px; padding-top: 18px; border-top: 1px solid var(--line);
+           font-size: 14.5px; }
   a { color: var(--ink); }
-  code { color: var(--warn); }
+  code { color: var(--ink); }
 </style>
 
 <main>
-<h1>Abstract algebra, visually</h1>
-<p class="sub">Magmas to groups, built and broken in sw-MLPL.</p>
+<h1>Learn abstract algebra by breaking it</h1>
+<p class="sub">No prior algebra needed. Start by clicking on a grid.</p>
 
-<p class="thesis">
-  A finite binary operation on <code>n</code> elements <strong>is</strong> an
-  <code>n × n</code> array. So building one is a single
-  <code>table(f, elements, elements)</code>; every law is an array predicate
-  with no explicit loop; every counterexample is an index into that array; and
-  the array is directly renderable.
+<p>
+  Abstract algebra is usually taught as definitions you are asked to accept
+  before you have seen anything they describe. This site does the reverse.
+  You get a small grid of numbers, you change it, and software tells you what
+  you have just built — and what you have just broken.
+</p>
+
+<p>
+  The whole subject sits on one idea. Pick a few things, and a rule that
+  combines any two of them into a third. Write out what every pair gives you.
+  That grid <em>is</em> the mathematical object; everything else is noticing
+  which patterns the grid does and does not have.
+</p>
+
+<h2>START HERE</h2>
+
+<a class="door" href="lab/">
+  <span class="tag live">LIVE</span>
+  <div class="name">The Lab — change a rule, see what it becomes</div>
+  <div class="what">
+    A grid showing what every pair of elements combines to. Click any square to
+    change its answer. The panel beside it re-decides, every time, what kind of
+    object you now have — and when a law fails it names the exact case that
+    broke it, rather than just saying no. Begin with rock-paper-scissors, which
+    you already understand, and take it apart.
+  </div>
+</a>
+
+<h2>WHAT YOU WILL LEARN</h2>
+
+<p>Five questions, asked of any rule. Each "yes" is a rung on a ladder:</p>
+
+<ol class="ladder">
+  <li><b>Closed</b> — does combining two of your things always give you back one of your things?</li>
+  <li><b>Associative</b> — does it matter where you put the brackets?</li>
+  <li><b>Identity</b> — is there one element that leaves everything else alone?</li>
+  <li><b>Inverses</b> — can every move be undone?</li>
+  <li><b>Commutative</b> — does the order of the two inputs matter?</li>
+</ol>
+
+<p>
+  Those answers have names. A rule that is merely closed is a <b>magma</b>. Add
+  associativity and it is a <b>semigroup</b>; add an identity, a <b>monoid</b>;
+  add inverses, a <b>group</b> — the structure behind symmetry, and the reason
+  this subject shows up in physics, cryptography and machine learning. You will
+  meet each name only after you have already needed it.
 </p>
 
 <figure>
   <img src="structure-lattice.svg"
-       alt="Two routes from magma to group, each arrow labelled by the law that earns it">
+       alt="Two routes from magma to group, each arrow labelled with the law that earns it">
   <figcaption>
-    Two routes up to a group, and the law that earns each step. The diagram is
-    <em>checked</em>, not drawn — every node carries a real table, and a demo
-    asserts the classifier puts it exactly where the picture says.
+    Where you are heading, and the law that earns each step. Two different
+    routes reach a group. This diagram is <em>checked</em>, not drawn — every
+    box holds a real grid, and a program verifies each one lands where the
+    picture claims.
   </figcaption>
 </figure>
 
-<h2>WHAT IS HERE NOW</h2>
+<h2>BEING BUILT</h2>
 
-<a class="door" href="lab/">
-  <span class="tag live">LIVE</span>
-  <div class="name">The Lab — Cayley table explorer</div>
+<div class="door">
+  <span class="tag soon">NEXT</span>
+  <div class="name">The course — guided, one small step at a time</div>
   <div class="what">
-    Click any cell to change what that pairing produces. Closure,
-    associativity, commutativity, identity, inverses and the ladder rung are
-    rechecked as you edit. Nothing is declared; it is all read off the table.
-    Seven structures to start from, and three puzzles.
+    Read two sentences, edit a line of code, press Run, and have the answer
+    checked — the way SQLZoo teaches SQL. The interpreter and the grading
+    already work (see below); the lessons are being written now.
   </div>
-</a>
+</div>
 
 <a class="door" href="spike/">
   <span class="tag live">LIVE</span>
-  <div class="name">Runtime spike — sw-MLPL running in this page</div>
+  <div class="name">Runtime check — the machinery, if you are curious</div>
   <div class="what">
-    Evidence, not a demo. It loads the interpreter into the browser, evaluates
-    a <code>def</code>, builds a Cayley table, loads all 810 lines of
-    <code>lib/algebra.mlpl</code> as source, and has an MLPL checker grade a
-    good and a bad submission. Seven cases; watch them pass.
+    Not a lesson. It proves the real sw-MLPL interpreter runs inside this page,
+    loads the same algebra library the command-line tests use, and grades
+    submitted answers. Ten checks; watch them pass.
   </div>
 </a>
 
-<h2>WHAT IS NOT BUILT YET</h2>
-
-<div class="door off">
-  <span class="tag soon">PLANNED</span>
-  <div class="name">Learn — the course</div>
-  <div class="what">
-    Read two sentences, edit MLPL, press Run, and have the real interpreter
-    execute and grade it. The runtime is proven (see the spike); the lessons
-    are not written. Plan: <code>docs/tutorial-plan.md</code>, sagas A and B.
-  </div>
-</div>
-
-<div class="door off">
-  <span class="tag soon">PLANNED</span>
-  <div class="name">How-to · Reference · Explanation</div>
-  <div class="what">
-    Task recipes, the algebra API, and the prose currently crowding the README.
-    The Diátaxis split is saga C.
-  </div>
-</div>
-
 <footer>
-  Source:
-  <a href="https://github.com/sw-ml-study/demo-abstract-algebra">sw-ml-study/demo-abstract-algebra</a>
-  · Language: <a href="https://mlpl.softwarewrighter.com/">sw-MLPL</a>
-  · This page is generated by <code>scripts/build-site</code>; it says what is
-  built and what is not, and it is not permitted to advertise a course that has
-  no lessons.
+  Built with <a href="https://mlpl.softwarewrighter.com/">sw-MLPL</a>, an
+  array language — the grids here are arrays, which is why the mathematics and
+  the code are the same object.
+  <a href="https://github.com/sw-ml-study/demo-abstract-algebra">Source on GitHub</a>.
 </footer>
 </main>

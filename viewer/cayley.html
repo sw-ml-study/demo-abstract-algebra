@@ -3,13 +3,13 @@
 <title>Cayley table explorer — demo-abstract-algebra</title>
 <style>
   :root {
-    --bg: #1a1b26; --panel: #1f2130; --line: #414868; --ink: #c0caf5;
-    --dim: #565f89; --good: #9ece6a; --bad: #f7768e; --warn: #e0af68;
+    --bg: #07080b; --panel: #101219; --line: #6b6f8c; --ink: #ffe14d;
+    --dim: #e3c34a; --good: #a9ee78; --bad: #ff8a9e; --warn: #ffb454;
   }
   * { box-sizing: border-box; }
   body {
     margin: 0; padding: 24px; background: var(--bg); color: var(--ink);
-    font: 15px/1.55 ui-monospace, Menlo, monospace;
+    font: 16px/1.6 ui-monospace, Menlo, monospace;
   }
   h1 { font-size: 19px; margin: 0 0 4px; }
   p.sub { color: var(--dim); margin: 0 0 20px; max-width: 62ch; }
@@ -19,28 +19,28 @@
     border-radius: 8px; padding: 16px;
   }
   table { border-collapse: collapse; }
-  th { color: var(--dim); font-weight: normal; padding: 4px 8px; font-size: 13px; }
+  th { color: var(--ink); font-weight: normal; padding: 4px 8px; font-size: 14px; }
   td.cell {
     width: 68px; height: 46px; text-align: center; cursor: pointer;
-    border-radius: 4px; border: 3px solid transparent; color: #12131c;
-    font-size: 13px; user-select: none;
+    border-radius: 4px; border: 3px solid transparent; color: #07080b;
+    font-size: 14px; font-weight: 600; user-select: none;
   }
   td.cell:hover { border-color: #ffffff; }
   td.cell.identity { border-color: #ffffff; }
-  td.cell.escaped { background: #3b3b4d !important; color: var(--bad); }
+  td.cell.escaped { background: #1c1d28 !important; color: var(--bad); font-weight: 700; }
   .laws { list-style: none; margin: 0; padding: 0; min-width: 260px; }
-  .laws li { display: flex; justify-content: space-between; padding: 3px 0; }
+  .laws li { display: flex; justify-content: space-between; padding: 4px 0; font-size: 15px; }
   .yes { color: var(--good); } .no { color: var(--bad); }
   .rung { margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--line); font-size: 17px; }
-  .witness { margin-top: 12px; color: var(--warn); font-size: 13px; white-space: pre-wrap; }
+  .witness { margin-top: 12px; color: var(--warn); font-size: 14px; white-space: pre-wrap; }
   button {
-    background: #2a2e42; color: var(--ink); border: 1px solid var(--line);
+    background: #191c28; color: var(--ink); border: 1px solid var(--line);
     border-radius: 5px; padding: 6px 11px; font: inherit; cursor: pointer; margin: 2px;
   }
   button:hover { border-color: var(--ink); }
   button.win { border-color: var(--good); color: var(--good); }
-  .puzzle { margin-top: 16px; font-size: 13px; color: var(--dim); max-width: 46ch; }
-  #conformance { margin-top: 22px; font-size: 13px; }
+  .puzzle { margin-top: 16px; font-size: 14px; color: var(--dim); max-width: 46ch; }
+  #conformance { margin-top: 22px; font-size: 14px; }
   code { color: var(--warn); }
 </style>
 
