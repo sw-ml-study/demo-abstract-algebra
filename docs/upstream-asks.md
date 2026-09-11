@@ -818,6 +818,55 @@ someone who has not yet learned the convention.
 
 ---
 
+## 25. An array literal cannot hold records, so there is no list of records
+
+Found writing `learn/lessons/course.mlpl`, which holds the browser course as
+data — in the language the course teaches.
+
+```mlpl
+[{id: "a"}, {id: "b"}]
+# error: array literal must be all-strings or all-numbers;
+#        got mixed kinds: [record, record]
+```
+
+Records nest fine, and a record may hold a string list:
+
+```mlpl
+to_json({a: {x: 1}, b: {y: 2}})        # Ok({"a":{"x":1},"b":{"y":2}})
+to_json({h: ["p", "q"], n: 3})         # Ok({"h":["p","q"],"n":3})
+```
+
+So the missing thing is specifically a **sequence** of records. An array
+literal accepts all-numbers or all-strings and nothing else.
+
+**Where it bit:** a course is a list of lessons, in order. That is the obvious
+shape and it cannot be written. The workaround is a record keyed by slug plus a
+separate `order` list of strings:
+
+```mlpl
+{order: ["ops-run", "ops-table"], lessons: {ops_run: ..., ops_table: ...}}
+```
+
+Two structures that must agree, where one would do — and they can silently
+disagree, so `scripts/build-learn` now checks that every name in `order` exists
+and that no lesson is missing from `order`. That check exists only because of
+this limitation.
+
+It also forces key names to differ from ids: `ops-run` is not a name, so the
+key is `ops_run` and the real id is repeated inside the record.
+
+**Required:** let an array literal hold records, as it holds numbers and
+strings. Ordered heterogeneous data is ordinary — a list of rows, a list of
+lessons, a list of test cases — and every workaround is a hand-maintained
+index.
+
+**Severity:** medium. Nothing is impossible, but the natural shape for ordered
+records is unavailable, and the substitute needs a validator to stay honest.
+This is a data-modelling limit rather than a computation one, which is exactly
+what bites when MLPL is used to describe things rather than to crunch arrays.
+
+---
+
 ## Bug or feature?
 
 Four findings concern the playground's handling of narration. They are not the
