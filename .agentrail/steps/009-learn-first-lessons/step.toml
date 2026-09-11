@@ -1,0 +1,9 @@
+number = 9
+slug = "learn-first-lessons"
+status = "completed"
+description = "Saga A steps 3-5 and Saga B module 0-1, together, because the site currently ..."
+role = "production"
+context_files = []
+created_at = "2026-09-08T08:19:42"
+completed_at = "2026-09-11T10:18:31"
+commits = ["0a343c35ee0c912c01b969d4b5ae51b930542f9a"]
