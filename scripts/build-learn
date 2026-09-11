@@ -1,0 +1,65 @@
+#!/bin/sh
+# Generate learn/lessons.json from the MLPL course records.
+#
+# The lessons are written in the language the course teaches, and this turns
+# them into something a page can fetch -- the same generate-and-check shape as
+# scripts/build-assets and scripts/build-web-demos, so scripts/check-generated
+# can tell when the JSON has drifted from its source.
+set -eu
+
+repo_root=$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)
+out=${1:-$repo_root/learn/lessons.json}
+mlpl=$("$repo_root/scripts/select-mlpl")
+tmp=$(mktemp -t build-learn)
+trap 'rm -f "$tmp" "$tmp.raw"' EXIT
+
+cat > "$tmp" <<'MLPL'
+include "learn/lessons/course.mlpl"
+to_json(u:course())
+MLPL
+
+"$mlpl" --source-dir "$repo_root" "$tmp" > "$tmp.raw" 2>&1 || {
+  echo "build-learn: the course did not evaluate" >&2
+  cat "$tmp.raw" >&2
+  exit 1
+}
+
+# to_json answers a Result, so the payload arrives wrapped as Ok(...).
+# docs/upstream-asks.md #10 and #20; learn/runtime.js unwraps the same way.
+python3 - "$tmp.raw" "$out" <<'PYEOF'
+import json, re, sys
+
+raw = open(sys.argv[1]).read().strip()
+m = re.search(r'^Ok\((.*)\)$', raw, re.S)
+if not m:
+    print("build-learn: expected Ok(<json>), got:\n" + raw[:400], file=sys.stderr)
+    raise SystemExit(1)
+course = json.loads(m.group(1))
+
+order = course["order"]
+lessons = course["lessons"]
+by_id = {l["id"]: l for l in lessons.values()}
+
+missing = [i for i in order if i not in by_id]
+if missing:
+    print("build-learn: order names lessons that do not exist: " + ", ".join(missing), file=sys.stderr)
+    raise SystemExit(1)
+orphan = [i for i in by_id if i not in order]
+if orphan:
+    print("build-learn: lessons missing from order: " + ", ".join(orphan), file=sys.stderr)
+    raise SystemExit(1)
+
+# Uniform shape: optional fields default rather than being absent, so the
+# page never has to distinguish "no setup" from "missing key".
+for l in by_id.values():
+    l.setdefault("setup", "")
+    l.setdefault("choices", [])
+    l.setdefault("solution", "")
+
+# Emit in course order, so the page never has to sort.
+out = {"order": order, "lessons": [by_id[i] for i in order]}
+with open(sys.argv[2], "w") as f:
+    json.dump(out, f, indent=1, sort_keys=True)
+    f.write("\n")
+print(f"build-learn: {len(order)} lessons -> {sys.argv[2]}")
+PYEOF

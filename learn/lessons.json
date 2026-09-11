@@ -1,0 +1,216 @@
+{
+ "lessons": [
+  {
+   "check": "",
+   "choices": [],
+   "concept": "operation",
+   "hints": [
+    "Nothing to change yet. Press Run."
+   ],
+   "id": "ops-run",
+   "kind": "observe",
+   "module": "Operations",
+   "prompt": "Here is a rule. It takes two numbers from {0, 1, 2} and gives back another one: add them, then wrap around at 3, so 2 + 2 becomes 1. Press Run and see what it answers.",
+   "setup": "",
+   "solution": "",
+   "starter": "def u:op(x, y) {\n  \"Add, and wrap around at 3.\"\n  mod(x + y, 3)\n}\n\nu:op(2, 2)",
+   "title": "Combine two things"
+  },
+  {
+   "check": "to_json(u:grade_is_table(t, 3))",
+   "choices": [],
+   "concept": "cayley-table",
+   "hints": [
+    "range(3) is the list 0, 1, 2.",
+    "Both blanks get the same thing: the rows and the columns are the same three elements.",
+    "table(:u:op, range(3), range(3))"
+   ],
+   "id": "ops-table",
+   "kind": "modify",
+   "module": "Operations",
+   "prompt": "One answer tells you very little. Ask the rule about EVERY pair at once. `table` does that: give it the rule and the things to combine, and it fills in a grid. Replace both blanks with range(3), the numbers 0, 1, 2.",
+   "setup": "",
+   "solution": "def u:op(x, y) {\n  \"Add, and wrap around at 3.\"\n  mod(x + y, 3)\n}\n\nt = table(:u:op, range(3), range(3))\nt",
+   "starter": "def u:op(x, y) {\n  \"Add, and wrap around at 3.\"\n  mod(x + y, 3)\n}\n\nt = table(:u:op, ____, ____)\nt",
+   "title": "Do it for every pair"
+  },
+  {
+   "check": "to_json(u:grade_equals([{{answer}}], [u:cell(t, 2, 2)]))",
+   "choices": [
+    "0",
+    "1",
+    "2"
+   ],
+   "concept": "cayley-table",
+   "hints": [
+    "2 + 2 is 4.",
+    "Then wrap around at 3: what is left over when you take 3 away?"
+   ],
+   "id": "ops-read",
+   "kind": "predict",
+   "module": "Operations",
+   "prompt": "Rows are the first input, columns the second, both running 0, 1, 2. So the cell in row 2, column 2 holds whatever the rule gives for 2 and 2. Before you run anything: what is in it?",
+   "setup": "def u:op(x, y) {\n  \"Add, and wrap around at 3.\"\n  mod(x + y, 3)\n}\nt = table(:u:op, range(3), range(3))",
+   "solution": "2 + 2 = 4, and 4 wraps around to 1.",
+   "starter": "",
+   "title": "Read the grid"
+  },
+  {
+   "check": "",
+   "choices": [],
+   "concept": "closure",
+   "hints": [
+    "Look at the bottom-right corner.",
+    "3 and 4 are not in {0, 1, 2}."
+   ],
+   "id": "closure-escape",
+   "kind": "observe",
+   "module": "Closure",
+   "prompt": "Now take the wrap-around away, so the rule is just ordinary addition. Your things are still only 0, 1 and 2. Run it, and look at the grid: some cells hold answers that are not among your three things at all.",
+   "setup": "",
+   "solution": "",
+   "starter": "def u:op(x, y) {\n  \"Ordinary addition -- no wrapping.\"\n  x + y\n}\n\nt = table(:u:op, range(3), range(3))\nt",
+   "title": "Watch it leave the set"
+  },
+  {
+   "check": "to_json(u:grade_equals([{{answer}}], [1]))",
+   "choices": [
+    "0 and 2",
+    "1 and 2",
+    "2 and 1",
+    "2 and 2"
+   ],
+   "concept": "closure",
+   "hints": [
+    "Read across row 0 first, then row 1, then row 2.",
+    "Row 0 is fine: 0+0, 0+1, 0+2 are all still in the set.",
+    "Row 1 goes 1, 2, then 3 -- and 3 is not one of your things."
+   ],
+   "id": "closure-witness",
+   "kind": "predict",
+   "module": "Closure",
+   "prompt": "Saying 'it leaves the set' is vague. Point at the first pair that does it, reading left to right and top to bottom. Which pair is the earliest one whose answer is not 0, 1 or 2?",
+   "setup": "def u:op(x, y) {\n  \"Ordinary addition.\"\n  x + y\n}\nt = table(:u:op, range(3), range(3))\nw = u:grade_closed(t)",
+   "solution": "1 and 2, because 1 + 2 = 3, and 3 is not in {0, 1, 2}.",
+   "starter": "",
+   "title": "Which pair broke it?"
+  },
+  {
+   "check": "to_json(u:grade_closed(t))",
+   "choices": [],
+   "concept": "closure",
+   "hints": [
+    "You have already seen the repair, in the very first lesson.",
+    "mod(a, 3) is the remainder after taking away 3s -- it is never bigger than 2.",
+    "mod(x + y, 3)"
+   ],
+   "id": "closure-repair",
+   "kind": "modify",
+   "module": "Closure",
+   "prompt": "Repair the rule so that every pair gives back one of your three things. Do not add more things to the set -- change the rule instead, so its answers stay home.",
+   "setup": "",
+   "solution": "def u:op(x, y) {\n  \"Add, and wrap around at 3.\"\n  mod(x + y, 3)\n}\n\nt = table(:u:op, range(3), range(3))\nt",
+   "starter": "def u:op(x, y) {\n  \"Repair me: every answer must be 0, 1 or 2.\"\n  x + y\n}\n\nt = table(:u:op, range(3), range(3))\nt",
+   "title": "Keep the answers inside"
+  },
+  {
+   "check": "to_json(u:grade_is_magma(t))",
+   "choices": [],
+   "concept": "magma",
+   "hints": [
+    "Nothing to change. Press Run and read what comes back."
+   ],
+   "id": "closure-magma",
+   "kind": "observe",
+   "module": "Closure",
+   "prompt": "A set of things, plus one rule that combines any two of them and always gives back one of them, is called a MAGMA. That is the whole definition -- and you needed it before you were told it. Run this to have the classifier confirm what you made.",
+   "setup": "",
+   "solution": "",
+   "starter": "def u:op(x, y) {\n  \"Add, and wrap around at 3.\"\n  mod(x + y, 3)\n}\n\nt = table(:u:op, range(3), range(3))\nu:structure_name(t)",
+   "title": "You built a magma"
+  },
+  {
+   "check": "to_json(u:grade_equals(t, [[0, 0, 1], [1, 0, 0], [0, 1, 0]]))",
+   "choices": [],
+   "concept": "operation",
+   "hints": [
+    "Paper is 1 and rock is 0, so for paper-beats-rock the expression mod(x - y + 3, 3) is 1 - 0 = 1.",
+    "Check it against scissors over paper: 2 - 1 = 1 as well.",
+    "The blank is 1."
+   ],
+   "id": "rps-beats",
+   "kind": "modify",
+   "module": "Rock-paper-scissors",
+   "prompt": "Call rock 0, paper 1 and scissors 2. Then a beats b exactly when a is one step ahead of b, wrapping around: paper (1) beats rock (0), scissors (2) beats paper (1), and rock (0) beats scissors (2). Fill in the blank so the rule is true for those three and false otherwise.",
+   "setup": "",
+   "solution": "def u:beats(x, y) {\n  \"True when x beats y.\"\n  eq(mod(x - y + 3, 3), 1)\n}\n\nt = table(:u:beats, range(3), range(3))\nt",
+   "starter": "def u:beats(x, y) {\n  \"True when x beats y.\"\n  eq(mod(x - y + 3, 3), ____)\n}\n\nt = table(:u:beats, range(3), range(3))\nt",
+   "title": "Who beats whom"
+  },
+  {
+   "check": "to_json(u:grade_equals(t, [[0, 1, 0], [1, 1, 2], [0, 2, 2]]))",
+   "choices": [],
+   "concept": "magma",
+   "hints": [
+    "If x beats y, then the winner is x.",
+    "Otherwise y won, or it was a draw -- and in a draw y is the same as x anyway.",
+    "The blanks are x and y."
+   ],
+   "id": "rps-winner",
+   "kind": "modify",
+   "module": "Rock-paper-scissors",
+   "prompt": "Knowing who beats whom, build the rule that plays a round: it takes two choices and answers the WINNER. A draw answers that same choice. Complete it so the winner is returned.",
+   "setup": "",
+   "solution": "def u:beats(x, y) {\n  \"True when x beats y.\"\n  eq(mod(x - y + 3, 3), 1)\n}\n\ndef u:fight(x, y) {\n  \"Answer the winner of a round.\"\n  if u:beats(x, y) {\n    x\n  } else {\n    y\n  }\n}\n\nt = table(:u:fight, range(3), range(3))\nt",
+   "starter": "def u:beats(x, y) {\n  \"True when x beats y.\"\n  eq(mod(x - y + 3, 3), 1)\n}\n\ndef u:fight(x, y) {\n  \"Answer the winner of a round.\"\n  if u:beats(x, y) {\n    ____\n  } else {\n    ____\n  }\n}\n\nt = table(:u:fight, range(3), range(3))\nt",
+   "title": "Play the game"
+  },
+  {
+   "check": "to_json(u:grade_is_magma(t))",
+   "choices": [],
+   "concept": "magma",
+   "hints": [
+    "Read the flags that came back: which ones are 1?"
+   ],
+   "id": "rps-classify",
+   "kind": "observe",
+   "module": "Rock-paper-scissors",
+   "prompt": "You now have a rule on three things whose answers are always one of those three. Ask the classifier what it is -- and notice how little it says. Every law but closure fails.",
+   "setup": "",
+   "solution": "",
+   "starter": "def u:beats(x, y) {\n  \"True when x beats y.\"\n  eq(mod(x - y + 3, 3), 1)\n}\n\ndef u:fight(x, y) {\n  \"Answer the winner of a round.\"\n  if u:beats(x, y) { x } else { y }\n}\n\nt = table(:u:fight, range(3), range(3))\nu:classify(t)",
+   "title": "What did you just build?"
+  },
+  {
+   "check": "to_json(u:grade_differs(left, right))",
+   "choices": [],
+   "concept": "associativity",
+   "hints": [
+    "A draw will never help -- pick three different choices.",
+    "Try rock, paper, scissors in that order: a = 0, b = 1, c = 2.",
+    "(rock beats-round paper) is paper, and paper against scissors gives scissors. The other bracketing gives rock."
+   ],
+   "id": "rps-assoc",
+   "kind": "discover",
+   "module": "Rock-paper-scissors",
+   "prompt": "With ordinary addition it never matters where you put the brackets. Here it does. Find three choices a, b, c for which playing (a then b) then c gives a DIFFERENT winner than a then (b then c). Set the three numbers and run.",
+   "setup": "",
+   "solution": "def u:fight(x, y) {\n  \"Answer the winner of a round.\"\n  if eq(mod(x - y + 3, 3), 1) { x } else { y }\n}\n\nt = table(:u:fight, range(3), range(3))\n\na = 0\nb = 1\nc = 2\n\nleft = u:cell(t, u:cell(t, a, b), c)\nright = u:cell(t, a, u:cell(t, b, c))\n{left: left, right: right}",
+   "starter": "def u:fight(x, y) {\n  \"Answer the winner of a round.\"\n  if eq(mod(x - y + 3, 3), 1) { x } else { y }\n}\n\nt = table(:u:fight, range(3), range(3))\n\na = 0\nb = 0\nc = 0\n\nleft = u:cell(t, u:cell(t, a, b), c)\nright = u:cell(t, a, u:cell(t, b, c))\n{left: left, right: right}",
+   "title": "Break the brackets"
+  }
+ ],
+ "order": [
+  "ops-run",
+  "ops-table",
+  "ops-read",
+  "closure-escape",
+  "closure-witness",
+  "closure-repair",
+  "closure-magma",
+  "rps-beats",
+  "rps-winner",
+  "rps-classify",
+  "rps-assoc"
+ ]
+}

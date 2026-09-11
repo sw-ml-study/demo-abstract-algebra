@@ -142,4 +142,21 @@ def u:test_verdict_shape() {
   ok({test: "verdict_shape", cases: 3})
 }
 
+@test {name: "a counterexample must actually disagree", tags: ["grade"]}
+def u:test_grade_differs() {
+  "The counterexample grader rejects an agreeing pair and accepts a differing one.";
+  # Rock-paper-scissors: (rock * paper) * scissors is scissors, but
+  # rock * (paper * scissors) is rock. A real counterexample.
+  rps = [[0, 1, 0], [1, 1, 2], [0, 2, 2]];
+  left = u:cell(rps, u:cell(rps, 0, 1), 2);
+  right = u:cell(rps, 0, u:cell(rps, 1, 2));
+  u:assert_eq(u:grade_differs(left, right).pass, 1, "rock/paper/scissors should differ")?;
+
+  # A draw triple agrees, so it proves nothing and must not pass.
+  same = u:cell(rps, u:cell(rps, 0, 0), 0);
+  also = u:cell(rps, 0, u:cell(rps, 0, 0));
+  u:assert_eq(u:grade_differs(same, also).pass, 0, "an agreeing pair is not a counterexample")?;
+  ok({test: "grade_differs", cases: 2})
+}
+
 u:run_registered_tests()

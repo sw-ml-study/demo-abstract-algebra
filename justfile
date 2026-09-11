@@ -32,6 +32,7 @@ audit:
     ./scripts/check-narration
     ./scripts/check-web-renders
     ./scripts/check-web-runs
+    ./scripts/check-learn
     ./scripts/check-viewer-conformance
 
 # Format every tracked .mlpl file with sw-MLPL's own formatter.
@@ -41,6 +42,10 @@ fmt:
 # Regenerate the standalone, paste-ready Web UI entries in web/.
 web:
     ./scripts/build-web-demos
+
+# Regenerate learn/lessons.json from the MLPL course records.
+learn:
+    ./scripts/build-learn
 
 # Regenerate the diagrams the README embeds, in assets/.
 assets:

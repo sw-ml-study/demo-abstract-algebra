@@ -1,0 +1,78 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>lesson check</title>
+<!--
+  Every lesson must be completable, and every prediction must have exactly one
+  right answer.
+
+  A lesson is data plus an MLPL checker, and neither is exercised by any MLPL
+  test: the checker only runs against a learner's submission, in a browser, in
+  a session with the library preloaded. So this drives the real course page the
+  way a learner does -- typing the lesson's own solution, or clicking each
+  choice in turn -- and fails if any lesson cannot be finished.
+
+  It also catches the subtler thing: a prediction where two choices both pass,
+  or none does, is a broken question even though nothing errors.
+
+  Driven by scripts/check-learn.
+-->
+<pre id="out">running</pre>
+<script type="module">
+import { createRuntime } from '../runtime.js';
+
+const report = { ok: false, lessons: [], note: '' };
+const el = document.getElementById('out');
+
+try {
+  const course = await (await fetch('../learn/lessons.json', { cache: 'no-store' })).json();
+  const mlpl = createRuntime('../mlpl/index.html');
+  await mlpl.ready();
+  mlpl.prelude(await (await fetch('../learn/algebra.mlpl', { cache: 'no-store' })).text());
+  mlpl.prelude(await (await fetch('../learn/grade.mlpl', { cache: 'no-store' })).text());
+
+  // Grade one submission exactly as the course page does.
+  function attempt(lesson, source, answerIndex) {
+    mlpl.reset();
+    if (lesson.setup) {
+      const s = mlpl.eval(lesson.setup);
+      if (s.failed) return { pass: false, why: 'setup failed: ' + s.display.slice(0, 120) };
+    }
+    if (source) {
+      const r = mlpl.eval(source);
+      if (r.failed) return { pass: false, why: 'did not run: ' + r.display.slice(0, 120) };
+    }
+    if (!lesson.check) return { pass: true, why: 'no check; running is enough' };
+    try {
+      const v = mlpl.evalJson(lesson.check.replace('{{answer}}', String(answerIndex)));
+      return { pass: !!v.pass, why: v.why };
+    } catch (e) {
+      return { pass: false, why: 'check failed: ' + String(e).slice(0, 120) };
+    }
+  }
+
+  for (const l of course.lessons) {
+    if (l.kind === 'predict') {
+      // Exactly one choice must pass. Zero means unanswerable; two means the
+      // question does not distinguish its own options.
+      const passing = l.choices
+        .map((_, i) => attempt(l, '', i))
+        .filter(r => r.pass).length;
+      report.lessons.push({
+        id: l.id, kind: l.kind, ok: passing === 1,
+        detail: `${passing} of ${l.choices.length} choices pass; want exactly 1`,
+      });
+    } else {
+      const source = l.solution || l.starter;
+      const r = attempt(l, source, -1);
+      report.lessons.push({
+        id: l.id, kind: l.kind, ok: r.pass,
+        detail: r.pass ? (l.solution ? 'solution completes it' : 'runs as given') : r.why,
+      });
+    }
+  }
+  report.ok = report.lessons.every(l => l.ok);
+} catch (e) {
+  report.note = String(e).slice(0, 300);
+}
+el.textContent = JSON.stringify(report, null, 1);
+</script>

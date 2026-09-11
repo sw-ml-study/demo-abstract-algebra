@@ -5,12 +5,12 @@ semigroups, monoids, groups, and the structure-preserving maps between them —
 written as standalone `.mlpl` scripts for the
 [sw-MLPL](https://sw-ml-study.github.io/sw-mlpl/) interpreter.
 
-**[Open the site](https://sw-ml-study.github.io/demo-abstract-algebra/)** — the
-[Cayley table explorer](https://sw-ml-study.github.io/demo-abstract-algebra/lab/)
-runs in your browser with no install, and a
-[runtime spike](https://sw-ml-study.github.io/demo-abstract-algebra/spike/)
-shows the sw-MLPL interpreter itself executing and grading MLPL on the page.
-The guided course is planned, not built: `docs/tutorial-plan.md`.
+**[Open the site](https://sw-ml-study.github.io/demo-abstract-algebra/)** — no
+install. The **[course](https://sw-ml-study.github.io/demo-abstract-algebra/learn/)**
+is eleven guided steps in which you write sw-MLPL and the real interpreter, in
+the page, runs and grades it; the
+**[Lab](https://sw-ml-study.github.io/demo-abstract-algebra/lab/)** lets you
+edit a Cayley table and watch the classifier re-decide what you built.
 
 The premise is small and does a lot of work:
 

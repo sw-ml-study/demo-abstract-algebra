@@ -1,0 +1,71 @@
+#!/bin/sh
+# Every lesson is completable, and every prediction has exactly one answer.
+#
+# The lessons are data and their checkers are MLPL expressions that only run
+# against a learner's submission, in a browser, in a session with the library
+# loaded. No MLPL test can reach them. So this drives the real page.
+#
+# Skips loudly -- never silently -- when Chrome, node or the bundle is absent.
+set -eu
+
+repo_root=$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)
+bundle=${MLPL_BUNDLE:-$repo_root/../mlpl-live}
+work=$repo_root/out/learn-check
+
+# The generated lessons must be current before anything is driven.
+"$repo_root/scripts/build-learn" >/dev/null
+
+chrome=${CHROME:-}
+if [ -z "$chrome" ]; then
+  for c in "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome" \
+           /usr/bin/google-chrome /usr/bin/chromium /usr/bin/chromium-browser; do
+    [ -x "$c" ] && { chrome=$c; break; }
+  done
+fi
+
+if [ -z "$chrome" ] || [ ! -f "$bundle/index.html" ] || ! command -v node >/dev/null 2>&1; then
+  echo "check-learn: SKIPPING (needs Chrome, node, and a bundle at $bundle)."
+  echo "  A pass here does NOT mean the lessons are completable."
+  exit 0
+fi
+
+rm -rf "$work"
+"$repo_root/scripts/build-site" "$work" >/dev/null
+mkdir -p "$work/check"
+cp "$repo_root/tests/browser/lesson-check.html" "$work/check/index.html"
+
+port=$(python3 -c 'import socket; s=socket.socket(); s.bind(("127.0.0.1",0)); print(s.getsockname()[1]); s.close()')
+cdp=$(python3 -c 'import socket; s=socket.socket(); s.bind(("127.0.0.1",0)); print(s.getsockname()[1]); s.close()')
+
+python3 -m http.server "$port" --directory "$work" >/dev/null 2>&1 &
+server=$!
+"$chrome" --headless=new --disable-gpu --no-sandbox --no-first-run \
+  --no-default-browser-check --disable-background-networking \
+  --disable-component-update --disable-features=MediaRouter \
+  --user-data-dir="$work/chrome" --remote-debugging-port="$cdp" \
+  about:blank >/dev/null 2>&1 &
+browser=$!
+trap 'kill $server $browser 2>/dev/null || true' EXIT
+until curl -s -o /dev/null "http://localhost:$cdp/json/version"; do sleep 1; done
+
+node "$repo_root/tests/browser/drive-web-subset.mjs" "$cdp" \
+  "http://localhost:$port/check/" > "$work/verdict.json" 2>/dev/null || true
+
+python3 - "$work/verdict.json" <<'PYEOF'
+import json, sys
+
+raw = open(sys.argv[1]).read().strip()
+if not raw or raw == "running":
+    print("check-learn: the harness never finished", file=sys.stderr)
+    raise SystemExit(1)
+report = json.loads(raw)
+if report.get("note"):
+    print(f"check-learn: {report['note']}", file=sys.stderr)
+for l in report["lessons"]:
+    mark = "ok  " if l["ok"] else "FAIL"
+    out = sys.stdout if l["ok"] else sys.stderr
+    print(f"  {mark} {l['id']:<18} {l['detail']}", file=out)
+raise SystemExit(0 if report.get("ok") else 1)
+PYEOF
+
+echo "check-learn: every lesson is completable"

@@ -164,6 +164,23 @@ def u:grade_rung_flag(flag, message) {
 }
 
 # ---------------------------------------------------------------------------
+# Disagreement, for exercises that ask for a counterexample
+# ---------------------------------------------------------------------------
+
+# Two values that must DIFFER.  This is the grader for a "find a case where
+# the law fails" exercise: the learner supplies the case, and passing means
+# their case genuinely breaks it.  Grading the search rather than the answer
+# is the point -- there are several valid triples and no reason to prefer one.
+def u:grade_differs(left, right) {
+  "Grade a counterexample: pass when the two results genuinely disagree.";
+  if eq(left, right) {
+    u:grade_fail("these two agree, so this is not a counterexample", -1, -1, left)
+  } else {
+    u:grade_ok("the two bracketings really do disagree")
+  }
+}
+
+# ---------------------------------------------------------------------------
 # Direct comparison, for exercises with one right answer
 # ---------------------------------------------------------------------------
 

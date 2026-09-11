@@ -40,6 +40,14 @@ cp "$repo_root/lib/algebra.mlpl" "$out/spike/lib-algebra.mlpl"
 # page reaches MLPL through this and none of them knows how. See B7.
 cp "$repo_root/learn/runtime.js" "$out/runtime.js"
 
+# The course: the runner, the generated lessons, and the two libraries it
+# evaluates as source because the browser session has no `include` (#21).
+mkdir -p "$out/learn"
+cp "$repo_root/learn/index.html" "$out/learn/index.html"
+cp "$repo_root/learn/lessons.json" "$out/learn/lessons.json"
+cp "$repo_root/lib/algebra.mlpl" "$out/learn/algebra.mlpl"
+cp "$repo_root/lib/grade.mlpl" "$out/learn/grade.mlpl"
+
 # The interpreter.
 if [ ! -f "$bundle/index.html" ]; then
   echo "no sw-MLPL bundle at $bundle" >&2
